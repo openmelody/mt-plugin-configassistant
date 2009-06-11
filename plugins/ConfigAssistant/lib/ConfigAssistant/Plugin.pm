@@ -60,15 +60,19 @@ sub tag_config_form {
     my $html = '';
     my $id = $args->{'id'};
     my $cfg = $app->registry('plugin_config', $id);
-    foreach my $key (keys %$cfg) {
+    foreach my $key (sort keys %$cfg) {
 	my $plugin = delete $cfg->{$key}->{'plugin'};
 	my $fieldset = $cfg->{$key};
 	$html .= "<fieldset>\n";
 	my $label = delete $fieldset->{'label'};
+	if ($label) {
+	    $html .= "  <h3>".&$label."</h3>\n";
+	}
 	my $fs_text = delete $fieldset->{'description'};
-        $html .= "  <h3>".&$label."</h3>\n" if $label;
-        $html .= "  <p>".&$fs_text."</p>\n" if $fs_text;
-	foreach my $field_id (keys %$fieldset) {
+	if ($fs_text) {
+	    $html .= "  <p>".&$fs_text."</p>\n";
+	}
+	foreach my $field_id (sort keys %$fieldset) {
 	    my $field = $fieldset->{$field_id};
 	    my $value = $plugin->get_config_value($field_id, 'blog:' . $app->blog->id);
 	    my $show_label = $field->{'show_label'} ? &{$field->{'show_label'}} : 1;
@@ -104,6 +108,15 @@ sub tag_config_form {
 
 	    } elsif ($field->{'type'} eq 'checkbox') {
 		$html .= "      <input type=\"checkbox\" name=\"$field_id\" value=\"1\" ".($value ? "checked ." : "")."/>\n";
+
+	    } elsif ($field->{'type'} eq 'blogs') {
+		my @blogs = MT->model('blog')->load({},{ sort => 'name' });
+		$html .= "      <select name=\"$field_id\">\n";
+                $html .= "        <option value=\"0\" ".(0 == $value ? " selected" : "") .">None Selected</option>\n";
+		foreach (@blogs) {
+		    $html .= "        <option value=\"".$_->id."\" ".($value == $_->id ? " selected" : "") .">".$_->name."</option>\n";
+		}
+		$html .= "      </select>\n";
 	    }
 
 	    if ($field->{hint}) { 
