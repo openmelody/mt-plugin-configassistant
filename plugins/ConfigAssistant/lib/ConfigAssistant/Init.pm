@@ -1,21 +1,78 @@
-
 package ConfigAssistant::Init;
 
 use strict;
 
-# Say hey, but we really just wanted the module loaded.
+sub plugin {
+    return MT->component('ConfigAssistant');
+}
+
+#sub init_request {
+#    open LOG, ">>/tmp/mt.log";
+#    print LOG "Initing request\n";
+#    close LOG;
+#}
+
 sub init_app { 
     my $plugin = shift;
     my ($app) = @_;
     return if $app->id eq 'wizard';
-
     my $r = $plugin->registry;
-    if ($app->id eq 'cms') {
-	# load menu item for theme options
-    }
     $r->{tags} = sub { load_tags($plugin) };
-    
+}
+
+sub init_request { 
+    my $callback = shift;
+    my $app = MT->instance;
+    return if $app->id eq 'wizard';
+    # For each plugin, convert options into settings
+    for my $sig ( keys %MT::Plugins ) {
+	my $plugin = $MT::Plugins{$sig};
+	my $obj = $MT::Plugins{$sig}{object};
+	my $r = $obj->{registry};
+	my @sets = keys %{$r->{'template_sets'}};
+	foreach my $set (@sets) {
+	    if ($r->{'template_sets'}->{$set}->{'options'}) {
+		foreach my $opt (keys %{$r->{'template_sets'}->{$set}->{'options'}}) {
+		    next if ($opt eq 'fieldsets');
+		    my $option = $r->{'template_sets'}->{$set}->{'options'}->{$opt};
+		    $obj->{registry}->{settings}->{$opt} = {
+			scope => 'blog',
+			%$option,
+		    };
+		}
+	    }
+	}
+    }
     1;
+}
+
+sub uses_config_assistant {
+    local $@;
+    my $blog = MT->instance->blog;
+    return 0 if !$blog;
+    my $ts = MT->instance->blog->template_set;
+    my $app = MT::App->instance;
+    return 1 if $app->registry('template_sets')->{$ts}->{options};
+    return 0;
+}
+
+sub load_menus {
+    if (uses_config_assistant()) {
+        my $plugin = plugin();
+        delete $plugin->{registry}->{applications}->{cms}->{menus};
+        my $core = MT->component('Core');
+        my $menus = $core->{registry}->{applications}->{cms}->{menus};
+        return {
+            'design:theme_options' => {
+                label => 'Theme Options',
+                order => 1000,
+                mode => 'theme_options',
+                view => "blog",
+                permission => 'edit_templates',
+            },
+        };
+    }
+    return {};
 }
 
 sub load_tags {

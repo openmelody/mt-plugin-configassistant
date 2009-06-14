@@ -1,0 +1,53 @@
+<mt:setvarblock name="page_title"><__trans phrase="Edit Theme Options"></mt:setvarblock>
+<mt:setvarblock name="html_title"><__trans phrase="Edit Theme Options"></mt:setvarblock>
+<mt:var name="position_actions_bottom" value="1">
+<mt:setvarblock name="system_msg">
+    <mt:if name="saved">
+        <mtapp:statusmsg
+            id="options-saved"
+            class="success">
+            <__trans phrase="You have saved your theme options.">
+        </mtapp:statusmsg>
+    </mt:if>
+</mt:setvarblock>
+<mt:setvartemplate name="action_buttons">
+    <button
+        onclick="return validate(this.form);"
+        type="submit"
+        accesskey="s"
+        tabindex="12"
+        title="<__trans phrase="Save (s)">"
+        class="primary-button"
+        ><__trans phrase="Save"></button>
+    <div id="autosave-notification-<$mt:var name="bar_position" escape="html" default="top"$>" class="autosave-notification"></div>
+</mt:setvartemplate>
+
+<mt:setvarblock name="html_head" append="1">
+</mt:setvarblock>
+
+<mt:setvarblock name="html_body" append="1">
+</mt:setvarblock>
+
+<mt:include name="include/header.tmpl">
+
+<form method="post" action="/~breese/mt/mt.cgi" id="plugin-1-form">
+   <input type="hidden" name="__mode" value="save_plugin_config" />
+   <input type="hidden" name="blog_id" value="<mt:BlogID>" />
+   <input type="hidden" name="return_args" value="__mode=theme_options&amp;blog_id=<mt:BlogID>&amp;saved=1" />
+   <input type="hidden" name="plugin_sig" value="<mt:var name="plugin_sig">" />
+   <input type="hidden" name="magic_token" value="<mt:var name="magic_token">" />
+
+   <mt:var name="html">
+
+   <div class="actions-bar settings-actions-bar">
+     <div class="actions-bar-inner pkg actions">
+       <button
+         mt:mode="save_plugin_config"
+         type="submit"
+         class="primary-button"
+         >Save Changes</button>
+     </div>
+   </div>
+
+</form>
+<mt:include name="include/footer.tmpl">

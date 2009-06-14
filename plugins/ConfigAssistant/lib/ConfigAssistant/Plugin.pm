@@ -5,6 +5,111 @@ use strict;
 use Carp qw( croak );
 use MT::Util qw( relative_date offset_time offset_time_list epoch2ts ts2epoch format_ts encode_html );
 
+sub find_theme_plugin {
+    my ($set) = @_;
+    for my $sig ( keys %MT::Plugins ) {
+	my $plugin = $MT::Plugins{$sig};
+	my $obj = $MT::Plugins{$sig}{object};
+	my $r = $obj->{registry};
+	my @sets = keys %{$r->{'template_sets'}};
+	foreach (@sets) {
+	    return $obj if ($set eq $_);
+	}
+    }
+    return undef;
+}
+
+sub theme_options {
+    my $app = shift;
+    my ($param) = @_;
+    my $q = $app->{query};
+    my $blog = $app->blog;
+
+    $param ||= {};
+    my $html;
+    
+    my $ts = $blog->template_set;
+    my $plugin = find_theme_plugin($ts);
+    my $cfg = $app->registry('template_sets')->{$ts}->{options};
+    my $fieldsets = $cfg->{fieldsets};
+#    use Data::Dumper;
+#    MT->log({ message => Dumper($plugin) });
+    $fieldsets->{__global} = { label => sub { "Global Options"; } };
+    foreach my $field_id (keys %{$cfg}) {
+	next if $field_id eq 'fieldsets';
+	my $field = $cfg->{$field_id};
+	my $value = $plugin->get_config_value($field_id, 'blog:' . $blog->id);
+
+	my $out;
+	$field->{fieldset} = '__global' unless defined $field->{fieldset};
+	my $show_label = defined $field->{show_label} ? $field->{show_label} : 1;
+	$out .= '  <div id="'.$field_id.'" class="field field-left-label pkg">'."\n";
+	$out .= "    <div class=\"field-header\">\n";
+	$out .= "      <label for=\"$field_id\">".&{$field->{label}}."</label>\n"
+	    if $show_label;
+	$out .= "    </div>\n";
+	$out .= "    <div class=\"field-content\">\n";
+	if ($field->{'type'} eq 'text') {
+	    $out .= "      <input type=\"text\" name=\"$field_id\" value=\"".encode_html($value)."\" class=\"full-width\" />\n";
+    
+	} elsif ($field->{'type'} eq 'textarea') {
+	    $out .= "      <textarea name=\"$field_id\" class=\"full-width\" rows=\"".$field->{rows}."\" />";
+	    $out .= encode_html($value);
+	    $out .= "</textarea>\n";
+	    
+	} elsif ($field->{'type'} eq 'radio') {
+	    my @values = split(",",$field->{values});
+	    $out .= "      <ul>\n";
+	    foreach (@values) {
+		$out .= "        <li><input type=\"radio\" name=\"$field_id\" value=\"$_\"".($value eq $_ ? " checked=\"checked\"" : "") ." class=\"rb\" />".$_."</li>\n";
+	    }
+	    $out .= "      </ul>\n";
+	    
+	} elsif ($field->{'type'} eq 'select') {
+	    my @values = split(",",$field->{values});
+	    $out .= "      <select name=\"$field_id\">\n";
+	    foreach (@values) {
+		$out .= "        <option".($value eq $_ ? " selected" : "") .">$_</option>\n";
+	    }
+	    $out .= "      </select>\n";
+	    
+	} elsif ($field->{'type'} eq 'checkbox') {
+	    $out .= "      <input type=\"checkbox\" name=\"$field_id\" value=\"1\" ".($value ? "checked ." : "")."/>\n";
+	    
+	} elsif ($field->{'type'} eq 'blogs') {
+	    my @blogs = MT->model('blog')->load({},{ sort => 'name' });
+	    $out .= "      <select name=\"$field_id\">\n";
+	    $out .= "        <option value=\"0\" ".(0 == $value ? " selected" : "") .">None Selected</option>\n";
+	    foreach (@blogs) {
+		$out .= "        <option value=\"".$_->id."\" ".($value == $_->id ? " selected" : "") .">".$_->name."</option>\n";
+	    }
+	    $out .= "      </select>\n";
+	}
+	
+	if ($field->{hint}) { 
+	    $out .= "      <div class=\"hint\">".$field->{hint}."</div>\n";
+	}
+	$out .= "    </div>\n";
+	$out .= "  </div>\n";
+	my $fs = $field->{fieldset};
+	push @{$fieldsets->{$fs}->{fields}}, $out; 
+    }
+    foreach my $set (keys %$fieldsets) {
+	next unless $fieldsets->{$set}->{fields};
+	$html .= "<fieldset>";
+	$html .= "<h3>" . &{$fieldsets->{$set}->{label}} . "</h3>";
+	foreach (@{$fieldsets->{$set}->{fields}}) {
+	    $html .= $_;
+	}
+	$html .= "</fieldset>";
+    }
+    $param->{html} = $html;
+    $param->{blog_id} = $blog->id;
+    $param->{plugin_sig} = $plugin->{plugin_sig};
+    $param->{saved} = $q->param('saved');
+    return $app->load_tmpl( 'theme_options.tmpl', $param );
+}
+
 sub _hdlr_field_value {
     my $plugin = shift;
     my ($ctx, $args) = @_;
