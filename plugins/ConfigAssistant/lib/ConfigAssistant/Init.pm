@@ -1,16 +1,11 @@
 package ConfigAssistant::Init;
 
 use strict;
+use ConfigAssistant::Util qw( find_theme_plugin );
 
 sub plugin {
     return MT->component('ConfigAssistant');
 }
-
-#sub init_request {
-#    open LOG, ">>/tmp/mt.log";
-#    print LOG "Initing request\n";
-#    close LOG;
-#}
 
 sub init_app { 
     my $plugin = shift;
@@ -104,6 +99,36 @@ sub load_tags {
 	    }
 	}
     }
+
+    for my $sig ( keys %MT::Plugins ) {
+	my $plugin = $MT::Plugins{$sig};
+	my $obj = $MT::Plugins{$sig}{object};
+	my $r = $obj->{registry};
+	my @sets = keys %{$r->{'template_sets'}};
+	foreach my $set (@sets) {
+	    if ($r->{'template_sets'}->{$set}->{'options'}) {
+		foreach my $opt (keys %{$r->{'template_sets'}->{$set}->{'options'}}) {
+		    my $option = $r->{'template_sets'}->{$set}->{'options'}->{$opt};
+		    next if (!defined($option->{tag}));
+		    my $tag = $option->{tag};
+		    if ($tag =~ s/\?$//) {
+			$tags->{block}->{$tag} = sub { 
+			    $_[0]->stash('field', $opt);
+			    $_[0]->stash('plugin_ns', $obj->id);
+			    runner('_hdlr_field_cond', 'ConfigAssistant::Plugin', @_); 
+			};
+		    } elsif ($tag ne '') {
+			$tags->{function}->{$tag} = sub { 
+			    $_[0]->stash('field', $opt);
+			    $_[0]->stash('plugin_ns', $obj->id);
+			    runner('_hdlr_field_value', 'ConfigAssistant::Plugin', @_); 
+			};
+		    }
+		}
+	    }
+	}
+    }
+
     $tags->{function}{'PluginConfigForm'} = '$ConfigAssistant::ConfigAssistant::Plugin::tag_config_form';
     return $tags;
 }

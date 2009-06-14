@@ -4,20 +4,7 @@ use strict;
 
 use Carp qw( croak );
 use MT::Util qw( relative_date offset_time offset_time_list epoch2ts ts2epoch format_ts encode_html );
-
-sub find_theme_plugin {
-    my ($set) = @_;
-    for my $sig ( keys %MT::Plugins ) {
-	my $plugin = $MT::Plugins{$sig};
-	my $obj = $MT::Plugins{$sig}{object};
-	my $r = $obj->{registry};
-	my @sets = keys %{$r->{'template_sets'}};
-	foreach (@sets) {
-	    return $obj if ($set eq $_);
-	}
-    }
-    return undef;
-}
+use ConfigAssistant::Util qw( find_theme_plugin );
 
 sub theme_options {
     my $app = shift;
