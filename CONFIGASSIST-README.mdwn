@@ -1,0 +1,170 @@
+This plugin is allows theme and plugin developers to easily surface a form 
+within Movable Type for configuring their theme/plugin. In addition, it allows
+theme and plugin developers to define template tags by which they can access
+the values entered in by their users directly within their templates.
+
+All this **without having to know perl or how to program at all**!
+
+This plugin works by allowing a developer to use their plugin's configuration
+file as a means for defining what the various settings and form elements they
+would like to expose to a user.
+
+If Config Assistant is being used within the context of a theme, then users of 
+your theme will automatically have a "Theme Options" menu item added to their 
+design menu so they can easily access the settings you define.
+
+The sample config file below should give you a quick understanding of how you
+can begin using this plugin today.
+
+# Prerequisites
+
+- Movable Type 4.1 or higher
+
+# Installation
+
+This plugin is installed [just like any other Movable Type Plugin](http://www.majordojo.com/2008/12/the-ultimate-guide-to-installing-movable-type-plugins.php).
+
+# Reference and Documentation
+
+## Using Config Assistant for Theme Options
+
+This plugin adds support for a new element in any plugin's `config.yaml` file called
+`options`, which is placed as a descendant to a defined template set. When a user of 
+your plugin applies the corresponding template set then a "Theme Options" menu item
+will automatically appear in their "Design" menu. They can click that menu item to 
+be taken directly to a page on which they can edit all of their theme's settings.
+
+    id: MyPluginID
+    name: My Plugin
+    template_sets:
+        my_awesome_theme:
+            options:
+                fieldsets:
+                    homepage:
+                        label: 'Homepage Options'
+                    feed:
+                        label: 'Feed Options'
+                feedburner_id:
+                    type: text
+                    label: "Feedburner ID"
+                    hint: "This is the name of your Feedburner feed."
+                    tag: 'MyPluginFeedburnerID'
+                    fieldset: feed
+                use_feedburner:
+                    type: checkbox
+                    label: "Use Feedburner?"
+                    tag: 'IfFeedburner?'
+                    fieldset: feed
+                posts_for_frontfoor:
+                    type: text
+                    label: "Entries on Frontdoor"
+                    hint: 'The number of entries to show on the front door.'
+                    tag: 'FrontdoorEntryCount'
+                    fieldset: homepage
+
+## Using Config Assistant for Plugin Settings
+
+*This is admittedly a little rough as it is based upon a much earlier version
+of the plugin. This will get simplified.*
+
+The data structure for input form elements is relatively straight forward.
+This plugin adds support for a new registry key called `plugin_config`.
+
+The `plugin_config` element has a child element which corresponds to the plugin's
+id. It is this element under which all the various fields are defined under
+"fieldsets". 
+
+Each plugin can have multiple fieldsets, or grouping of input parameters.
+Each fieldset should have a unique key or identifier.
+
+Under each fieldset is a sequence of fields.
+
+In order to surface the form under your plugin's settings area, you will need
+to define a blog configuration template like so:
+
+    blog_config_template: '<mt:PluginConfigForm id="MyPluginID">'
+
+## Fields
+
+Each field definition supports the following properties:
+
+* `type` - the type of the field. Supported values are: text, textarea, select,
+  checkbox, blogs
+* `label` - the label to display to the left of the input element
+* `show_label` - display the label? (default: yes). This is ideal for checkboxes.
+* `hint` - the hint text to display below the input element
+* `tag` - the template tag that will access the value held by the corresponding
+  input element
+
+### Supported Field Types
+
+Below is a list of acceptable values for the `type` parameter for any defined 
+field:
+
+* `text` - Produces a simple single line text box.
+
+* `textarea` - Produces a multi-line text box. You can specify the `rows` sibling 
+  element to control the size/height of the text box.
+
+* `select` - Produces a pull-down menu or arbitrary values. Those values are
+  defined by specifying a sibling element called `values` which should contain 
+  a comma delimitted list of values to present in the pull down menu
+
+* `checkbox` - Produces a single checkbox, ideal for boolean values.
+
+* `blogs` - Produces a pull down menu listing every blog in the system.
+  *Warning: this is not advisable for large installations as it can dramatically
+  impact performance (negatively).*
+
+## Defining Template Tags
+
+Each plugin configuration field can define a template tag by which a designer
+or developer can access its value. If a tag name terminates in a question mark
+then the system will interpret the tag as a conditional block element. Here are 
+two example fields:
+
+    feedburner_id:
+        type: text
+        label: "Feedburner ID"
+        hint: "This is the name of your Feedburner feed."
+        tag: 'FeedburnerID'
+    use_feedburner:
+        type: checkbox
+        label: "Use Feedburner?"
+        tag: 'IfFeedburner?'
+
+And here are corresponding template tags that make use of these configuration
+options:
+
+    <mt:IfFeedburner>
+      My feedburner id is <mt:FeedburnerID>.
+    <mt:Else>
+      Feedburner is disabled!
+    </mt:IfFeedburner>
+
+# Sample config.yaml
+
+    blog_config_template: '<mt:PluginConfigForm id="MyPluginID">'
+    plugin_config:
+        MyPluginID:
+            fieldset_1:
+                label: "This is a label for my fieldset"
+                description: "This is some text to display below my fieldset label"
+                feedburner_id:
+                    type: text
+                    label: "Feedburner ID"
+                    hint: "This is the name of your Feedburner feed."
+                    tag: 'MyPluginFeedburnerID'
+
+# Support
+
+http://forums.movabletype.org/codesixapartcom/project-support/
+
+# Info
+
+Configuration Assistant Plugin for Movable Type   
+Author: Byrne Reese   
+Copyright 2008 Six Apart, Ltd.   
+Copyright 2009 Byrne Reese   
+License: Artistic, licensed under the same terms as Perl itself   
+
