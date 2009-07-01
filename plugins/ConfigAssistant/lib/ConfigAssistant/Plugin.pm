@@ -19,9 +19,9 @@ sub theme_options {
     my $plugin = find_theme_plugin($ts);
     my $cfg = $app->registry('template_sets')->{$ts}->{options};
     my $fieldsets = $cfg->{fieldsets};
-#    use Data::Dumper;
-#    MT->log({ message => Dumper($plugin) });
     $fieldsets->{__global} = { label => sub { "Global Options"; } };
+    # this is a localized stash for field HTML
+    my $fields;
     foreach my $field_id (keys %{$cfg}) {
 	next if $field_id eq 'fieldsets';
 	my $field = $cfg->{$field_id};
@@ -79,13 +79,13 @@ sub theme_options {
 	$out .= "    </div>\n";
 	$out .= "  </div>\n";
 	my $fs = $field->{fieldset};
-	push @{$fieldsets->{$fs}->{fields}}, $out; 
+	push @{$fields->{$fs}}, $out; 
     }
     foreach my $set (keys %$fieldsets) {
-	next unless $fieldsets->{$set}->{fields};
+	next unless $fields->{$set};
 	$html .= "<fieldset>";
 	$html .= "<h3>" . &{$fieldsets->{$set}->{label}} . "</h3>";
-	foreach (@{$fieldsets->{$set}->{fields}}) {
+	foreach (@{$fields->{$set}}) {
 	    $html .= $_;
 	}
 	$html .= "</fieldset>";

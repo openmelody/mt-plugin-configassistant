@@ -42,7 +42,7 @@ sub init_request {
 }
 
 sub uses_config_assistant {
-    local $@;
+#    local $@;
     my $blog = MT->instance->blog;
     return 0 if !$blog;
     my $ts = MT->instance->blog->template_set;
