@@ -30,10 +30,14 @@ sub init_request {
 		foreach my $opt (keys %{$r->{'template_sets'}->{$set}->{'options'}}) {
 		    next if ($opt eq 'fieldsets');
 		    my $option = $r->{'template_sets'}->{$set}->{'options'}->{$opt};
-		    $obj->{registry}->{settings}->{$opt} = {
-			scope => 'blog',
-			%$option,
-		    };
+		    if ($obj->{'registry'}->{'settings'}->{$opt}) {
+			MT->log({level => MT::Log::WARNING(), message => "A plugin (".$r->{name}.") is installed that defines a duplicate setting name ($opt)."});
+		    } else {
+			$obj->{'registry'}->{'settings'}->{$opt} = {
+			    scope => 'blog',
+			    %$option,
+			};
+		    }
 		}
 	    }
 	}
