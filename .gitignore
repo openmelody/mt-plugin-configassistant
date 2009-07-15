@@ -2,5 +2,6 @@ MANIFEST
 Makefile
 MANIFEST.bak
 META.yml
+*.zip
 *~
 #*

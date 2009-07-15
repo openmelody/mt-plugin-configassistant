@@ -31,7 +31,9 @@ sub init_request {
 		    next if ($opt eq 'fieldsets');
 		    my $option = $r->{'template_sets'}->{$set}->{'options'}->{$opt};
 		    if ($obj->{'registry'}->{'settings'}->{$opt}) {
-			MT->log({level => MT::Log::WARNING(), message => "A plugin (".$r->{name}.") is installed that defines a duplicate setting name ($opt)."});
+			MT->log({blog_id => ($app->blog ? $app->blog->id : 0), 
+				 level => MT::Log::WARNING(), 
+				 message => "A plugin (".$r->{name}.") is installed that defines a duplicate setting name ($opt)."});
 		    } else {
 			$obj->{'registry'}->{'settings'}->{$opt} = {
 			    scope => 'blog',
