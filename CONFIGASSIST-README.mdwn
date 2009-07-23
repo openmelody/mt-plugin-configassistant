@@ -61,6 +61,8 @@ be taken directly to a page on which they can edit all of their theme's settings
                     hint: 'The number of entries to show on the front door.'
                     tag: 'FrontdoorEntryCount'
                     fieldset: homepage
+                    condition: > 
+                      sub { return 1; }
 
 ## Using Config Assistant for Plugin Settings
 
@@ -95,6 +97,9 @@ Each field definition supports the following properties:
 * `hint` - the hint text to display below the input element
 * `tag` - the template tag that will access the value held by the corresponding
   input element
+* `condition` - a code reference that will determine if an option is rendered
+  to the screen or not. The handler should return true to show the option, or false
+  to hide it.
 
 ### Supported Field Types
 
@@ -115,6 +120,43 @@ field:
 * `blogs` - Produces a pull down menu listing every blog in the system.
   *Warning: this is not advisable for large installations as it can dramatically
   impact performance (negatively).*
+
+### Defining Custom Field Types
+
+To define your own form field type, you first need to register your type and 
+type handler in your plugin's `config.yaml` file, like so:
+
+    config_types:
+      my_custom_type:
+        handler: $MyPlugin::MyPlugin::custom_type_hdlr
+
+Then in `lib/MyPlugin.pm` you would implement your handler. Here is an example handler
+that outputs the HTML for a HTML pulldown or select menu:
+
+    sub custom_type_hdlr {
+      my ($field_id, $field, $value) = @_;
+      my $out;
+      my @values = split(",",$field->{values});
+      $out .= "      <ul>\n";
+      foreach (@values) {
+          $out .= "<li><input type=\"radio\" name=\"$field_id\" value=\"$_\"".
+	     ($value eq $_ ? " checked=\"checked\"" : "") ." class=\"rb\" />".$_."</li>\n";
+      }
+      $out .= "      </ul>\n";
+      return $out;
+    }
+
+With these two tasks complete, you can now use your new config type in your template set:
+
+    template_sets:
+      my_theme:
+        label: 'My Theme'
+        options:
+          layout:
+            type: my_custom_type
+            values: foo,bar,baz
+            label: 'My Setting'
+            default: 'bar'
 
 ## Defining Template Tags
 
