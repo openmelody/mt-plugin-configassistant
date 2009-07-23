@@ -18,7 +18,7 @@ can begin using this plugin today.
 
 # Prerequisites
 
-- Movable Type 4.1 or higher
+* Movable Type 4.1 or higher
 
 # Installation
 
@@ -137,7 +137,7 @@ And here are corresponding template tags that make use of these configuration
 options:
 
     <mt:IfFeedburner>
-      My feedburner id is <mt:FeedburnerID>.
+      My feedburner id is <$mt:FeedburnerID$>.
     <mt:Else>
       Feedburner is disabled!
     </mt:IfFeedburner>

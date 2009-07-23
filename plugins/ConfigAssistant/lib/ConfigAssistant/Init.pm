@@ -30,12 +30,19 @@ sub init_request {
 		foreach my $opt (keys %{$r->{'template_sets'}->{$set}->{'options'}}) {
 		    next if ($opt eq 'fieldsets');
 		    my $option = $r->{'template_sets'}->{$set}->{'options'}->{$opt};
-		    if ($obj->{'registry'}->{'settings'}->{$opt}) {
-			MT->log({blog_id => ($app->blog ? $app->blog->id : 0), 
-				 level => MT::Log::WARNING(), 
-				 message => "A plugin (".$r->{name}.") is installed that defines a duplicate setting name ($opt)."});
+		    # To avoid option names that may collide with other options in other template sets
+		    # settings are derived by combining the name of the template set and the option's
+		    # key.
+		    my $optname = $set . '_' . $opt;
+		    if ($obj->{'registry'}->{'settings'}->{$optname}) {
+#			MT->log({blog_id => ($app->blog ? $app->blog->id : 0), 
+#				 level => MT::Log::WARNING(), 
+#				 message => "The plugin (".$r->{name}.") defines two options with the same key ($opt) in the same template set ($set)."});
 		    } else {
-			$obj->{'registry'}->{'settings'}->{$opt} = {
+#			MT->log({blog_id => ($app->blog ? $app->blog->id : 0), 
+#				 level => MT::Log::WARNING(), 
+#				 message => "Registering $optname for plugin (".$r->{name}.")"});
+			$obj->{'registry'}->{'settings'}->{$optname} = {
 			    scope => 'blog',
 			    %$option,
 			};
@@ -80,6 +87,8 @@ sub load_tags {
     my $app = MT->app;
     my $cfg = $app->registry('plugin_config');
     my $tags = {};
+    # First load tags that correspond with Plugin Settings
+    # TODO: this struct needs to be abstracted out to be similar to template set options
     foreach my $plugin_id (keys %$cfg) {
 	my $plugin_cfg = $cfg->{$plugin_id};
 	my $p = delete $cfg->{$plugin_id}->{'plugin'};
@@ -106,6 +115,7 @@ sub load_tags {
 	}
     }
 
+    # Now register template tags for each of the template set options.
     for my $sig ( keys %MT::Plugins ) {
 	my $plugin = $MT::Plugins{$sig};
 	my $obj = $MT::Plugins{$sig}{object};
@@ -115,17 +125,24 @@ sub load_tags {
 	    if ($r->{'template_sets'}->{$set}->{'options'}) {
 		foreach my $opt (keys %{$r->{'template_sets'}->{$set}->{'options'}}) {
 		    my $option = $r->{'template_sets'}->{$set}->{'options'}->{$opt};
+		    # If the option does not define a tag name, 
+		    # then there is no need to register one
 		    next if (!defined($option->{tag}));
 		    my $tag = $option->{tag};
+		    # TODO - there is the remote possibility that a template set
+		    # will attempt to register a duplicate tag. This case needs to be
+		    # handled properly. Or does it?
+		    # Note: the tag handler takes into consideration the blog_id, the 
+		    # template set id and the option/setting name. 
 		    if ($tag =~ s/\?$//) {
 			$tags->{block}->{$tag} = sub { 
-			    $_[0]->stash('field', $opt);
+			    $_[0]->stash('field', $set . '_' . $opt);
 			    $_[0]->stash('plugin_ns', $obj->id);
 			    runner('_hdlr_field_cond', 'ConfigAssistant::Plugin', @_); 
 			};
 		    } elsif ($tag ne '') {
 			$tags->{function}->{$tag} = sub { 
-			    $_[0]->stash('field', $opt);
+			    $_[0]->stash('field', $set . '_' . $opt);
 			    $_[0]->stash('plugin_ns', $obj->id);
 			    runner('_hdlr_field_value', 'ConfigAssistant::Plugin', @_); 
 			};
