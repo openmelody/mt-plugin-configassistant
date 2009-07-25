@@ -64,25 +64,6 @@ sub uses_config_assistant {
     return 0;
 }
 
-sub load_menus {
-    if (uses_config_assistant()) {
-        my $plugin = plugin();
-        delete $plugin->{registry}->{applications}->{cms}->{menus};
-        my $core = MT->component('Core');
-        my $menus = $core->{registry}->{applications}->{cms}->{menus};
-        return {
-            'design:theme_options' => {
-                label => 'Theme Options',
-                order => 1000,
-                mode => 'theme_options',
-                view => "blog",
-                permission => 'edit_templates',
-            },
-        };
-    }
-    return {};
-}
-
 sub load_tags {
     my $app = MT->app;
     my $cfg = $app->registry('plugin_config');

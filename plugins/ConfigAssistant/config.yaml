@@ -8,7 +8,14 @@ version: 1.1
 
 applications:
   cms:
-    menus: $ConfigAssistant::ConfigAssistant::Init::load_menus
+    menus: 
+      design:theme_options:
+        label: 'Theme Options'
+        order: 1000
+        mode: theme_options
+        view: blog
+        permission: edit_templates
+        condition: $ConfigAssistant::ConfigAssistant::Init::uses_config_assistant
     methods:
       theme_options: $ConfigAssistant::ConfigAssistant::Plugin::theme_options
 
