@@ -6,7 +6,7 @@
 # CPAN chain files
 ^MANIFEST
 ^Makefile
-^META.yml$
+META.yml
 ^blib/
 
 # packages

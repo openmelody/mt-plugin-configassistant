@@ -134,6 +134,7 @@ Then in `lib/MyPlugin.pm` you would implement your handler. Here is an example h
 that outputs the HTML for a HTML pulldown or select menu:
 
     sub custom_type_hdlr {
+      my $app = shift;
       my ($field_id, $field, $value) = @_;
       my $out;
       my @values = split(",",$field->{values});

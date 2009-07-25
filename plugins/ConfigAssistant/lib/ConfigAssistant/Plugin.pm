@@ -46,7 +46,7 @@ sub theme_options {
 	    $out .= "    </div>\n";
 	    $out .= "    <div class=\"field-content\">\n";
 	    my $hdlr = MT->handler_to_coderef( $types->{$field->{'type'}}->{handler} );
-	    $out .= $hdlr->($field_id, $field, $value);
+	    $out .= $hdlr->($app, $field_id, $field, $value);
 	    if ($field->{hint}) { 
 		$out .= "      <div class=\"hint\">".$field->{hint}."</div>\n";
 	    }
@@ -75,11 +75,13 @@ sub theme_options {
 }
 
 sub type_text {
+    my $app = shift;
     my ($field_id, $field, $value) = @_;
     return "      <input type=\"text\" name=\"$field_id\" value=\"".encode_html($value)."\" class=\"full-width\" />\n";
 }
 
 sub type_textarea {
+    my $app = shift;
     my ($field_id, $field, $value) = @_;
     my $out;
     $out .= "      <textarea name=\"$field_id\" class=\"full-width\" rows=\"".$field->{rows}."\" />";
@@ -89,6 +91,7 @@ sub type_textarea {
 }
 
 sub type_radio {
+    my $app = shift;
     my ($field_id, $field, $value) = @_;
     my $out;
     my @values = split(",",$field->{values});
@@ -101,6 +104,7 @@ sub type_radio {
 }
 
 sub type_select {
+    my $app = shift;
     my ($field_id, $field, $value) = @_;
     my $out;
     my @values = split(",",$field->{values});
@@ -113,6 +117,7 @@ sub type_select {
 }
 
 sub type_blogs {
+    my $app = shift;
     my ($field_id, $field, $value) = @_;
     my $out;
     my @blogs = MT->model('blog')->load({},{ sort => 'name' });
@@ -126,6 +131,7 @@ sub type_blogs {
 }
 
 sub type_checkbox {
+    my $app = shift;
     my ($field_id, $field, $value) = @_;
     my $out;
     $out .= "      <input type=\"checkbox\" name=\"$field_id\" value=\"1\" ".($value ? "checked ." : "")."/>\n";
