@@ -1,4 +1,4 @@
-<mt:setvarblock name="page_title"><__trans phrase="Edit Theme Options"></mt:setvarblock>
+<mt:setvarblock name="page_title"><__trans phrase="Theme Options"> &gt; <span></span></mt:setvarblock>
 <mt:setvarblock name="html_title"><__trans phrase="Edit Theme Options"></mt:setvarblock>
 <mt:var name="position_actions_bottom" value="1">
 <mt:setvarblock name="system_msg">
@@ -22,10 +22,76 @@
     <div id="autosave-notification-<$mt:var name="bar_position" escape="html" default="top"$>" class="autosave-notification"></div>
 </mt:setvartemplate>
 
-<mt:setvarblock name="html_head" append="1">
+<mt:setvarblock name="content_nav">
+<ul>
+<mt:loop name="fieldsets">
+<li class="<$mt:var name="id"$><mt:if name="__first__"> active</mt:if>"><a href="#" title="<$mt:var name="id"$>"><b><$mt:var name="label"$> <span class="star">*</span></b></a></li>
+</mt:loop>
+</ul>
 </mt:setvarblock>
 
-<mt:setvarblock name="html_body" append="1">
+<mt:setvarblock name="html_head" append="1">
+  <style>
+    .fieldset-options { display: none; }
+    #fieldsets h3 { display: none; }
+    h2#page-title span.star { display: none; }
+    #content-nav ul li.changed b { font-style: italic; }
+    #content-nav ul li.changed span { display: inline; }
+    #content-nav ul li span { display: none; }
+
+    #container .actions-bar-wrapper {
+      padding: 10px;
+      position: fixed;
+      width: 100%;
+      left: 0;
+      bottom: 0;
+      overflow: hidden;
+    }
+    #container .actions-bar {
+      position: relative;
+      z-index:2;
+    }
+    #container .actions-bar-inner {
+     width: 960px;
+     margin: 0 auto 0 auto;
+    }
+    #container .actions-bar-inner button {  
+     margin-left: 210px;
+   }
+   #container .actions-bar-wrapper .transparency {
+     opacity:0.5;  
+     filter:alpha(opacity=50);  
+     -moz-opacity:0.5;  
+     background-color: #000000;  
+     width: 100%; height:100px;  
+     position:absolute;  
+     top:0px;  
+     left:0px;  
+     z-index:1;  
+   }
+
+  </style>
+  <script src="<$mt:StaticWebPath$>jquery/jquery.js" type="text/javascript"></script>
+  <script type="text/javascript">
+    $(document).ready( function() {
+      var active = $('#content-nav ul li.active a').attr('title');
+      $('#'+active).show();
+      $('h2#page-title span').html( $('#content-nav ul li.active a b').html() );
+      $('#fieldsets input, #fieldsets select, #fieldsets textarea').change( function () {
+        var changed = $(this).parent().parent().parent().attr('id');
+        $('#content-nav ul li.'+changed).addClass('changed');
+      });
+      $('#content-nav ul li a').click( function() {
+        var newactive = $(this).attr('title');
+	$('#content-nav li.active').removeClass('active');
+	$('#' + active).hide();
+	$('#content-nav li.' + newactive).addClass('active');
+	$('#' + newactive).show();
+        $('h2#page-title span').html( $('#content-nav ul li.'+newactive+' a b').html() );
+	active = newactive;
+      });  
+    });
+  </script>
 </mt:setvarblock>
 
 <mt:include name="include/header.tmpl">
@@ -37,15 +103,25 @@
    <input type="hidden" name="plugin_sig" value="<mt:var name="plugin_sig">" />
    <input type="hidden" name="magic_token" value="<mt:var name="magic_token">" />
 
-   <mt:var name="html">
+<div id="fieldsets">
+<mt:loop name="fieldsets">
+  <div id="<$mt:var name="id"$>" class="fieldset-options">
+    <h3><$mt:var name="label"$></h3>
+    <$mt:var name="content"$>
+  </div>
+</mt:loop>
+</div>
 
-   <div class="actions-bar settings-actions-bar">
-     <div class="actions-bar-inner pkg actions">
-       <button
-         mt:mode="save_plugin_config"
-         type="submit"
-         class="primary-button"
-         >Save Changes</button>
+   <div class="actions-bar-wrapper">
+     <div class="transparency"></div>
+     <div class="actions-bar settings-actions-bar">
+       <div class="actions-bar-inner pkg actions">
+         <button
+           mt:mode="save_plugin_config"
+           type="submit"
+           class="primary-button"
+           >Save Changes</button>
+       </div>
      </div>
    </div>
 

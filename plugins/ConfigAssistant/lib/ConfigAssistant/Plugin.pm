@@ -3,7 +3,7 @@ package ConfigAssistant::Plugin;
 use strict;
 
 use Carp qw( croak );
-use MT::Util qw( relative_date offset_time offset_time_list epoch2ts ts2epoch format_ts encode_html );
+use MT::Util qw( relative_date offset_time offset_time_list epoch2ts ts2epoch format_ts encode_html dirify );
 use ConfigAssistant::Util qw( find_theme_plugin );
 
 sub theme_options {
@@ -13,7 +13,6 @@ sub theme_options {
     my $blog = $app->blog;
 
     $param ||= {};
-    my $html;
     
     my $ts = $blog->template_set;
     my $plugin = find_theme_plugin($ts);
@@ -58,16 +57,37 @@ sub theme_options {
 	    MT->log({ message => 'Unknown config type encountered: ' . $field->{'type'} });
 	}
     }
-    foreach my $set (keys %$fieldsets) {
-	next unless $fields->{$set};
-	$html .= "<fieldset>";
-	$html .= "<h3>" . &{$fieldsets->{$set}->{label}} . "</h3>";
-	foreach (@{$fields->{$set}}) {
-	    $html .= $_;
+    my @loop;
+    my $count = 0;
+    my $html;
+    foreach my $set (sort { ($fieldsets->{$a}->{order} || 999) <=> ($fieldsets->{$b}->{order} || 999) } keys %$fieldsets) {
+	next unless $fields->{$set} || $fieldsets->{$set}->{template};
+	my $label = &{$fieldsets->{$set}->{label}};
+	my $innerhtml = '';
+	if (my $tmpl = $fieldsets->{$set}->{template}) {
+	    my $txt = $plugin->load_tmpl( $tmpl );
+	    my $filter = $fieldsets->{$set}->{format} ? $fieldsets->{$set}->{format} : '__default__';
+	    $txt = MT->apply_text_filters( $txt->text(), [ $filter ] );
+	    $innerhtml = $txt;
+	    $html .= $txt;
+	} else {
+	    $html .= "<fieldset>";
+	    $html .= "<h3>" . $label . "</h3>";
+	    foreach (@{$fields->{$set}}) {
+		$innerhtml .= $_;
+	    }
+	    $html .= $innerhtml;
+	    $html .= "</fieldset>";
 	}
-	$html .= "</fieldset>";
+	push @loop, {
+            '__first__' => ($count++ == 0),
+	    id => dirify($label),
+	    label => $label,
+	    content => $innerhtml,
+        };
     }
     $param->{html} = $html;
+    $param->{fieldsets} = \@loop;
     $param->{blog_id} = $blog->id;
     $param->{plugin_sig} = $plugin->{plugin_sig};
     $param->{saved} = $q->param('saved');
