@@ -37,3 +37,5 @@ config_types:
     handler: $ConfigAssistant::ConfigAssistant::Plugin::type_blogs
   checkbox: 
     handler: $ConfigAssistant::ConfigAssistant::Plugin::type_checkbox
+  radio-image:
+    handler: $ConfigAssistant::ConfigAssistant::Plugin::type_radio_image
