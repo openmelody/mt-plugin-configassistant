@@ -171,9 +171,7 @@ sub type_radio_image {
     my $out;
     my $static = $app->config->StaticWebPath;
     $out .= "      <ul class=\"pkg\">\n";
-    MT->log( { message => $field->{values} } );
     while ( $field->{values} =~ /\"([^\"]*)\":\"([^\"]*)\",?/g ) {
-        MT->log( { message => "img: $1, name: $2, static: $static" } );
         $out .=
             "        <li><input type=\"radio\" name=\"$field_id\" value=\"$2\""
           . ( $value eq $2 ? " checked=\"checked\"" : "" )
