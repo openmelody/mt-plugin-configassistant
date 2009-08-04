@@ -38,7 +38,7 @@ sub theme_options {
 	    my $out;
 	    $field->{fieldset} = '__global' unless defined $field->{fieldset};
 	    my $show_label = defined $field->{show_label} ? $field->{show_label} : 1;
-	    $out .= '  <div id="'.$field_id.'" class="field field-left-label pkg">'."\n";
+	    $out .= '  <div id="'.$field_id.'" class="field field-left-label pkg field-type-'.$field->{type}.'">'."\n";
 	    $out .= "    <div class=\"field-header\">\n";
 	    $out .= "      <label for=\"$field_id\">".&{$field->{label}}."</label>\n"
 		if $show_label;
@@ -123,6 +123,21 @@ sub type_radio {
     return $out;
 }
 
+sub type_radio_image {
+    my $app = shift;
+    my ($field_id, $field, $value) = @_;
+    my $out;
+    my $static = $app->config->StaticWebPath;
+    $out .= "      <ul class=\"pkg\">\n";
+    MT->log({ message => $field->{values} });
+    while ( $field->{values} =~ /\"([^\"]*)\":\"([^\"]*)\",?/g) { 
+	MT->log({ message => "img: $1, name: $2, static: $static" });
+	$out .= "        <li><input type=\"radio\" name=\"$field_id\" value=\"$2\"".($value eq $2 ? " checked=\"checked\"" : "") ." class=\"rb\" />"."<img src=\"".$static.$1."\" /><br />$2"."</li>\n";
+    }
+    $out .= "      </ul>\n";
+    return $out;
+}
+
 sub type_select {
     my $app = shift;
     my ($field_id, $field, $value) = @_;
@@ -177,6 +192,7 @@ sub _hdlr_field_value {
     } else {
 	$value = $plugin->get_config_value($field);
     }
+    return $args->{default} if ($args->{default} && $value eq '');
     return $value;
 }
 
