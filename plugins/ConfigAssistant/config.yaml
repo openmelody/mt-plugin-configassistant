@@ -4,7 +4,7 @@ key: ConfigAssistant
 author_link: http://www.majordojo.com/
 author_name: Byrne Reese
 description: This plugin provides a simple YAML based framework for creating plugin configuration forms.
-version: 1.2
+version: 1.2.1
 
 applications:
   cms:
@@ -20,9 +20,6 @@ applications:
       theme_options: $ConfigAssistant::ConfigAssistant::Plugin::theme_options
 
 init_app: $ConfigAssistant::ConfigAssistant::Init::init_app
-
-callbacks:
-  init_request: $ConfigAssistant::ConfigAssistant::Init::init_request
 
 config_types:
   text: 

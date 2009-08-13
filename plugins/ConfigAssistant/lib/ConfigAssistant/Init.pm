@@ -11,14 +11,14 @@ sub init_app {
     my $plugin = shift;
     my ($app) = @_;
     return if $app->id eq 'wizard';
+    init_options($app);
     my $r = $plugin->registry;
-    $r->{tags} = sub { load_tags($plugin) };
+    $r->{tags} = sub { load_tags($app,$plugin) };
 }
 
-sub init_request {
-    my $callback = shift;
-    my $app      = MT->instance;
-    return if $app->id eq 'wizard';
+sub init_options {
+#    my $callback = shift;
+    my $app = shift;
 
     # For each plugin, convert options into settings
     for my $sig ( keys %MT::Plugins ) {
@@ -40,16 +40,11 @@ sub init_request {
 # key.
                     my $optname = $set . '_' . $opt;
                     if ( $obj->{'registry'}->{'settings'}->{$optname} ) {
-
-#			MT->log({blog_id => ($app->blog ? $app->blog->id : 0),
-#				 level => MT::Log::WARNING(),
-#				 message => "The plugin (".$r->{name}.") defines two options with the same key ($opt) in the same template set ($set)."});
+			MT->log({blog_id => ($app->blog ? $app->blog->id : 0),
+				 level => MT::Log::WARNING(),
+				 message => "The plugin (".$r->{name}.") defines two options with the same key ($opt) in the same template set ($set)."});
                     }
                     else {
-
-          #			MT->log({blog_id => ($app->blog ? $app->blog->id : 0),
-          #				 level => MT::Log::WARNING(),
-          #				 message => "Registering $optname for plugin (".$r->{name}.")"});
                         $obj->{'registry'}->{'settings'}->{$optname} = {
                             scope => 'blog',
                             %$option,
@@ -59,12 +54,9 @@ sub init_request {
             }
         }
     }
-    1;
 }
 
 sub uses_config_assistant {
-
-    #    local $@;
     my $blog = MT->instance->blog;
     return 0 if !$blog;
     my $ts  = MT->instance->blog->template_set;
@@ -74,7 +66,7 @@ sub uses_config_assistant {
 }
 
 sub load_tags {
-    my $app  = MT->app;
+    my $app  = shift;
     my $cfg  = $app->registry('plugin_config');
     my $tags = {};
 

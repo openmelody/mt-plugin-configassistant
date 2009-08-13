@@ -8,6 +8,7 @@
 ^Makefile
 META.yml
 ^blib/
+.bak$
 
 # packages
 \.zip$
