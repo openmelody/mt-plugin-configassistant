@@ -40,9 +40,9 @@ sub init_options {
 # key.
                     my $optname = $set . '_' . $opt;
                     if ( $obj->{'registry'}->{'settings'}->{$optname} ) {
-			MT->log({blog_id => ($app->blog ? $app->blog->id : 0),
-				 level => MT::Log::WARNING(),
-				 message => "The plugin (".$r->{name}.") defines two options with the same key ($opt) in the same template set ($set)."});
+#			MT->log({blog_id => ($app->blog ? $app->blog->id : 0),
+#				 level => MT::Log::WARNING(),
+#				 message => "The plugin (".$r->{name}.") defines two options with the same key ($opt) in the same template set ($set)."});
                     }
                     else {
                         $obj->{'registry'}->{'settings'}->{$optname} = {

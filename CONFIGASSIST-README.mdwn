@@ -100,6 +100,7 @@ Each field definition supports the following properties:
 * `condition` - a code reference that will determine if an option is rendered
   to the screen or not. The handler should return true to show the option, or false
   to hide it.
+* `order` - the sort order for the field within its fieldset
 
 ### Supported Field Types
 
@@ -120,6 +121,28 @@ field:
 * `blogs` - Produces a pull down menu listing every blog in the system.
   *Warning: this is not advisable for large installations as it can dramatically
   impact performance (negatively).*
+
+* `radio-image` - Produces a javascript enabled list of radio buttons where 
+  each "button" is an image. Note that this version of the radio type supports
+  a special syntax for the `values` attribute. See example below.
+
+* `tagged-entries` - Produces a pull down menu of entries tagged a certain way.
+  This type supports the following additional attributes: `lastn` and `tag-filter`.
+
+**Example Radio Image**
+
+The `radio-image` type supports a special syntax for the `values` attribute. 
+The list of radio button is a comma-limitted list of image/value pairs (delimitted 
+by a colon). Got that? The images you reference are all relative to Movable Type's
+mt-static directory. Confused? I think a sample will make it perfectly clear:
+
+      homepage_layout:
+        type: radio-image
+        label: 'Homepage Layout'
+        hint: 'The layout for the homepage of your blog.'
+        tag: 'HomepageLayout'
+        values: >
+          "plugins/Foo/layout-1.png":"Layout 1","plugins/Foo/layout-2.png":"Layout 2"
 
 ### Defining Custom Field Types
 

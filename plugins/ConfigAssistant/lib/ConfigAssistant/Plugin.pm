@@ -26,7 +26,12 @@ sub theme_options {
 
     # this is a localized stash for field HTML
     my $fields;
-    foreach my $optname ( keys %{$cfg} ) {
+    foreach my $optname ( 
+        sort {
+            ( $cfg->{$a}->{order} || 999 )
+              <=> ( $cfg->{$b}->{order} || 999 )
+        } keys %{$cfg}
+     ) {
         next if $optname eq 'fieldsets';
         my $field = $cfg->{$optname};
         if ( my $cond = $field->{condition} ) {
@@ -144,6 +149,96 @@ sub type_textarea {
       . $field->{rows} . "\" />";
     $out .= encode_html($value);
     $out .= "      </textarea>\n";
+    return $out;
+}
+
+sub type_tagged_entries {
+    my $app = shift;
+    my ( $field_id, $field, $value ) = @_;
+    my $out;
+    my $lastn = $field->{lastn} || 10;
+    my $tag = $field->{tag};
+
+    my (%terms,%args);
+    $terms{blog_id} = $app->blog->id unless $field->{blog_id} eq 'all';
+    $args{lastn} = $lastn;
+    my @filters;
+    my $class = 'MT::Entry';
+    if (my $tag_arg = $field->{tag_filter}) {
+        require MT::Tag;
+        require MT::ObjectTag;
+
+        my $terms;
+        if ($tag_arg !~ m/\b(AND|OR|NOT)\b|\(|\)/i) {
+            my @tags = MT::Tag->split(',', $tag_arg);
+            $terms = { name => \@tags };
+            $tag_arg = join " or ", @tags;
+        }
+        my $tags = [ MT::Tag->load($terms, {
+                    binary => { name => 1 },
+                    join => ['MT::ObjectTag', 'tag_id', { %terms, object_datasource => $class->datasource }]
+        }) ];
+	require MT::Template::Context;
+	my $ctx = MT::Template::Context->new;
+        my $cexpr = $ctx->compile_tag_filter($tag_arg, $tags);
+        if ($cexpr) {
+            my @tag_ids = map { $_->id, ( $_->n8d_id ? ( $_->n8d_id ) : () ) } @$tags;
+            my $preloader = sub {
+                my ($entry_id) = @_;
+                my $cterms = {
+                    tag_id            => \@tag_ids,
+                    object_id         => $entry_id,
+                    object_datasource => $class->datasource,
+                    %terms,
+                };
+                my $cargs = {
+                    %args,
+                    fetchonly => ['tag_id'],
+                    no_triggers => 1,
+                };
+                my @ot_ids = MT::ObjectTag->load( $cterms, $cargs ) if @tag_ids;
+                my %map;
+                $map{ $_->tag_id } = 1 for @ot_ids;
+                \%map;
+            };
+            push @filters, sub { $cexpr->( $preloader->( $_[0]->id ) ) };
+        }
+    }
+
+    my @entries;
+    my $iter = MT->model('entry')->load_iter(\%terms, \%args);
+    my $i = 0; my $j = 0;
+    my $n = $field->{lastn};
+    ENTRY: while (my $e = $iter->()) {
+      for (@filters) {
+	  next ENTRY unless $_->($e);
+      }
+      push @entries, $e;
+      $i++;
+      last if $n && $i >= $n;
+    }
+    $out .= "      <select name=\"$field_id\">\n";
+    $out .=
+	'        <option value=""'
+	. ( !$value || $value eq ""  ? " selected" : "" )
+	. ">None selected</option>\n";
+    my $has_selected = 0;
+    foreach (@entries) {
+	$has_selected = 1 if $value eq $_->id;
+        $out .=
+            '        <option value="'.$_->id.'"'
+          . ( $value eq $_->id ? " selected" : "" )
+          . ">".$_->title.($field->{blog_id} eq 'all' ? " (".$_->blog->name.")" : "")."</option>\n";
+    }
+    if ($value && !$has_selected) {
+	my $e = MT->model('entry')->load( $value );
+	if ($e) {
+	    $out .=
+		'        <option value="'.$e->id.'" selected>'.$e->title
+		. ($field->{blog_id} eq 'all' ? " (".$e->blog->name.")" : "")."</option>\n";
+	}
+    }
+    $out .= "      </select>\n";
     return $out;
 }
 
