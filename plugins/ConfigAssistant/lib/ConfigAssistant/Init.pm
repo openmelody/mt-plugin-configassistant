@@ -39,21 +39,43 @@ sub init_options {
 # settings are derived by combining the name of the template set and the option's
 # key.
                     my $optname = $set . '_' . $opt;
-                    if ( $obj->{'registry'}->{'settings'}->{$optname} ) {
+                    if ( _option_exists($sig,$optname) ) {
 #			MT->log({blog_id => ($app->blog ? $app->blog->id : 0),
 #				 level => MT::Log::WARNING(),
 #				 message => "The plugin (".$r->{name}.") defines two options with the same key ($opt) in the same template set ($set)."});
                     }
                     else {
-                        $obj->{'registry'}->{'settings'}->{$optname} = {
-                            scope => 'blog',
-                            %$option,
-                        };
+			if (ref $obj->{'registry'}->{'settings'} eq 'ARRAY') {
+			    push @{ $obj->{'registry'}->{'settings'} }, [ $optname, {
+				scope => 'blog',
+				%$option,
+			    } ];
+			} elsif (ref $obj->{'registry'}->{'settings'} eq 'HASH') {
+			    $obj->{'registry'}->{'settings'}->{$optname} = {
+				scope => 'blog',
+				%$option,
+			    };
+			}
                     }
                 }
             }
         }
     }
+}
+
+sub _option_exists {
+    my ($sig, $opt) = @_;
+    my $obj    = $MT::Plugins{$sig}{object};
+    if (ref $obj->{'registry'}->{'settings'} eq 'ARRAY') {
+	my @settings = $obj->{'registry'}->{'settings'}->{$opt};
+	foreach (@settings) {
+	    return 1 if $opt eq $_[0];
+	}
+	return 0;
+    } elsif (ref $obj->{'registry'}->{'settings'} eq 'HASH') {
+	return $obj->{'registry'}->{'settings'}->{$opt} ? 1 : 0;
+    }
+    return 0;
 }
 
 sub uses_config_assistant {

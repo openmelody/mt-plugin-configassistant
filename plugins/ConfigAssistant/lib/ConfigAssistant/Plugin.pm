@@ -20,6 +20,9 @@ sub theme_options {
     my $cfg       = $app->registry('template_sets')->{$ts}->{options};
     my $types     = $app->registry('config_types');
     my $fieldsets = $cfg->{fieldsets};
+    my $scope     = 'blog:' . $app->blog->id;
+    my $cfg_obj   = $plugin->get_config_hash($scope); 
+
     $fieldsets->{__global} = {
         label => sub { "Global Options"; }
     };
@@ -43,8 +46,9 @@ sub theme_options {
 
         my $field_id = $ts . '_' . $optname;
         if ( $types->{ $field->{'type'} } ) {
-            my $value =
-              $plugin->get_config_value( $field_id, 'blog:' . $blog->id );
+            my $value = delete $cfg_obj->{$field_id};
+#            my $value =
+#              $plugin->get_config_value( $field_id, $scope );
             my $out;
             $field->{fieldset} = '__global' unless defined $field->{fieldset};
             my $show_label =
@@ -124,8 +128,16 @@ sub theme_options {
             content     => $innerhtml,
           };
     }
+    my @leftovers;
+    foreach my $field_id (keys %$cfg_obj) {
+	push @leftovers, {
+	    name => $field_id,
+	    value => $cfg_obj->{$field_id},
+	};
+    }
     $param->{html}       = $html;
     $param->{fieldsets}  = \@loop;
+    $param->{leftovers}  = \@leftovers;
     $param->{blog_id}    = $blog->id;
     $param->{plugin_sig} = $plugin->{plugin_sig};
     $param->{saved}      = $q->param('saved');
@@ -391,6 +403,8 @@ sub tag_config_form {
     my $cfg  = $app->registry( 'plugin_config', $id );
     foreach my $key ( sort keys %$cfg ) {
         my $plugin   = delete $cfg->{$key}->{'plugin'};
+	my $scope    = 'blog:' . $app->blog->id;
+	my $cfg_obj  = $plugin->get_config_hash($scope); 
         my $fieldset = $cfg->{$key};
         $html .= "<fieldset>\n";
         my $label = delete $fieldset->{'label'};
@@ -403,8 +417,9 @@ sub tag_config_form {
         }
         foreach my $field_id ( sort keys %$fieldset ) {
             my $field = $fieldset->{$field_id};
-            my $value =
-              $plugin->get_config_value( $field_id, 'blog:' . $app->blog->id );
+#            my $value =
+#              $plugin->get_config_value( $field_id, $scope );
+            my $value = $cfg_obj->{$field_id};
             my $show_label =
               $field->{'show_label'} ? &{ $field->{'show_label'} } : 1;
             $html .=
@@ -491,6 +506,10 @@ sub tag_config_form {
             $html .= "    </div>\n";
             $html .= "  </div>\n";
         }
+	foreach (keys %$cfg_obj) {
+	    $html .= '<input type="hidden" name="'.$_.'" value="'.encode_html($cfg_obj->{$_}).'" />'."\n";
+#	    MT->log({ message => "This key is left over: $_" });
+	}
     }
     return $html;
 }
