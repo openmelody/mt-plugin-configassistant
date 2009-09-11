@@ -17,7 +17,9 @@ applications:
         permission: edit_templates
         condition: $ConfigAssistant::ConfigAssistant::Init::uses_config_assistant
     methods:
-      theme_options: $ConfigAssistant::ConfigAssistant::Plugin::theme_options
+      theme_options:   $ConfigAssistant::ConfigAssistant::Plugin::theme_options
+      ca_config_entry: $ConfigAssistant::ConfigAssistant::Plugin::list_entry_mini
+      ca_select_entry:    $ConfigAssistant::ConfigAssistant::Plugin::select_entry
 
 init_app: $ConfigAssistant::ConfigAssistant::Init::init_app
 
@@ -36,5 +38,7 @@ config_types:
     handler: $ConfigAssistant::ConfigAssistant::Plugin::type_checkbox
   radio-image:
     handler: $ConfigAssistant::ConfigAssistant::Plugin::type_radio_image
+  entry:
+    handler: $ConfigAssistant::ConfigAssistant::Plugin::type_entry
   tagged-entry:
-    handler: $ConfigAssistant::ConfigAssistant::Plugin::type_tagged_entries
+    handler: $ConfigAssistant::ConfigAssistant::Plugin::type_tagged_entry

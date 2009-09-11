@@ -22,6 +22,8 @@ sub theme_options {
     my $fieldsets = $cfg->{fieldsets};
     my $scope     = 'blog:' . $app->blog->id;
     my $cfg_obj   = $plugin->get_config_hash($scope); 
+    require MT::Template::Context;
+    my $ctx       = MT::Template::Context->new();
 
     $fieldsets->{__global} = {
         label => sub { "Global Options"; }
@@ -54,7 +56,7 @@ sub theme_options {
             my $show_label =
               defined $field->{show_label} ? $field->{show_label} : 1;
             $out .=
-                '  <div id="'
+                '  <div id="field-'
               . $field_id
               . '" class="field field-left-label pkg field-type-'
               . $field->{type} . '">' . "\n";
@@ -68,7 +70,7 @@ sub theme_options {
             $out .= "    <div class=\"field-content\">\n";
             my $hdlr =
               MT->handler_to_coderef( $types->{ $field->{'type'} }->{handler} );
-            $out .= $hdlr->( $app, $field_id, $field, $value );
+            $out .= $hdlr->( $app, $ctx, $field_id, $field, $value );
 
             if ( $field->{hint} ) {
                 $out .=
@@ -146,7 +148,7 @@ sub theme_options {
 
 sub type_text {
     my $app = shift;
-    my ( $field_id, $field, $value ) = @_;
+    my ( $ctx, $field_id, $field, $value ) = @_;
     return
         "      <input type=\"text\" name=\"$field_id\" value=\""
       . encode_html($value)
@@ -155,18 +157,53 @@ sub type_text {
 
 sub type_textarea {
     my $app = shift;
-    my ( $field_id, $field, $value ) = @_;
+    my ( $ctx, $field_id, $field, $value ) = @_;
     my $out;
     $out .= "      <textarea name=\"$field_id\" class=\"full-width\" rows=\""
       . $field->{rows} . "\" />";
     $out .= encode_html($value);
-    $out .= "      </textarea>\n";
+    $out .= "</textarea>\n";
     return $out;
 }
 
-sub type_tagged_entries {
+sub type_entry {
     my $app = shift;
-    my ( $field_id, $field, $value ) = @_;
+    my ( $ctx, $field_id, $field, $value ) = @_;
+    my $out;
+    my $entry = MT->model('entry')->load($value);
+    my $entry_name = $entry ? $entry->title : '';
+    my $blog_id = $field->{all_blogs} ? 0 : $app->blog->id;
+    unless ($ctx->var('entry_chooser_js')) {
+	$out .= <<EOH;
+    <script type="text/javascript">
+        function insertCustomFieldEntry(html, val, id) {
+            \$('#'+id).val(val);
+            try {
+                \$('#'+id+'_preview').html(html);
+            } catch(e) {
+                log.error(e);
+            };
+        }
+    </script>
+EOH
+      $ctx->var('entry_chooser_js',1);
+    }
+    $out .= <<EOH;
+<div class="pkg">
+  <input name="$field_id" id="$field_id" class="hidden" type="hidden" value="$value" />
+  <button type="submit"
+          onclick="return openDialog(this.form, 'ca_config_entry', 'blog_id=$blog_id&edit_field=$field_id')">Choose Entry</button>
+  <div id="${field_id}_preview" class="preview">
+    $entry_name
+  </div>
+</div>
+EOH
+    return $out;
+}
+
+sub type_tagged_entry {
+    my $app = shift;
+    my ( $ctx, $field_id, $field, $value ) = @_;
     my $out;
     my $lastn = $field->{lastn} || 10;
     my $tag = $field->{tag};
@@ -256,7 +293,7 @@ sub type_tagged_entries {
 
 sub type_radio {
     my $app = shift;
-    my ( $field_id, $field, $value ) = @_;
+    my ( $ctx, $field_id, $field, $value ) = @_;
     my $out;
     my @values = split( ",", $field->{values} );
     $out .= "      <ul>\n";
@@ -274,7 +311,7 @@ sub type_radio {
 
 sub type_radio_image {
     my $app = shift;
-    my ( $field_id, $field, $value ) = @_;
+    my ( $ctx, $field_id, $field, $value ) = @_;
     my $out;
     my $static = $app->config->StaticWebPath;
     $out .= "      <ul class=\"pkg\">\n";
@@ -295,7 +332,7 @@ sub type_radio_image {
 
 sub type_select {
     my $app = shift;
-    my ( $field_id, $field, $value ) = @_;
+    my ( $ctx, $field_id, $field, $value ) = @_;
     my $out;
     my @values = split( ",", $field->{values} );
     $out .= "      <select name=\"$field_id\">\n";
@@ -311,7 +348,7 @@ sub type_select {
 
 sub type_blogs {
     my $app = shift;
-    my ( $field_id, $field, $value ) = @_;
+    my ( $ctx, $field_id, $field, $value ) = @_;
     my $out;
     my @blogs = MT->model('blog')->load( {}, { sort => 'name' } );
     $out .= "      <select name=\"$field_id\">\n";
@@ -333,7 +370,7 @@ sub type_blogs {
 
 sub type_checkbox {
     my $app = shift;
-    my ( $field_id, $field, $value ) = @_;
+    my ( $ctx, $field_id, $field, $value ) = @_;
     my $out;
     $out .= "      <input type=\"checkbox\" name=\"$field_id\" value=\"1\" "
       . ( $value ? "checked ." : "" ) . "/>\n";
@@ -512,6 +549,75 @@ sub tag_config_form {
 	}
     }
     return $html;
+}
+
+sub list_entry_mini {
+    my $app = shift;
+
+    my $blog_id = $app->param('blog_id') || 0;
+
+    my $type = 'entry';
+    my $pkg = $app->model($type) or return "Invalid request.";
+
+    my %terms;
+    $terms{blog_id} = $blog_id if $blog_id;
+    
+    my %args = (
+        sort      => 'authored_on',
+        direction => 'descend',
+    );
+
+    my $plugin = MT->component('ConfigAssistant') or die "OMG NO COMPONENT!?!";
+    my $tmpl = $plugin->load_tmpl('entry_list.mtml');
+    return $app->listing({
+        type => 'entry',
+        template => $tmpl,
+        params => {
+	    panel_searchable => 1,
+            edit_blog_id     => $blog_id,
+            edit_field       => $app->param('edit_field'),
+            search           => $app->param('search'),
+            blog_id          => $blog_id,
+        },
+        code => sub {
+            my ($obj, $row) = @_;
+            $row->{'status_' . lc MT::Entry::status_text($obj->status)} = 1;
+            $row->{entry_permalink} = $obj->permalink
+                if $obj->status == MT::Entry->RELEASE();
+            if (my $ts = $obj->authored_on) {
+                my $date_format = MT::App::CMS->LISTING_DATE_FORMAT();
+                my $datetime_format = MT::App::CMS->LISTING_DATETIME_FORMAT();
+                $row->{created_on_formatted} = format_ts($date_format, $ts, $obj->blog,
+                    $app->user ? $app->user->preferred_language : undef);
+                $row->{created_on_time_formatted} = format_ts($datetime_format, $ts, $obj->blog,
+                    $app->user ? $app->user->preferred_language : undef);
+                $row->{created_on_relative} = relative_date($ts, time, $obj->blog);
+            }
+            return $row;
+        },
+        terms => \%terms,
+        args  => \%args,
+        limit => 10,
+    });
+}
+
+sub select_entry {
+    my $app = shift;
+
+    my $entry_id = $app->param('id')
+        or return $app->errtrans('No id');
+    my $entry = MT->model('entry')->load($entry_id)
+        or return $app->errtrans('No entry #[_1]', $entry_id);
+    my $edit_field = $app->param('edit_field')
+        or return $app->errtrans('No edit_field');
+
+    my $plugin = MT->component('ConfigAssistant') or die "OMG NO COMPONENT!?!";
+    my $tmpl = $plugin->load_tmpl('select_entry.mtml', {
+        entry_id    => $entry->id,
+        entry_title => $entry->title,
+        edit_field  => $edit_field,
+    });
+    return $tmpl;
 }
 
 1;
