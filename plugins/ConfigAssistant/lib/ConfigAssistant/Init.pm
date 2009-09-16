@@ -149,7 +149,9 @@ sub load_tags {
                # template set id and the option/setting name.
                     if ( $tag =~ s/\?$// ) {
                         $tags->{block}->{$tag} = sub {
-                            $_[0]->stash( 'field',     $set . '_' . $opt );
+			    my $blog = $_[0]->stash('blog');
+			    my $bset = $blog->template_set;
+                            $_[0]->stash( 'field',     $bset . '_' . $opt );
                             $_[0]->stash( 'plugin_ns', $obj->id );
                             runner( '_hdlr_field_cond',
                                 'ConfigAssistant::Plugin', @_ );
@@ -157,7 +159,9 @@ sub load_tags {
                     }
                     elsif ( $tag ne '' ) {
                         $tags->{function}->{$tag} = sub {
-                            $_[0]->stash( 'field',     $set . '_' . $opt );
+			    my $blog = $_[0]->stash('blog');
+			    my $bset = $blog->template_set;
+                            $_[0]->stash( 'field',     $bset . '_' . $opt );
                             $_[0]->stash( 'plugin_ns', $obj->id );
                             runner( '_hdlr_field_value',
                                 'ConfigAssistant::Plugin', @_ );

@@ -397,7 +397,7 @@ sub _hdlr_field_value {
     else {
         $value = $plugin->get_config_value($field);
     }
-    return $args->{default} if ( $args->{default} && $value eq '' );
+    return $args->{default} if ( $args->{default} && (!$value || $value eq '' ));
     return $value;
 }
 
@@ -412,8 +412,7 @@ sub _hdlr_field_cond {
     if ( !$blog && $blog_id ) {
         $blog = MT->model('blog')->load($blog_id);
     }
-    $plugin = MT->component($plugin_ns);    # is this necessary?
-
+    $plugin = MT->component($plugin_ns); # load the theme plugin
     my $value = $plugin->get_config_value( $field, 'blog:' . $blog->id );
     if ($value) {
         return $ctx->_hdlr_pass_tokens(@_);
