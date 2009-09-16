@@ -57,3 +57,23 @@ h2#page-title span.star { display: none; }
   left:0px;  
   z-index:1;  
 }
+
+#configassistant-form .field-content .preview {
+  float: left;
+}
+#configassistant-form .field-content button {
+  color: white;
+  float: left;
+  font-size: 10px;
+  background: #999;
+  margin: 0 10px 0 0;
+  padding: 3px;
+  border: 0;
+  border-radius: 5px;
+  -moz-border-radius: 5px;
+  -webkit-border-radius: 5px;
+}
+#list-entries-dialog .listing-filter select {
+  margin-left: 180px;
+  font-size: 13px;
+}
