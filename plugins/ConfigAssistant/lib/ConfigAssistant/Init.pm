@@ -151,7 +151,6 @@ sub load_tags {
                         $tags->{block}->{$tag} = sub {
 			    my $blog = $_[0]->stash('blog');
 			    my $bset = $blog->template_set;
-			    MT->log({ blog_id => $blog->id, message => "Registering $tag for $sig" });
                             $_[0]->stash( 'field',      $bset . '_' . $opt );
                             $_[0]->stash( 'plugin_ns',  find_theme_plugin($bset)->id );
                             runner( '_hdlr_field_cond',
@@ -163,7 +162,7 @@ sub load_tags {
 			    my $blog = $_[0]->stash('blog');
 			    my $bset = $blog->template_set;
                             $_[0]->stash( 'field',     $bset . '_' . $opt );
-                            $_[0]->stash( 'plugin_ns', $obj->id );
+                            $_[0]->stash( 'plugin_ns',  find_theme_plugin($bset)->id );
                             runner( '_hdlr_field_value',
                                 'ConfigAssistant::Plugin', @_ );
                         };

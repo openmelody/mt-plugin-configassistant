@@ -414,10 +414,6 @@ sub _hdlr_field_cond {
     }
     $plugin = MT->component($plugin_ns); # load the theme plugin
     my $value = $plugin->get_config_value( $field, 'blog:' . $blog->id );
-    MT->log({ blog_id => $blog->id, message => "plugin: " . $plugin->id . "($plugin_ns)" });
-    MT->log({ blog_id => $blog->id, message => $_[0]->stash('tag') . " ($field:".$blog->id.") = " . $value });
-    use Data::Dumper;
-    MT->log({ blog_id => $blog->id, message => Dumper( $plugin->get_config_hash( "blog:".$blog->id) ) });
     if ($value) {
         return $ctx->_hdlr_pass_tokens(@_);
     }
