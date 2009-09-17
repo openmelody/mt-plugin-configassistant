@@ -386,9 +386,9 @@ sub _hdlr_field_value {
     $plugin = MT->component($plugin_ns);    # is this necessary?
 
     my $value;
-    my $blog_id = $ctx->var('blog_id');
     my $blog    = $ctx->stash('blog');
-    if ( !$blog && $blog_id ) {
+    if ( !$blog ) {
+	my $blog_id = $ctx->var('blog_id');
         $blog = MT->model('blog')->load($blog_id);
     }
     if ( $blog && $blog->id ) {
@@ -404,16 +404,20 @@ sub _hdlr_field_value {
 sub _hdlr_field_cond {
     my $plugin = shift;
     my ( $ctx, $args ) = @_;
-    my $plugin_ns = $ctx->stash('plugin_ns');
-    my $field     = $ctx->stash('field')
+    my $plugin_ns  = $ctx->stash('plugin_ns');
+    my $field      = $ctx->stash('field')
       or return _no_field($ctx);
-    my $blog_id = $ctx->var('blog_id');
     my $blog    = $ctx->stash('blog');
-    if ( !$blog && $blog_id ) {
+    if ( !$blog ) {
+	my $blog_id = $ctx->var('blog_id');
         $blog = MT->model('blog')->load($blog_id);
     }
     $plugin = MT->component($plugin_ns); # load the theme plugin
     my $value = $plugin->get_config_value( $field, 'blog:' . $blog->id );
+    MT->log({ blog_id => $blog->id, message => "plugin: " . $plugin->id . "($plugin_ns)" });
+    MT->log({ blog_id => $blog->id, message => $_[0]->stash('tag') . " ($field:".$blog->id.") = " . $value });
+    use Data::Dumper;
+    MT->log({ blog_id => $blog->id, message => Dumper( $plugin->get_config_hash( "blog:".$blog->id) ) });
     if ($value) {
         return $ctx->_hdlr_pass_tokens(@_);
     }
