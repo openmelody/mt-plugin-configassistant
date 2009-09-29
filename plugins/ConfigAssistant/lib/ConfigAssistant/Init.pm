@@ -50,7 +50,7 @@ sub init_options {
 				scope => 'blog',
 				%$option,
 			    } ];
-			} elsif (ref $obj->{'registry'}->{'settings'} eq 'HASH') {
+			} else { # (ref $obj->{'registry'}->{'settings'} eq 'HASH') {
 			    $obj->{'registry'}->{'settings'}->{$optname} = {
 				scope => 'blog',
 				%$option,

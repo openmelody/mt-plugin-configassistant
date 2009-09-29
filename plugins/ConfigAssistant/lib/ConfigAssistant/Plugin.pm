@@ -21,7 +21,9 @@ sub theme_options {
     my $types     = $app->registry('config_types');
     my $fieldsets = $cfg->{fieldsets};
     my $scope     = 'blog:' . $app->blog->id;
+    
     my $cfg_obj   = $plugin->get_config_hash($scope); 
+
     require MT::Template::Context;
     my $ctx       = MT::Template::Context->new();
 
