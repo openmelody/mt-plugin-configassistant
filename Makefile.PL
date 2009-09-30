@@ -2,6 +2,6 @@ use ExtUtils::MakeMaker;
 
 WriteMakefile(
     NAME            => 'Config Assistant',
-    VERSION         => '1.3.2',
+    VERSION         => '1.3.3',
     DISTNAME        => 'ConfigAssistant',
 );
