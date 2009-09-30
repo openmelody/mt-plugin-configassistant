@@ -153,7 +153,7 @@ sub type_text {
     my ( $ctx, $field_id, $field, $value ) = @_;
     return
         "      <input type=\"text\" name=\"$field_id\" value=\""
-      . encode_html($value)
+      . encode_html($value, 1) # The additional "1" will escape HTML entities properly
       . "\" class=\"full-width\" />\n";
 }
 
@@ -163,7 +163,7 @@ sub type_textarea {
     my $out;
     $out .= "      <textarea name=\"$field_id\" class=\"full-width\" rows=\""
       . $field->{rows} . "\" />";
-    $out .= encode_html($value);
+    $out .= encode_html($value, 1); # The additional "1" will escape HTML entities properly
     $out .= "</textarea>\n";
     return $out;
 }
@@ -476,7 +476,7 @@ sub tag_config_form {
             if ( $field->{'type'} eq 'text' ) {
                 $html .=
                     "      <input type=\"text\" name=\"$field_id\" value=\""
-                  . encode_html($value)
+                  . encode_html($value, 1) # The additional "1" will escape HTML entities properly
                   . "\" class=\"full-width\" />\n";
 
             }
@@ -484,7 +484,7 @@ sub tag_config_form {
                 $html .=
 "      <textarea name=\"$field_id\" class=\"full-width\" rows=\""
                   . $field->{rows} . "\" />";
-                $html .= encode_html($value);
+                $html .= encode_html($value, 1); # The additional "1" will escape HTML entities properly
                 $html .= "</textarea>\n";
 
             }
