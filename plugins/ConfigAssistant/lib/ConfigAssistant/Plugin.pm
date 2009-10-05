@@ -5,7 +5,7 @@ use strict;
 use Carp qw( croak );
 use MT::Util
   qw( relative_date offset_time offset_time_list epoch2ts ts2epoch format_ts encode_html dirify );
-use ConfigAssistant::Util qw( find_theme_plugin );
+use ConfigAssistant::Util qw( find_theme_plugin find_template_def find_option_def );
 
 sub theme_options {
     my $app     = shift;
@@ -33,6 +33,7 @@ sub theme_options {
 
     # this is a localized stash for field HTML
     my $fields;
+
     foreach my $optname ( 
         sort {
             ( $cfg->{$a}->{order} || 999 )
@@ -51,8 +52,6 @@ sub theme_options {
         my $field_id = $ts . '_' . $optname;
         if ( $types->{ $field->{'type'} } ) {
             my $value = delete $cfg_obj->{$field_id};
-#            my $value =
-#              $plugin->get_config_value( $field_id, $scope );
             my $out;
             $field->{fieldset} = '__global' unless defined $field->{fieldset};
             my $show_label =
@@ -146,6 +145,87 @@ sub theme_options {
     $param->{plugin_sig} = $plugin->{plugin_sig};
     $param->{saved}      = $q->param('saved');
     return $app->load_tmpl( 'theme_options.tmpl', $param );
+}
+
+# Code for this method taken from MT::CMS::Plugin
+sub save_config {
+    my $app = shift;
+
+    my $q          = $app->param;
+    my $plugin_sig = $q->param('plugin_sig');
+    my $profile    = $MT::Plugins{$plugin_sig};
+    my $blog_id    = $q->param('blog_id');
+    return unless $blog_id; # this works one within the context of a blog, no system plugin settings
+
+    $app->blog( MT->model('blog')->load($blog_id) ) if $blog_id;
+
+    $app->validate_magic or return;
+    return $app->errtrans("Permission denied.")
+        unless $app->user->can_manage_plugins
+            or ($blog_id
+            and $app->user->permissions($blog_id)->can_administer_blog);
+
+    my $param;
+    my @params = $q->param;
+    foreach (@params) {
+        next if $_ =~ m/^(__mode|return_args|plugin_sig|magic_token|blog_id)$/;
+        $param->{$_} = $q->param($_);
+    }
+    if ( $profile && $profile->{object} ) {
+        my $plugin = $profile->{object};
+        $plugin->error(undef);
+	my $scope = $blog_id ? 'blog:' . $blog_id : 'system';
+
+#        $plugin->save_config( \%param, $scope );
+
+	# BEGIN - contents of MT::Plugin->save_config
+	my $pdata = $plugin->get_config_obj($blog_id ? 'blog' : 'system');
+	$scope =~ s/:.*//;
+	my @vars = $plugin->config_vars($scope);
+	my $data = $pdata->data() || {};
+
+	my $repub_queue;
+	foreach my $var (@vars) {
+	    my $old = $data->{$var};
+	    my $new = $param->{$var};
+	    my $has_changed = $new && ($old ne $new);
+	    my $opt = find_option_def($var,$app->blog->template_set);
+	    if ($has_changed && $opt->{'republish'}) {
+		foreach (split(',',$opt->{'republish'})) {
+		    $repub_queue->{$_} = 1;
+		}
+	    }
+	    $data->{$var} = exists $new ? $new : undef;
+	    if ($has_changed) {
+		$app->run_callbacks( 'theme_options_change.'.$var, $app, $opt, $old, $new );
+		$app->run_callbacks( 'theme_options_change.*', $app, $opt, $old, $new );
+	    }    
+	}
+	foreach (keys %$repub_queue) {
+	    my $tmpl = MT->model('template')->load({
+		blog_id => $blog_id,
+		identifier => $_,
+            });
+	    next unless $tmpl;
+	    MT->log({ blog_id => $blog_id, message => "Config Assistant: Republishing " . $tmpl->name });
+	    $app->rebuild_indexes(
+		Blog     => $app->blog,
+		Template => $tmpl,
+		Force    => 1,
+		);
+	}
+	$pdata->data($data);
+	MT->request('plugin_config.'.$plugin->id, undef);
+	$pdata->save() or die $pdata->errstr;
+	# END - contents of MT::Plugin->save_config
+
+        if ( $plugin->errstr ) {
+            return $app->error("Error saving plugin settings: " . $plugin->errstr);
+        }
+    }
+
+    $app->add_return_arg( saved => 1 );
+    $app->call_return;
 }
 
 sub type_text {
@@ -439,6 +519,7 @@ sub tag_config_form {
     my $html = '';
     my $id   = $args->{'id'};
     my $cfg  = $app->registry( 'plugin_config', $id );
+    my $seen;
     foreach my $key ( sort keys %$cfg ) {
         my $plugin   = delete $cfg->{$key}->{'plugin'};
 	my $scope    = 'blog:' . $app->blog->id;
@@ -455,6 +536,7 @@ sub tag_config_form {
         }
         foreach my $field_id ( sort keys %$fieldset ) {
             my $field = $fieldset->{$field_id};
+	    $seen->{$field_id} = 1;
 #            my $value =
 #              $plugin->get_config_value( $field_id, $scope );
             my $value = $cfg_obj->{$field_id};
@@ -545,8 +627,8 @@ sub tag_config_form {
             $html .= "  </div>\n";
         }
 	foreach (keys %$cfg_obj) {
-	    $html .= '<input type="hidden" name="'.$_.'" value="'.encode_html($cfg_obj->{$_}).'" />'."\n";
-#	    MT->log({ message => "This key is left over: $_" });
+	    $html .= '<input type="hidden" name="'.$_.'" value="'.encode_html($cfg_obj->{$_}).'" />'."\n"
+		unless $seen->{$_};
 	}
     }
     return $html;

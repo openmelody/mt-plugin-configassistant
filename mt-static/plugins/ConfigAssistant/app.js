@@ -21,5 +21,7 @@ $(document).ready( function() {
     $(this).find('input').attr('checked',true);
     $(this).parent().find('.selected').removeClass('selected');
     $(this).addClass('selected');
+    var changed = $(this).parent().parent().parent().parent().attr('id');
+    $('#content-nav ul li.'+changed).addClass('changed');
   });
 });

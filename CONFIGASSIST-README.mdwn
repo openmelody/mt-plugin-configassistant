@@ -101,6 +101,8 @@ Each field definition supports the following properties:
   to the screen or not. The handler should return true to show the option, or false
   to hide it.
 * `order` - the sort order for the field within its fieldset
+* `republish` - a list of template identifiers (delimitted by a comma) that reference
+  templates that should be rebuilt when a theme option changes
 
 ### Supported Field Types
 
@@ -207,6 +209,45 @@ options:
     <mt:Else>
       Feedburner is disabled!
     </mt:IfFeedburner>
+
+## Callbacks
+
+Config Assistant defines a callback called `theme_options_change` which can be
+triggered when a specific theme option changes value or when any theme option 
+changes value. To register a callback for a specific theme option, you would use
+the following syntax:
+
+    callbacks:
+      theme_options_change.<option_id>: $MyPlugin::MyPlugin::handler
+
+To register a callback to be triggered when *any* theme option changes, you would 
+use this syntax:
+
+    callbacks:
+      theme_options_change.*: $MyPlugin::MyPlugin::handler
+
+When the callback is invoked, it will be invoked with the following input parameters:
+
+* `$app` - A reference to the MT::App instance currently in-context.
+* `$option_hash` - A reference to a hash containing the name/value pairs representing
+  this modified theme option in the registry.
+* `$old_value` - The value of the option prior to being modified.
+* `$new_value` - The value of the option after being modified.
+
+**Example**
+
+    sub my_handler {
+      my ($app, $option, $old, $new) = @_;
+      MT->log({ message => "Changing " . $option->label . " from $old to $new." });
+    }
+
+**Note: The callback is invoked after the new value has been inserted into the config
+hash, but prior to the hash being saved. This gives developers the opportunity to change
+the value of the config value one last time before being committed to the database.**
+
+### Registering a Handler
+
+
 
 # Sample config.yaml
 
