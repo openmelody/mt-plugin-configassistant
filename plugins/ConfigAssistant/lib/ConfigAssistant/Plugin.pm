@@ -179,7 +179,7 @@ sub save_config {
 #        $plugin->save_config( \%param, $scope );
 
 	# BEGIN - contents of MT::Plugin->save_config
-	my $pdata = $plugin->get_config_obj($blog_id ? 'blog' : 'system');
+	my $pdata = $plugin->get_config_obj($scope);
 	$scope =~ s/:.*//;
 	my @vars = $plugin->config_vars($scope);
 	my $data = $pdata->data() || {};
@@ -190,12 +190,12 @@ sub save_config {
 	    my $new = $param->{$var};
 	    my $has_changed = $new && ($old ne $new);
 	    my $opt = find_option_def($var,$app->blog->template_set);
-	    if ($has_changed && $opt->{'republish'}) {
+	    if ($has_changed && $opt && $opt->{'republish'}) {
 		foreach (split(',',$opt->{'republish'})) {
 		    $repub_queue->{$_} = 1;
 		}
 	    }
-	    $data->{$var} = exists $new ? $new : undef;
+	    $data->{$var} = $new ? $new : undef;
 	    if ($has_changed) {
 		$app->run_callbacks( 'theme_options_change.'.$var, $app, $opt, $old, $new );
 		$app->run_callbacks( 'theme_options_change.*', $app, $opt, $old, $new );
@@ -455,7 +455,7 @@ sub type_checkbox {
     my ( $ctx, $field_id, $field, $value ) = @_;
     my $out;
     $out .= "      <input type=\"checkbox\" name=\"$field_id\" value=\"1\" "
-      . ( $value ? "checked ." : "" ) . "/>\n";
+      . ( $value ? "checked " : "" ) . "/>\n";
     return $out;
 }
 
@@ -599,7 +599,7 @@ sub tag_config_form {
             elsif ( $field->{'type'} eq 'checkbox' ) {
                 $html .=
 "      <input type=\"checkbox\" name=\"$field_id\" value=\"1\" "
-                  . ( $value ? "checked ." : "" ) . "/>\n";
+                  . ( $value ? "checked " : "" ) . "/>\n";
 
             }
             elsif ( $field->{'type'} eq 'blogs' ) {
@@ -644,6 +644,7 @@ sub list_entry_mini {
 
     my %terms;
     $terms{blog_id} = $blog_id if $blog_id;
+    $terms{status} = MT::Entry::RELEASE();
     
     my %args = (
         sort      => 'authored_on',
