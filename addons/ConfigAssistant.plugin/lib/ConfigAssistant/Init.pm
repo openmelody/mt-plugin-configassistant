@@ -45,6 +45,12 @@ sub init_options {
 #				 message => "The plugin (".$r->{name}.") defines two options with the same key ($opt) in the same template set ($set)."});
                     }
                     else {
+			if ( my $default = $option->{default} ) {
+			    if ( !ref($default) && ($default =~ /^\s*sub/ || $default =~ /^\$/)) {
+				$default = $app->handler_to_coderef($default);
+				$option->{default} = $default->($app);
+			    }
+			}
 			if (ref $obj->{'registry'}->{'settings'} eq 'ARRAY') {
 			    push @{ $obj->{'registry'}->{'settings'} }, [ $optname, {
 				scope => 'blog',
