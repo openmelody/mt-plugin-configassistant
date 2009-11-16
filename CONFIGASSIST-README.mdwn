@@ -100,6 +100,8 @@ Each field definition supports the following properties:
 * `condition` - a code reference that will determine if an option is rendered
   to the screen or not. The handler should return true to show the option, or false
   to hide it.
+* `default` - a static value or a code reference which will determine the proper
+   default value for the option
 * `order` - the sort order for the field within its fieldset
 * `republish` - a list of template identifiers (delimitted by a comma) that reference
   templates that should be rebuilt when a theme option changes
