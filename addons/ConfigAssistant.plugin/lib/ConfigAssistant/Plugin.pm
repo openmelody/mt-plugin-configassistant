@@ -274,7 +274,7 @@ EOH
 <div class="pkg">
   <input name="$field_id" id="$field_id" class="hidden" type="hidden" value="$value" />
   <button type="submit"
-          onclick="return openDialog(this.form, 'ca_config_entry', 'blog_id=$blog_id&edit_field=$field_id')">Choose Entry</button>
+          onclick="return openDialog(this.form, 'ca_config_entry', 'blog_id=$blog_id&edit_field=$field_id&status=2')">Choose Entry</button>
   <div id="${field_id}_preview" class="preview">
     $entry_name
   </div>
@@ -634,6 +634,12 @@ sub tag_config_form {
     return $html;
 }
 
+sub entry_search_api_prep {
+    my $app = MT->instance;
+    my ($terms, $args, $blog_id) = @_;
+    $terms->{status} = $app->param('status') if ($app->param('status'));
+}
+
 sub list_entry_mini {
     my $app = shift;
 
@@ -642,9 +648,9 @@ sub list_entry_mini {
     my $type = 'entry';
     my $pkg = $app->model($type) or return "Invalid request.";
 
-    my %terms;
-    $terms{blog_id} = $blog_id if $blog_id;
-    $terms{status} = MT::Entry::RELEASE();
+    my $terms;
+    $terms->{blog_id} = $blog_id if $blog_id;
+    $terms->{status} = 2;
     
     my %args = (
         sort      => 'authored_on',
@@ -657,7 +663,7 @@ sub list_entry_mini {
         type => 'entry',
         template => $tmpl,
         params => {
-	    panel_searchable => 1,
+            panel_searchable => 1,
             edit_blog_id     => $blog_id,
             edit_field       => $app->param('edit_field'),
             search           => $app->param('search'),
@@ -679,7 +685,7 @@ sub list_entry_mini {
             }
             return $row;
         },
-        terms => \%terms,
+        terms => $terms,
         args  => \%args,
         limit => 10,
     });
