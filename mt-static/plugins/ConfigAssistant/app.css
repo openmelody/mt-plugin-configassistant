@@ -30,7 +30,7 @@ h2#page-title span.star { display: none; }
   display: none;
 }
 
-#container .actions-bar-wrapper {
+#theme-options #container .actions-bar-wrapper {
   padding: 10px;
   position: fixed;
   width: 100%;
@@ -38,18 +38,18 @@ h2#page-title span.star { display: none; }
   bottom: 0;
   overflow: hidden;
 }
-#container .actions-bar {
+#theme-options #container .actions-bar {
   position: relative;
   z-index:2;
 }
-#container .actions-bar-inner {
+#theme-options #container .actions-bar-inner {
   width: 960px;
   margin: 0 auto 0 auto;
 }
-#container .actions-bar-inner button {  
+#theme-options #container .actions-bar-inner button {  
   margin-left: 210px;
 }
-#container .actions-bar-wrapper .transparency {
+#theme-options #container .actions-bar-wrapper .transparency {
   opacity:0.5;  
   filter:alpha(opacity=50);  
   -moz-opacity:0.5;  

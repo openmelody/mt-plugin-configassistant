@@ -66,25 +66,31 @@ be taken directly to a page on which they can edit all of their theme's settings
 
 ## Using Config Assistant for Plugin Settings
 
-*This is admittedly a little rough as it is based upon a much earlier version
-of the plugin. This will get simplified.*
+To use Config Assistant as the rendering and enablement platform for plugin
+settings, use the same `options` struct you would for theme options, but use
+it as a root level element. For example:
 
-The data structure for input form elements is relatively straight forward.
-This plugin adds support for a new registry key called `plugin_config`.
+    id: MyPluginID
+    name: My Plugin
+    options:
+      fieldsets:
+        homepage:
+          label: 'Homepage Options'
+        feed:
+          label: 'Feed Options'
+      feedburner_id:
+        type: text
+        label: "Feedburner ID"
+        hint: "This is the name of your Feedburner feed."
+        tag: 'MyPluginFeedburnerID'
+        fieldset: feed
 
-The `plugin_config` element has a child element which corresponds to the plugin's
-id. It is this element under which all the various fields are defined under
-"fieldsets". 
+Using this method for plugin options completely obviates the need for developers 
+to specify the following elements in their plugin's config.yaml files:
 
-Each plugin can have multiple fieldsets, or grouping of input parameters.
-Each fieldset should have a unique key or identifier.
-
-Under each fieldset is a sequence of fields.
-
-In order to surface the form under your plugin's settings area, you will need
-to define a blog configuration template like so:
-
-    blog_config_template: '<mt:PluginConfigForm id="MyPluginID">'
+* `settings`
+* `blog_config_template`
+* `system_config_template`
 
 ## Fields
 
@@ -105,6 +111,9 @@ Each field definition supports the following properties:
 * `order` - the sort order for the field within its fieldset
 * `republish` - a list of template identifiers (delimitted by a comma) that reference
   templates that should be rebuilt when a theme option changes
+* `scope` - (for plugin settings only, all theme options are required to be
+  blog specific) determines whether the config option will be rendered at the blog
+  level or system level.
 
 ### Supported Field Types
 
@@ -132,6 +141,13 @@ field:
 
 * `tagged-entries` - Produces a pull down menu of entries tagged a certain way.
   This type supports the following additional attributes: `lastn` and `tag-filter`.
+
+* `entry` - Produces the ability to select a single entry via a small pop-up 
+  dialog. In the dialog, the user will be permitted to search the system via
+  keyword for the entry they are looking for. This field type supports the 
+  field property of `all_blogs`, a boolean value which determines whether the 
+  user will be constricted to searching entries in the current blog, or all
+  blogs on the system.
 
 **Example Radio Image**
 
@@ -287,7 +303,9 @@ http://forums.movabletype.org/codesixapartcom/project-support/
 
 # Info
 
-Configuration Assistant Plugin for Movable Type   
+This plugin is not necessary in Melody, as this is core component of that platform.
+
+Configuration Assistant Plugin for Movable Type and Melody
 Author: Byrne Reese   
 Copyright 2008 Six Apart, Ltd.   
 Copyright 2009 Byrne Reese   
