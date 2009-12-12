@@ -21,6 +21,9 @@ sub init_options {
     my $app = shift;
 
     # For each plugin, convert options into settings
+    my $has_blog_settings = 0;
+    my $has_sys_settings = 0;
+    
     for my $sig ( keys %MT::Plugins ) {
         my $plugin = $MT::Plugins{$sig};
         my $obj    = $MT::Plugins{$sig}{object};
@@ -33,36 +36,63 @@ sub init_options {
                 {
                     next if ( $opt eq 'fieldsets' );
                     my $option =
-                      $r->{'template_sets'}->{$set}->{'options'}->{$opt};
+                        $r->{'template_sets'}->{$set}->{'options'}->{$opt};
 
 # To avoid option names that may collide with other options in other template sets
 # settings are derived by combining the name of the template set and the option's
 # key.
                     my $optname = $set . '_' . $opt;
                     if ( _option_exists($sig,$optname) ) {
-#			MT->log({blog_id => ($app->blog ? $app->blog->id : 0),
-#				 level => MT::Log::WARNING(),
-#				 message => "The plugin (".$r->{name}.") defines two options with the same key ($opt) in the same template set ($set)."});
+                        # do nothing
                     }
                     else {
-#			if ( my $default = $option->{default} ) {
-#			    if ( !ref($default) && ($default =~ /^\s*sub/ || $default =~ /^\$/)) {
-#				$default = $app->handler_to_coderef($default);
-#				$option->{default} = sub { my $app = MT->instance; return $default->($app) };
-#			    }
-#			}
-			if (ref $obj->{'registry'}->{'settings'} eq 'ARRAY') {
-			    push @{ $obj->{'registry'}->{'settings'} }, [ $optname, {
-				scope => 'blog',
-				%$option,
-			    } ];
-			} else { # (ref $obj->{'registry'}->{'settings'} eq 'HASH') {
-			    $obj->{'registry'}->{'settings'}->{$optname} = {
-				scope => 'blog',
-				%$option,
-			    };
-			}
+#                        if ( my $default = $option->{default} ) {
+#                            if ( !ref($default) && ($default =~ /^\s*sub/ || $default =~ /^\$/)) {
+#                                $default = $app->handler_to_coderef($default);
+#                                $option->{default} = sub { my $app = MT->instance; return $default->($app) };
+#                            }
+#                        }
+                        if (ref $obj->{'registry'}->{'settings'} eq 'ARRAY') {
+                            push @{ $obj->{'registry'}->{'settings'} }, [ $optname, {
+                                scope => 'blog',
+                                %$option,
+                            } ];
+                        } else { # (ref $obj->{'registry'}->{'settings'} eq 'HASH') {
+                            $obj->{'registry'}->{'settings'}->{$optname} = {
+                                scope => 'blog',
+                                %$option,
+                            };
+                        }
                     }
+                }
+            }
+        } # end foreach (@sets)
+        # Now register settings for each plugin option, and register a plugin_config_form
+        my @options   = keys %{ $r->{'options'} };
+        foreach my $opt (@options) {
+            next if ( $opt eq 'fieldsets' );
+            my $option = $r->{'options'}->{$opt};
+
+            if ($option->{scope} eq 'system') {
+                require ConfigAssistant::Plugin;
+                $obj->{'registry'}->{'system_config_template'} = \&ConfigAssistant::Plugin::plugin_options;
+            }
+            if ($option->{scope} eq 'blog') {
+                $obj->{'registry'}->{'blog_config_template'}   = \&ConfigAssistant::Plugin::plugin_options;
+            }
+
+            if ( _option_exists($sig,$opt) ) {
+                # do nothing
+            }
+            else {
+                if (ref $obj->{'registry'}->{'settings'} eq 'ARRAY') {
+                    push @{ $obj->{'registry'}->{'settings'} }, [ $opt, {
+                        %$option,
+                    } ];
+                } else { # (ref $obj->{'registry'}->{'settings'} eq 'HASH') {
+                    $obj->{'registry'}->{'settings'}->{$opt} = {
+                        %$option,
+                    };
                 }
             }
         }
@@ -88,6 +118,7 @@ sub uses_config_assistant {
     my $blog = MT->instance->blog;
     return 0 if !$blog;
     my $ts  = MT->instance->blog->template_set;
+    return 0 if !$ts;
     my $app = MT::App->instance;
     return 1 if $app->registry('template_sets')->{$ts}->{options};
     return 0;

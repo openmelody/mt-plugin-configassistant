@@ -214,19 +214,25 @@ options:
 
 ## Callbacks
 
-Config Assistant defines a callback called `theme_options_change` which can be
+Config Assistant supports a number of callbacks to give developers the ability
+to respond to specific change events for options at a theme and plugin level.
+All of these callbacks are in the `options_change` callback family.
+
+### On Single Option Change
+
+Config Assistant defines a callback which can be
 triggered when a specific theme option changes value or when any theme option 
 changes value. To register a callback for a specific theme option, you would use
 the following syntax:
 
     callbacks:
-      theme_options_change.<option_id>: $MyPlugin::MyPlugin::handler
+      options_change.option.<option_id>: $MyPlugin::MyPlugin::handler
 
 To register a callback to be triggered when *any* theme option changes, you would 
 use this syntax:
 
     callbacks:
-      theme_options_change.*: $MyPlugin::MyPlugin::handler
+      options_change.option.*: $MyPlugin::MyPlugin::handler
 
 When the callback is invoked, it will be invoked with the following input parameters:
 
@@ -247,9 +253,19 @@ When the callback is invoked, it will be invoked with the following input parame
 hash, but prior to the hash being saved. This gives developers the opportunity to change
 the value of the config value one last time before being committed to the database.**
 
-### Registering a Handler
+### On Plugin Option Change
 
+Config Assistat has the ability to trigger a callback when any option within a 
+plugin changes. To register a callback of this nature you would use the following
+syntax:
 
+    callbacks:
+      options_change.plugin.<plugin_id>: $MyPlugin::MyPlugin::handler
+
+When the callback is invoked, it will be invoked with the following input parameters:
+
+* `$app` - A reference to the MT::App instance currently in-context.
+* `$plugin` - A reference to the plugin object that was changed
 
 # Sample config.yaml
 

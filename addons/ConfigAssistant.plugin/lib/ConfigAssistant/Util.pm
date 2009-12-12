@@ -21,14 +21,29 @@ sub find_template_def {
 }
 
 sub find_option_def {
-    my ($id,$set) = @_;
-    $id =~ s/^($set)_//;
-    my $r = MT->registry('template_sets');
-    return unless $r->{$set}->{'options'};
-    foreach (keys %{$r->{$set}->{'options'}}) {
-#	MT->log({ message => "Found option '$id' in $set." });
-	return $r->{$set}->{'options'}->{$id} if ($id eq $_);
+    my ($app,$id) = @_;
+    my $opt;
+    # First, search the current template set's theme options
+    if ($app->blog) {
+        my $set = $app->blog->template_set;
+        $id =~ s/^($set)_//;
+        my $r = MT->registry('template_sets');
+        if ($r->{$set}->{'options'}) {
+            foreach (keys %{$r->{$set}->{'options'}}) {
+                $opt = $r->{$set}->{'options'}->{$id} if ($id eq $_);
+            }
+        }
     }
+    # Next, if a theme option was not found, search plugin options
+    unless ($opt) {
+        my $r = MT->registry('options');
+        if ($r) {
+            foreach (keys %{$r}) {
+                $opt = $r->{$id} if ($id eq $_);
+            }
+        }
+    }
+    return $opt;
 }
 
 sub find_theme_plugin {

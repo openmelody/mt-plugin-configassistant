@@ -1,3 +1,6 @@
+#list-plugins .fieldset-options { display: block; }
+#list-plugins #fieldsets h3 { display: block; }
+
 .fieldset-options { display: none; }
 #fieldsets h3 { display: none; }
 h2#page-title span.star { display: none; }
