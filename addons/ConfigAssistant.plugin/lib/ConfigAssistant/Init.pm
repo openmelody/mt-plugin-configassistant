@@ -1,7 +1,7 @@
 package ConfigAssistant::Init;
 
 use strict;
-use ConfigAssistant::Util qw( find_theme_plugin );
+use ConfigAssistant::Util qw( find_theme_plugin find_option_plugin );
 
 sub plugin {
     return MT->component('ConfigAssistant');
@@ -78,6 +78,7 @@ sub init_options {
                 $obj->{'registry'}->{'system_config_template'} = \&ConfigAssistant::Plugin::plugin_options;
             }
             if ($option->{scope} eq 'blog') {
+                require ConfigAssistant::Plugin;
                 $obj->{'registry'}->{'blog_config_template'}   = \&ConfigAssistant::Plugin::plugin_options;
             }
 
@@ -126,37 +127,21 @@ sub uses_config_assistant {
 
 sub load_tags {
     my $app  = shift;
-    my $cfg  = $app->registry('plugin_config');
     my $tags = {};
 
 # First load tags that correspond with Plugin Settings
 # TODO: this struct needs to be abstracted out to be similar to template set options
+    my $cfg  = $app->registry('plugin_config');
     foreach my $plugin_id ( keys %$cfg ) {
         my $plugin_cfg = $cfg->{$plugin_id};
         my $p          = delete $cfg->{$plugin_id}->{'plugin'};
         foreach my $key ( keys %$plugin_cfg ) {
-            my $fieldset = $plugin_cfg->{$key};
-            delete $fieldset->{'label'};
-            foreach my $field_id ( keys %$fieldset ) {
-                my $field = $fieldset->{$field_id};
-                my $tag   = $field->{tag};
-                if ( $tag =~ s/\?$// ) {
-                    $tags->{block}->{$tag} = sub {
-                        $_[0]->stash( 'field',     $field_id );
-                        $_[0]->stash( 'plugin_ns', $p->id );
-                        runner( '_hdlr_field_cond', 'ConfigAssistant::Plugin',
-                            @_ );
-                    };
-                }
-                elsif ( $tag ne '' ) {
-                    $tags->{function}->{$tag} = sub {
-                        $_[0]->stash( 'field',     $field_id );
-                        $_[0]->stash( 'plugin_ns', $p->id );
-                        runner( '_hdlr_field_value', 'ConfigAssistant::Plugin',
-                            @_ );
-                    };
-                }
-            }
+            MT->log({ 
+                message => $p->name . " is using a Config Assistant syntax that is no longer supported. plugin_config needs to be updated to 'options'. Please consult documentation.",
+                class    => 'system',
+                category => 'plugin',
+                level    => MT::Log::ERROR(),
+            });
         }
     }
 
@@ -165,6 +150,8 @@ sub load_tags {
         my $plugin = $MT::Plugins{$sig};
         my $obj    = $MT::Plugins{$sig}{object};
         my $r      = $obj->{registry};
+
+        # First initialize all the tags associated with themes
         my @sets   = keys %{ $r->{'template_sets'} };
         foreach my $set (@sets) {
             if ( $r->{'template_sets'}->{$set}->{'options'} ) {
@@ -172,34 +159,36 @@ sub load_tags {
                     keys %{ $r->{'template_sets'}->{$set}->{'options'} } )
                 {
                     my $option =
-                      $r->{'template_sets'}->{$set}->{'options'}->{$opt};
-
+                        $r->{'template_sets'}->{$set}->{'options'}->{$opt};
+                    
                     # If the option does not define a tag name,
                     # then there is no need to register one
                     next if ( !defined( $option->{tag} ) );
                     my $tag = $option->{tag};
-
-               # TODO - there is the remote possibility that a template set
-               # will attempt to register a duplicate tag. This case needs to be
-               # handled properly. Or does it?
-               # Note: the tag handler takes into consideration the blog_id, the
-               # template set id and the option/setting name.
+                    
+                    # TODO - there is the remote possibility that a template set
+                    # will attempt to register a duplicate tag. This case needs to be
+                    # handled properly. Or does it?
+                    # Note: the tag handler takes into consideration the blog_id, the
+                    # template set id and the option/setting name.
                     if ( $tag =~ s/\?$// ) {
                         $tags->{block}->{$tag} = sub {
-			    my $blog = $_[0]->stash('blog');
-			    my $bset = $blog->template_set;
+                            my $blog = $_[0]->stash('blog');
+                            my $bset = $blog->template_set;
                             $_[0]->stash( 'field',      $bset . '_' . $opt );
                             $_[0]->stash( 'plugin_ns',  find_theme_plugin($bset)->id );
+                            $_[0]->stash( 'scope',      'blog' );
                             runner( '_hdlr_field_cond',
-                                'ConfigAssistant::Plugin', @_ );
+                                    'ConfigAssistant::Plugin', @_ );
                         };
                     }
                     elsif ( $tag ne '' ) {
                         $tags->{function}->{$tag} = sub {
-			    my $blog = $_[0]->stash('blog');
-			    my $bset = $blog->template_set;
+                            my $blog = $_[0]->stash('blog');
+                            my $bset = $blog->template_set;
                             $_[0]->stash( 'field',     $bset . '_' . $opt );
                             $_[0]->stash( 'plugin_ns',  find_theme_plugin($bset)->id );
+                            $_[0]->stash( 'scope',      'blog' );
                             runner( '_hdlr_field_value',
                                 'ConfigAssistant::Plugin', @_ );
                         };
@@ -207,10 +196,45 @@ sub load_tags {
                 }
             }
         }
+
+        my @options   = keys %{ $r->{'options'} };
+        foreach my $opt (@options) {
+            my $option = $r->{'options'}->{$opt};
+                    
+            # If the option does not define a tag name,
+            # then there is no need to register one
+            next if ( !defined( $option->{tag} ) );
+            my $tag = $option->{tag};
+                    
+            # TODO - there is the remote possibility that a template set
+            # will attempt to register a duplicate tag. This case needs to be
+            # handled properly. Or does it?
+            # Note: the tag handler takes into consideration the blog_id, the
+            # template set id and the option/setting name.
+            if ( $tag =~ s/\?$// ) {
+                $tags->{block}->{$tag} = sub {
+                    $_[0]->stash( 'field',      $opt );
+                    $_[0]->stash( 'plugin_ns',  $obj->id );
+                    $_[0]->stash( 'scope',      lc($option->{scope}) );
+                    runner( '_hdlr_field_cond',
+                            'ConfigAssistant::Plugin', @_ );
+                };
+            }
+            elsif ( $tag ne '' ) {
+                $tags->{function}->{$tag} = sub {
+                    $_[0]->stash( 'field',      $opt );
+                    $_[0]->stash( 'plugin_ns',  $obj->id );
+                    $_[0]->stash( 'scope',      lc($option->{scope}) );
+                    runner( '_hdlr_field_value',
+                            'ConfigAssistant::Plugin', @_ );
+                };
+            }
+        }
     }
 
     $tags->{function}{'PluginConfigForm'} =
       '$ConfigAssistant::ConfigAssistant::Plugin::tag_config_form';
+
     return $tags;
 }
 

@@ -3,7 +3,7 @@ package ConfigAssistant::Util;
 use strict;
 use base 'Exporter';
 
-our @EXPORT_OK = qw( find_theme_plugin find_template_def find_option_def );
+our @EXPORT_OK = qw( find_theme_plugin find_template_def find_option_def find_option_plugin );
 
 sub find_template_def {
     my ($id,$set) = @_;
@@ -55,6 +55,20 @@ sub find_theme_plugin {
         my @sets   = keys %{ $r->{'template_sets'} };
         foreach (@sets) {
             return $obj if ( $set eq $_ );
+        }
+    }
+    return undef;
+}
+
+sub find_option_plugin {
+    my ($option_name) = @_;
+    for my $sig ( keys %MT::Plugins ) {
+        my $plugin = $MT::Plugins{$sig};
+        my $obj    = $MT::Plugins{$sig}{object};
+        my $r      = $obj->{registry};
+        my @opts   = keys %{ $r->{'options'} };
+        foreach (@opts) {
+            return $obj if ( $option_name eq $_ );
         }
     }
     return undef;
