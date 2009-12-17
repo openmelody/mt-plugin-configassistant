@@ -61,14 +61,14 @@ sub find_theme_plugin {
 }
 
 sub find_option_plugin {
-    my ($option_name) = @_;
+    my ($opt_name) = @_;
     for my $sig ( keys %MT::Plugins ) {
         my $plugin = $MT::Plugins{$sig};
         my $obj    = $MT::Plugins{$sig}{object};
         my $r      = $obj->{registry};
         my @opts   = keys %{ $r->{'options'} };
         foreach (@opts) {
-            return $obj if ( $option_name eq $_ );
+            return $obj if ( $opt_name eq $_ );
         }
     }
     return undef;

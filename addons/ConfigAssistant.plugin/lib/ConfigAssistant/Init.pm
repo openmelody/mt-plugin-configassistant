@@ -175,9 +175,9 @@ sub load_tags {
                         $tags->{block}->{$tag} = sub {
                             my $blog = $_[0]->stash('blog');
                             my $bset = $blog->template_set;
-                            $_[0]->stash( 'field',      $bset . '_' . $opt );
-                            $_[0]->stash( 'plugin_ns',  find_theme_plugin($bset)->id );
-                            $_[0]->stash( 'scope',      'blog' );
+                            $_[0]->stash( 'field',     $bset . '_' . $opt );
+                            $_[0]->stash( 'plugin_ns', find_theme_plugin($bset)->id );
+                            $_[0]->stash( 'scope',     'blog' );
                             runner( '_hdlr_field_cond',
                                     'ConfigAssistant::Plugin', @_ );
                         };
@@ -187,8 +187,8 @@ sub load_tags {
                             my $blog = $_[0]->stash('blog');
                             my $bset = $blog->template_set;
                             $_[0]->stash( 'field',     $bset . '_' . $opt );
-                            $_[0]->stash( 'plugin_ns',  find_theme_plugin($bset)->id );
-                            $_[0]->stash( 'scope',      'blog' );
+                            $_[0]->stash( 'plugin_ns', find_theme_plugin($bset)->id );
+                            $_[0]->stash( 'scope',     'blog' );
                             runner( '_hdlr_field_value',
                                 'ConfigAssistant::Plugin', @_ );
                         };
@@ -214,7 +214,7 @@ sub load_tags {
             if ( $tag =~ s/\?$// ) {
                 $tags->{block}->{$tag} = sub {
                     $_[0]->stash( 'field',      $opt );
-                    $_[0]->stash( 'plugin_ns',  $obj->id );
+                    $_[0]->stash( 'plugin_ns',  find_option_plugin($opt)->id );
                     $_[0]->stash( 'scope',      lc($option->{scope}) );
                     runner( '_hdlr_field_cond',
                             'ConfigAssistant::Plugin', @_ );
@@ -223,7 +223,7 @@ sub load_tags {
             elsif ( $tag ne '' ) {
                 $tags->{function}->{$tag} = sub {
                     $_[0]->stash( 'field',      $opt );
-                    $_[0]->stash( 'plugin_ns',  $obj->id );
+                    $_[0]->stash( 'plugin_ns',  find_option_plugin($opt)->id );
                     $_[0]->stash( 'scope',      lc($option->{scope}) );
                     runner( '_hdlr_field_value',
                             'ConfigAssistant::Plugin', @_ );

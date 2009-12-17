@@ -5,7 +5,7 @@ use strict;
 use Carp qw( croak );
 use MT::Util
   qw( relative_date offset_time offset_time_list epoch2ts ts2epoch format_ts encode_html dirify );
-use ConfigAssistant::Util qw( find_theme_plugin find_template_def find_option_def );
+use ConfigAssistant::Util qw( find_theme_plugin find_template_def find_option_def find_option_plugin );
 
 sub theme_options {
     my $app     = shift;
@@ -476,6 +476,9 @@ sub _hdlr_field_value {
     my $scope     = $ctx->stash('scope') || 'blog';
     my $field     = $ctx->stash('field')
       or return _no_field($ctx);
+
+#    MT->log("Fetching value for $field in $scope for $plugin_ns");
+
     $plugin = MT->component($plugin_ns);    # is this necessary?
 
     my $value;
@@ -501,14 +504,17 @@ sub _hdlr_field_cond {
     my $scope      = $ctx->stash('scope') || 'blog';
     my $field      = $ctx->stash('field')
       or return _no_field($ctx);
+
+    MT->log("Fetching condition for $field in $scope for $plugin_ns");
+
     my $blog    = $ctx->stash('blog');
     if ( !$blog ) {
-	my $blog_id = $ctx->var('blog_id');
+        my $blog_id = $ctx->var('blog_id');
         $blog = MT->model('blog')->load($blog_id);
     }
     $plugin = MT->component($plugin_ns); # load the theme plugin
     my $value;
-    if ( $blog && $blog->id && $scope != 'system' ) {
+    if ( $blog && $blog->id && $scope eq 'blog' ) {
         $value = $plugin->get_config_value( $field, 'blog:' . $blog->id );
     }
     else {
@@ -625,7 +631,6 @@ sub plugin_options {
     }
     my @loop;
     my $count = 0;
-    my $html;
     foreach my $set (
         sort {
             ( $fieldsets->{$a}->{order} || 999 )
