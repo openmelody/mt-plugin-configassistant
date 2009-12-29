@@ -7,7 +7,7 @@ use MT::Util
   qw( relative_date offset_time offset_time_list epoch2ts ts2epoch format_ts encode_html dirify );
 use ConfigAssistant::Util qw( find_theme_plugin find_template_def find_option_def find_option_plugin );
 
-use MT::Log::Log4perl qw( l4mtdump ); use Log::Log4perl qw( :resurrect );
+# use MT::Log::Log4perl qw( l4mtdump ); use Log::Log4perl qw( :resurrect );
 our $logger;
 
 sub theme_options {
@@ -161,7 +161,7 @@ sub save_config {
     ###l4p $logger ||= MT::Log::Log4perl->new(); $logger->trace();
 
     # this should not break out anymore, except for theme settings
-#    return unless $blog_id; # this works one within the context of a blog, no system plugin settings
+    #return unless $blog_id; # this works one within the context of a blog, no system plugin settings
     
     $app->blog( MT->model('blog')->load($blog_id) ) if $blog_id;
     
@@ -198,7 +198,8 @@ sub save_config {
             my $has_changed = (defined $new and ! defined $old)
                            || (defined $new and $old ne $new)
                            || (defined $old && ! defined $new);
-
+            ###l4p $logger->debug('$has_changed: '.$has_changed);
+            
             my $opt = find_option_def($app, $var);
             if ($has_changed && $opt && $opt->{'republish'}) {
                 foreach (split(',',$opt->{'republish'})) {
