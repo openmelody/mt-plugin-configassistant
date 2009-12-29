@@ -28,7 +28,6 @@ sub plugin_static_file_path {
     my ($plugin) = @_;
     return File::Spec->catdir( MT->instance->static_file_path,
                                'support', 'plugins', $plugin->id );
-
 }
 
 sub process_file_upload {
