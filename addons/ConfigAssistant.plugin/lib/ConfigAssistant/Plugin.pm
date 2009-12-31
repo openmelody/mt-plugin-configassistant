@@ -8,6 +8,9 @@ use MT::Util
 use ConfigAssistant::Util
   qw( find_theme_plugin find_template_def find_option_def find_option_plugin );
 
+# use MT::Log::Log4perl qw( l4mtdump ); use Log::Log4perl qw( :resurrect );
+our $logger;
+
 sub theme_options {
     my $app     = shift;
     my ($param) = @_;
@@ -152,15 +155,16 @@ sub theme_options {
 # Code for this method taken from MT::CMS::Plugin
 sub save_config {
     my $app = shift;
-
     my $q          = $app->param;
     my $plugin_sig = $q->param('plugin_sig');
     my $profile    = $MT::Plugins{$plugin_sig};
     my $blog_id    = $q->param('blog_id');
 
-# this should not break out anymore, except for theme settings
-#    return unless $blog_id; # this works one within the context of a blog, no system plugin settings
+    ###l4p $logger ||= MT::Log::Log4perl->new(); $logger->trace();
 
+    # this should not break out anymore, except for theme settings
+    #return unless $blog_id; # this works one within the context of a blog, no system plugin settings
+    
     $app->blog( MT->model('blog')->load($blog_id) ) if $blog_id;
 
     $app->validate_magic or return;
@@ -191,13 +195,16 @@ sub save_config {
         my $repub_queue;
         my $plugin_changed = 0;
         foreach my $var (@vars) {
-            my $old         = $data->{$var};
-            my $new         = $param->{$var};
-            my $has_changed = $new && ( $old ne $new );
-
-            my $opt = find_option_def( $app, $var );
-            if ( $has_changed && $opt && $opt->{'republish'} ) {
-                foreach ( split( ',', $opt->{'republish'} ) ) {
+            my $old = $data->{$var};
+            my $new = $param->{$var};
+            my $has_changed = (defined $new and ! defined $old)
+                           || (defined $new and $old ne $new)
+                           || (defined $old && ! defined $new);
+            ###l4p $logger->debug('$has_changed: '.$has_changed);
+            
+            my $opt = find_option_def($app, $var);
+            if ($has_changed && $opt && $opt->{'republish'}) {
+                foreach (split(',',$opt->{'republish'})) {
                     $repub_queue->{$_} = 1;
                 }
             }
