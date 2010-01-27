@@ -270,6 +270,29 @@ sub type_text {
       . "\" class=\"full-width\" />\n";
 }
 
+sub type_colorpicker {
+    my $app = shift;
+    my ( $ctx, $field_id, $field, $value ) = @_;
+    return "      <div id=\"$field_id-colorpicker\" class=\"colorpicker-container\"><div style=\"background-color: $value\"></div></div><input type=\"hidden\" id=\"$field_id\" name=\"$field_id\" value=\""
+      . encode_html( $value,
+        1 )    # The additional "1" will escape HTML entities properly
+      . "\" />\n<script type=\"text/javascript\">\$('#'+'$field_id-colorpicker').ColorPicker({
+        color: '$value',
+        onShow: function (colpkr) {
+            \$(colpkr).fadeIn(500);
+            return false;
+        },
+        onHide: function (colpkr) {
+            \$(colpkr).fadeOut(500);
+            return false;
+        },
+        onChange: function (hsb, hex, rgb) {
+            \$('#'+'$field_id-colorpicker div').css('backgroundColor', '#' + hex);
+            \$('#'+'$field_id').val('#' + hex).trigger('change');
+        }
+    });</script>\n";
+}
+
 sub type_textarea {
     my $app = shift;
     my ( $ctx, $field_id, $field, $value ) = @_;
@@ -547,8 +570,6 @@ sub _hdlr_field_cond {
     my $scope     = $ctx->stash('scope') || 'blog';
     my $field     = $ctx->stash('field')
       or return _no_field($ctx);
-
-    MT->log("Fetching condition for $field in $scope for $plugin_ns");
 
     my $blog = $ctx->stash('blog');
     if ( !$blog ) {

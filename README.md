@@ -149,6 +149,8 @@ field:
   user will be constricted to searching entries in the current blog, or all
   blogs on the system.
 
+* `colorpicker` - Produces a color wheel pop-up for selecting a color or hex value.
+
 **Example Radio Image**
 
 The `radio-image` type supports a special syntax for the `values` attribute. 
