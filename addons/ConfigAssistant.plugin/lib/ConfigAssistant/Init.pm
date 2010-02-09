@@ -81,13 +81,13 @@ sub init_options {
         foreach my $opt (@options) {
             next if ( $opt eq 'fieldsets' );
             my $option = $r->{'options'}->{$opt};
-
-            if ($option->{scope}||'' eq 'system') {
+            $option->{scope} ||= '';
+            if ($option->{scope} eq 'system') {
                 require ConfigAssistant::Plugin;
                 $obj->{'registry'}->{'system_config_template'} 
                     = \&ConfigAssistant::Plugin::plugin_options;
             }
-            if ($option->{scope}||'' eq 'blog') {
+            if ($option->{scope} eq 'blog') {
                 require ConfigAssistant::Plugin;
                 $obj->{'registry'}->{'blog_config_template'}
                     = \&ConfigAssistant::Plugin::plugin_options;
