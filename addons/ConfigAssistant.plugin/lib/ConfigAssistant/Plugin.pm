@@ -502,14 +502,21 @@ sub type_radio_image {
     my $static = $app->config->StaticWebPath;
     $out .= "      <ul class=\"pkg\">\n";
     while ( $field->{values} =~ /\"([^\"]*)\":\"([^\"]*)\",?/g ) {
+        my ($url,$label) = ($1,$2);
+        my $base;
+        if ($url =~ /^http/) {
+            $base = '';
+        } else {
+            $base = $static;
+        }
         $out .=
-            "        <li><input type=\"radio\" name=\"$field_id\" value=\"$2\""
-          . ( $value eq $2 ? " checked=\"checked\"" : "" )
+            "        <li><input type=\"radio\" name=\"$field_id\" value=\"$label\""
+          . ( $value eq $label ? " checked=\"checked\"" : "" )
           . " class=\"rb\" />"
           . "<img src=\""
-          . $static
-          . $1
-          . "\" /><br />$2"
+          . $base
+          . $url
+          . "\" /><br />$label"
           . "</li>\n";
     }
     $out .= "      </ul>\n";
