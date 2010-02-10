@@ -151,6 +151,34 @@ field:
 
 * `colorpicker` - Produces a color wheel pop-up for selecting a color or hex value.
 
+* `file` - Allows a user to upload a file, which in turn gets converted into an
+  asset. An additional field property is supported for file types: `destination`
+  which can be used to customize the path/url of the uploaded file. See "Example
+  File" below. Files uploaded are uploaded into a path relative to the
+  mt-static/support directory.
+
+**Example File**
+
+The `file` type allows theme admins to upload files via their Theme Options screen.
+The file, or files, uploaded get imported into the system's asset manager. The
+path where the uploaded file will be stored can be customized via the `destination`
+field option.
+
+Allowable file format tokens:
+
+* `%e` - Will generate a random string of characters. The default length of the 
+  string is 8, but can be customized using the following syntax, `%{n}e` where "n"
+  is an integer representing the length of the string.
+
+Example:
+
+   my_keyfile:
+     type: file
+     label: 'My Private Key'
+     hint: 'A private key used for signing PayPal buttons.'
+     tag: 'PrivatePayPalKey'
+     destination: my_theme/%{10}e
+
 **Example Radio Image**
 
 The `radio-image` type supports a special syntax for the `values` attribute. 
