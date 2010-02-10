@@ -6,7 +6,7 @@ use Carp qw( croak );
 use MT::Util
   qw( relative_date offset_time offset_time_list epoch2ts ts2epoch format_ts encode_html dirify );
 use ConfigAssistant::Util
-  qw( find_theme_plugin find_template_def find_option_def find_option_plugin );
+  qw( find_theme_plugin find_template_def find_option_def find_option_plugin process_file_upload );
 
 # use MT::Log::Log4perl qw( l4mtdump ); use Log::Log4perl qw( :resurrect );
 our $logger;
@@ -195,6 +195,20 @@ sub save_config {
         my $repub_queue;
         my $plugin_changed = 0;
         foreach my $var (@vars) {
+            my $opt = find_option_def($app, $var);
+            if ($opt->{type} eq 'file') {
+                my $result = process_file_upload( $app, $var, 'support', $opt->{destination} );
+                if ( $result->{status} == ConfigAssistant::Util::ERROR() ) {
+                    return $app->error(
+                        "Error uploading file: " . $result->{message} );
+                }
+                next if ($result->{status} == ConfigAssistant::Util::NO_UPLOAD);
+                if ($data->{$var}) {
+                    my $old = MT->model('asset')->load( $data->{$var} );
+                    $old->remove if $old;
+                }
+                $param->{$var} = $result->{asset}->{id};
+            }
             my $old = $data->{$var};
             my $new = $param->{$var};
             my $has_changed = (defined $new and ! defined $old)
@@ -202,7 +216,6 @@ sub save_config {
                            || (defined $old && ! defined $new);
             ###l4p $logger->debug('$has_changed: '.$has_changed);
             
-            my $opt = find_option_def($app, $var);
             if ($has_changed && $opt && $opt->{'republish'}) {
                 foreach (split(',',$opt->{'republish'})) {
                     $repub_queue->{$_} = 1;
@@ -268,6 +281,22 @@ sub type_text {
       . encode_html( $value,
         1 )    # The additional "1" will escape HTML entities properly
       . "\" class=\"full-width\" />\n";
+}
+
+sub type_file {
+    my $app = shift;
+    my ( $ctx, $field_id, $field, $value ) = @_;
+    my $html = "";
+    if ($value) {
+        my $asset = MT->model('asset')->load( $value );
+        if ($asset) {
+            $html .= "<p>".($asset->label ? $asset->label : $asset->file_name)." <a target=\"_new\" href=\"".$asset->url."\">view</a></p>";
+        } else {
+            $html .= "<p>File not found.</p>";
+        }
+    }
+    $html .= "      <input type=\"file\" name=\"$field_id\" class=\"full-width\" />\n";
+    return $html;
 }
 
 sub type_colorpicker {
@@ -854,7 +883,7 @@ sub xfrm_cfg_plugin {
     my ( $cb, $app, $tmpl ) = @_;
     my $slug1 = <<END_TMPL;
 
-<form method="post" action="<mt:var name="script_url">" id="plugin-<mt:var name="plugin_id">-form">
+<form enctype="multipart/form-data" method="post" action="<mt:var name="script_url">" id="plugin-<mt:var name="plugin_id">-form">
 <mt:unless name="uses_configassistant">
   <input type="hidden" name="__mode" value="save_plugin_config" />
 <mt:if name="blog_id">

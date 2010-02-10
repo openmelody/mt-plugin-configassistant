@@ -43,7 +43,7 @@
 <mt:var name="screen_id" value="theme_options">
 <mt:include name="include/header.tmpl">
 
-<form method="post" action="<mt:var name="script_url">" id="configassistant-form">
+<form enctype="multipart/form-data" method="post" action="<mt:var name="script_url">" id="configassistant-form">
    <input type="hidden" name="__mode" value="ca_save_config" />
    <input type="hidden" name="blog_id" value="<mt:BlogID>" />
    <input type="hidden" name="return_args" value="__mode=theme_options&amp;blog_id=<mt:BlogID>&amp;saved=1" />
