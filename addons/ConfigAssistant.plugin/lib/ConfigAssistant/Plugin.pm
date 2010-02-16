@@ -60,6 +60,7 @@ sub theme_options {
             $field->{fieldset} = '__global' unless defined $field->{fieldset};
             my $show_label =
               defined $field->{show_label} ? $field->{show_label} : 1;
+            my $label = $field->{label} ne '' ? &{$field->{label}} : '';
             $out .=
                 '  <div id="field-'
               . $field_id
@@ -68,7 +69,7 @@ sub theme_options {
             $out .= "    <div class=\"field-header\">\n";
             $out .=
                 "      <label for=\"$field_id\">"
-              . &{ $field->{label} }
+              . $label
               . "</label>\n"
               if $show_label;
             $out .= "    </div>\n";
@@ -326,7 +327,7 @@ sub type_textarea {
     my $app = shift;
     my ( $ctx, $field_id, $field, $value ) = @_;
     my $out;
-    $out .= "      <textarea name=\"$field_id\" class=\"full-width\" rows=\""
+    $out = "      <textarea name=\"$field_id\" class=\"full-width\" rows=\""
       . $field->{rows} . "\" />";
     $out .= encode_html( $value, 1 )
       ;        # The additional "1" will escape HTML entities properly
@@ -529,11 +530,18 @@ sub type_select {
     my $out;
     my @values = split( ",", $field->{values} );
     $out .= "      <select name=\"$field_id\">\n";
-    foreach (@values) {
+    foreach my $label (@values) {
+        my $v;
+        if ($label =~ /\"([^\"]+)\":\"([^\"]+)\"/) {
+            $label = $1;
+            $v = $2;
+        } else {
+            $v = $label;
+        }
         $out .=
-            "        <option"
-          . ( $value eq $_ ? " selected" : "" )
-          . ">$_</option>\n";
+            "        <option value=\"$v\""
+          . ( $value eq $label ? " selected" : "" )
+          . ">$label</option>\n";
     }
     $out .= "      </select>\n";
     return $out;
