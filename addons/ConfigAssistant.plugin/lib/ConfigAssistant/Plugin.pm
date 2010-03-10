@@ -932,9 +932,9 @@ END_TMPL
 
     my $slug2 = <<END_TMPL;
 <mt:setvarblock name="html_head" append="1">
-  <link rel="stylesheet" href="<mt:StaticWebPath>plugins/ConfigAssistant/app.css" type="text/css" />
+  <link rel="stylesheet" href="<mt:ConfigAssistantStaticWebPath>css/app.css" type="text/css" />
   <script src="<mt:StaticWebPath>jquery/jquery.js" type="text/javascript"></script>
-  <script src="<mt:StaticWebPath>plugins/ConfigAssistant/app.js" type="text/javascript"></script>
+  <script src="<mt:ConfigAssistantStaticWebPath>js/app.js" type="text/javascript"></script>
 </mt:setvarblock>
 END_TMPL
 

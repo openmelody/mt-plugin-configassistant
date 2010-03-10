@@ -3,8 +3,11 @@ id: ConfigAssistant
 key: ConfigAssistant
 author_link: http://www.majordojo.com/
 author_name: Byrne Reese
-description: This plugin provides a simple YAML based framework for creating plugin configuration forms.
-version: 1.7.1
+description: This plugin provides a simple YAML based framework for creating plugin configuration options.
+version: 1.8
+schema_version: 1
+
+system_config_template: system_config.mtml
 
 applications:
   cms:
@@ -21,6 +24,7 @@ applications:
       ca_config_entry: $ConfigAssistant::ConfigAssistant::Plugin::list_entry_mini
       ca_select_entry: $ConfigAssistant::ConfigAssistant::Plugin::select_entry
       ca_save_config:  $ConfigAssistant::ConfigAssistant::Plugin::save_config
+      run_static_copy: $ConfigAssistant::ConfigAssistant::Static::manual_run
     search_apis: 
       entry:
         setup_terms_args: $ConfigAssistant::ConfigAssistant::Plugin::entry_search_api_prep
@@ -55,3 +59,54 @@ config_types:
     handler: $ConfigAssistant::ConfigAssistant::Plugin::type_entry
   tagged-entry:
     handler: $ConfigAssistant::ConfigAssistant::Plugin::type_tagged_entry
+
+upgrade_functions:
+  static_copy:
+    # A version_limit is required to trigger the upgrade function. So, just
+    # use a way big one, just so I don't have to remember to update it.
+    version_limit: 999
+    handler: $ConfigAssistant::ConfigAssistant::Static::upgrade
+
+static:
+  css:
+    - app.css
+  js:
+    - app.js
+  colorpicker:
+    css:
+      - colorpicker.css
+      - layout.css
+    images:
+      - blank.gif
+      - colorpicker_background.png
+      - colorpicker_hex.png
+      - colorpicker_hsb_b.png
+      - colorpicker_hsb_h.png
+      - colorpicker_hsb_s.png
+      - colorpicker_indic.gif
+      - colorpicker_overlay.png
+      - colorpicker_rgb_b.png
+      - colorpicker_rgb_g.png
+      - colorpicker_rgb_r.png
+      - colorpicker_select.gif
+      - colorpicker_submit.png
+      - custom_background.png
+      - custom_hex.png
+      - custom_hsb_b.png
+      - custom_hsb_h.png
+      - custom_hsb_s.png
+      - custom_indic.gif
+      - custom_rgb_b.png
+      - custom_rgb_g.png
+      - custom_rgb_r.png
+      - custom_submit.png
+      - select.png
+      - select2.png
+      - slider.png
+    js:
+      - colorpicker.js
+      - eye.js
+      - jquery.js
+      - layout.js
+      - utils.js
+

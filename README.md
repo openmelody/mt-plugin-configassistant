@@ -13,6 +13,13 @@ If Config Assistant is being used within the context of a theme, then users of
 your theme will automatically have a "Theme Options" menu item added to their 
 design menu so they can easily access the settings you define.
 
+Config Assistant can also work with "static" content to make deploying your plugin 
+or theme easier. (If you've installed many plugins, you know that you must often 
+copy content to `[MT Home]/plugins/` and `[MT Home]/mt-static/plugins/` -- Config 
+Assistant can help simplify this!) In addition to copying static files to their 
+`mt-static` home, plugin-specific template tags are created for the plugin's static 
+file path and static web path location.
+
 The sample config file below should give you a quick understanding of how you
 can begin using this plugin today.
 
@@ -33,9 +40,12 @@ This plugin adds support for a new element in any plugin's `config.yaml` file ca
 your plugin applies the corresponding template set then a "Theme Options" menu item
 will automatically appear in their "Design" menu. They can click that menu item to 
 be taken directly to a page on which they can edit all of their theme's settings.
+The `static` root-level element will let you specify folders and files to be copied to the `mt-static/support/plugins/[plugin key]/` folder.
 
     id: MyPluginID
     name: My Plugin
+    version: 1.0
+    schema_version: 1
     template_sets:
         my_awesome_theme:
             options:
@@ -63,15 +73,31 @@ be taken directly to a page on which they can edit all of their theme's settings
                     fieldset: homepage
                     condition: > 
                       sub { return 1; }
+    static:
+        css:
+            - base.css
+            - theme.css
+        js:
+            - theme.js
+        images:
+            global: 
+                - header.png
+                - footer.png
+            widgets:
+                - bg.png
+                - line.png
+                - photo.jpg
 
 ## Using Config Assistant for Plugin Settings
 
 To use Config Assistant as the rendering and enablement platform for plugin
 settings, use the same `options` struct you would for theme options, but use
-it as a root level element. For example:
+it as a root level element. The `static` element is also valid here. For example:
 
     id: MyPluginID
     name: My Plugin
+    version: 1.0
+    schema_version: 1
     options:
       fieldsets:
         homepage:
@@ -84,6 +110,9 @@ it as a root level element. For example:
         hint: "This is the name of your Feedburner feed."
         tag: 'MyPluginFeedburnerID'
         fieldset: feed
+    static:
+        - large-feed-icon.png
+        - small-feed-icon.png
 
 Using this method for plugin options completely obviates the need for developers 
 to specify the following elements in their plugin's config.yaml files:
@@ -258,6 +287,79 @@ options:
       Feedburner is disabled!
     </mt:IfFeedburner>
 
+## Deploying Static Content
+
+### Preparing the Static Content
+
+If you've installed many plugins, you know that you must often copy content 
+to `[MT Home]/plugins/` and `[MT Home]/mt-static/plugins/`. For new users 
+this can be a confusing task, and for experienced users it's one more 
+annoying step that has to be done. But no more! Config Assistant can be used 
+to help your plugin or theme copy static content to its permanent home in the 
+`mt-static/` folder!
+
+As you've seen in the previous examples, the familiar YAML structure is used 
+to add a new `static` key at the root-level of your plugin or theme:
+
+    static:
+        folder:
+            subfolder:
+                - file1.png
+                - file2.png
+        folder2:
+            - plugin.js
+
+Notice that new keys (in this example, `folder`, `subfolder`, and 
+`folder2`) create the folder structure. Any number or level of subfolders may 
+be created this way. Within a folder is an array of files (`file1.png` and 
+`file2.png`), which is signified with a leading dash and space. Of course, 
+any number of files can be included here, as well.
+
+Folders and files _can not_ exist at the same level.
+
+On the filesystem side, you will want to have a folder and file structure 
+that mirrors your YAML: inside of your plugin envelope you'll create a 
+`static` folder, and inside of that create the folder/subfolder structure and 
+place files where they are needed.
+
+Lastly, you'll need to be sure to set the `schema\_version` key. You may 
+already be using this for your plugin or theme. Incrementing the 
+`schema_version` will trigger Movable Type and Melody to run an upgrade, 
+which is when Config Assistant will deploy static content.
+
+### Installing the Static Content
+
+When installing your new plugin or theme, the `schema_version` will trigger 
+Movable Type or Melody to run an upgrade. During the upgrade, Config 
+Assistant will copy static content to the `mt-static/support/plugins/` 
+folder, and will create a folder for its contents. (For example, after 
+installing Config Assistant, its static files can be found in 
+`mt-static/support/plugins/ConfigAssistant/`.)
+
+Note that the `mt-static/support/` folder must have adequate permissions to 
+be writable by the web server; Movable Type and Melody will warn you if it 
+does not. Also note that this path is different from where you often install 
+static content, in `mt-static/plugins/`.
+
+### Plugin-Specific Static Template Tags
+
+Two template tags are created for your plugin or theme, to help you type less 
+and keep code clean: `[Plugin ID]StaticFilePath` and 
+`[Plugin ID]StaticWebPath`. For example, Config Assistant makes available 
+`ConfigAssistantStaticFilePath` and `ConfigAssistantStaticWebPath`.
+
+These tags will output the file path and the URL to a plugin's static content, 
+based on the `StaticFilePath` and `StaticWebPath` configuration directives. 
+These tags are really just shortcuts. You could use either of the following to 
+publish a link to the image `photo.jpg` in your theme, for example:
+
+    <mt:StaticWebPath>support/plugins/MyPlugin/images/photo.jpg
+    <mt:MyPluginStaticWebPath>images/photo.jpg
+
+both of which would output
+
+    http://example.com/mt/mt-static/support/plugins/MyPlugin/images/photo.jpg
+
 ## Callbacks
 
 Config Assistant supports a number of callbacks to give developers the ability
@@ -315,6 +417,10 @@ When the callback is invoked, it will be invoked with the following input parame
 
 # Sample config.yaml
 
+    id: MyPluginID
+    name: My Plugin
+    version: 1.0
+    schema_version: 1
     blog_config_template: '<mt:PluginConfigForm id="MyPluginID">'
     plugin_config:
         MyPluginID:
@@ -326,6 +432,9 @@ When the callback is invoked, it will be invoked with the following input parame
                     label: "Feedburner ID"
                     hint: "This is the name of your Feedburner feed."
                     tag: 'MyPluginFeedburnerID'
+    static:
+        - large-feed-icon.png
+        - small-feed-icon.png
 
 # Support
 

@@ -2,6 +2,7 @@ package ConfigAssistant::Init;
 
 use strict;
 use ConfigAssistant::Util qw( find_theme_plugin find_option_plugin );
+use File::Spec;
 
 sub plugin {
     return MT->component('ConfigAssistant');
@@ -14,10 +15,24 @@ sub init_app {
     init_options($app);
     my $r = $plugin->registry;
     $r->{tags} = sub { load_tags( $app, $plugin ) };
+    
+    # Static files only get copied during an upgrade.
+    if ($app->id eq 'upgrade') {
+        # Because no schema version is set, the upgrade process doesn't run
+        # during the plugin's initial install. But, we need it to so that
+        # static files will get copied. Check if PluginschemaVersion has been
+        # set for Config Assistant. If not, set it. That way, when the upgrade
+        # runs it sees it and will run the upgrade_function.
+        # If this isn't the upgrade screen, just quit.
+        my $cfg = MT->config('PluginSchemaVersion');
+        if ( $cfg->{$plugin->id} == '' ) {
+            # There is no schema version set. Set one!
+            $cfg->{$plugin->id} = '0.1';
+        }
+    }
 }
 
 sub init_options {
-
     #    my $callback = shift;
     my $app = shift;
 
@@ -244,6 +259,29 @@ sub load_tags {
                         @_ );
                 };
             }
+        }
+        
+        # Create plugin-specific tags to the static content
+        if ( $r->{'static'} ) {
+            # Create the plugin-specific static file path tag, such as "ConfigAssistantStaticFilePath."
+            my $tag = $obj->key . 'StaticFilePath';
+            my $dir = File::Spec->catfile($app->config('StaticFilePath'), 
+                        'support', 'plugins', $obj->key) . '/';
+            $tags->{function}->{$tag} = sub {
+                $_[0]->stash( 'field',     $tag      );
+                $_[0]->stash( 'plugin_ns', $obj->key );
+                $_[0]->stash( 'scope',     'system'  );
+                $_[0]->stash( 'default',   $dir      );
+            };
+            # Create the plugin-specific static web path tag, such as "ConfigAssistantStaticWebPath."
+            my $tag = $obj->key . 'StaticWebPath';
+            my $url = $app->config('StaticWebPath').'/support/plugins/'.$obj->key.'/';
+            $tags->{function}->{$tag} = sub {
+                $_[0]->stash( 'field',     $tag      );
+                $_[0]->stash( 'plugin_ns', $obj->key );
+                $_[0]->stash( 'scope',     'system'  );
+                $_[0]->stash( 'default',   $url      );
+            };
         }
     }
 
