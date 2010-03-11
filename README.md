@@ -40,12 +40,15 @@ This plugin adds support for a new element in any plugin's `config.yaml` file ca
 your plugin applies the corresponding template set then a "Theme Options" menu item
 will automatically appear in their "Design" menu. They can click that menu item to 
 be taken directly to a page on which they can edit all of their theme's settings.
-The `static` root-level element will let you specify folders and files to be copied to the `mt-static/support/plugins/[plugin key]/` folder.
+The `static_version` root-level element will trigger Config Assistant to copy files 
+to the `mt-static/support/plugins/[plugin key]/` folder, and the `skip\_static` 
+root-level element will let you specify files _not_ to copy..
 
     id: MyPluginID
     name: My Plugin
     version: 1.0
     schema_version: 1
+    static_version: 1
     template_sets:
         my_awesome_theme:
             options:
@@ -73,20 +76,11 @@ The `static` root-level element will let you specify folders and files to be cop
                     fieldset: homepage
                     condition: > 
                       sub { return 1; }
-    static:
-        css:
-            - base.css
-            - theme.css
-        js:
-            - theme.js
-        images:
-            global: 
-                - header.png
-                - footer.png
-            widgets:
-                - bg.png
-                - line.png
-                - photo.jpg
+    skip_static:
+        - index.html
+        - readme.txt
+        - .psd
+        - .zip
 
 ## Using Config Assistant for Plugin Settings
 
@@ -98,6 +92,7 @@ it as a root level element. The `static` element is also valid here. For example
     name: My Plugin
     version: 1.0
     schema_version: 1
+    static_version: 1
     options:
       fieldsets:
         homepage:
@@ -110,9 +105,11 @@ it as a root level element. The `static` element is also valid here. For example
         hint: "This is the name of your Feedburner feed."
         tag: 'MyPluginFeedburnerID'
         fieldset: feed
-    static:
-        - large-feed-icon.png
-        - small-feed-icon.png
+    skip_static:
+        - index.html
+        - readme.txt
+        - .psd
+        - .zip
 
 Using this method for plugin options completely obviates the need for developers 
 to specify the following elements in their plugin's config.yaml files:
@@ -298,34 +295,35 @@ annoying step that has to be done. But no more! Config Assistant can be used
 to help your plugin or theme copy static content to its permanent home in the 
 `mt-static/` folder!
 
-As you've seen in the previous examples, the familiar YAML structure is used 
-to add a new `static` key at the root-level of your plugin or theme:
+Within your plugin, use the `static\_version` root-level key to cause Config 
+Assistant to work with your static content. This key should be an integer, and 
+should be incremented when you've changed your static content and want it to 
+be re-copied.
 
-    static:
-        folder:
-            subfolder:
-                - file1.png
-                - file2.png
-        folder2:
-            - plugin.js
+If you want to exclude some of your static content from the copy process, 
+you can specify this with the `skip\_static` root-level key, as in the 
+previous example.
 
-Notice that new keys (in this example, `folder`, `subfolder`, and 
-`folder2`) create the folder structure. Any number or level of subfolders may 
-be created this way. Within a folder is an array of files (`file1.png` and 
-`file2.png`), which is signified with a leading dash and space. Of course, 
-any number of files can be included here, as well.
+    skip_static:
+        - index.html
+        - readme.txt
+        - .psd
+        - .zip
 
-Folders and files _can not_ exist at the same level.
-
-On the filesystem side, you will want to have a folder and file structure 
-that mirrors your YAML: inside of your plugin envelope you'll create a 
-`static` folder, and inside of that create the folder/subfolder structure and 
-place files where they are needed.
+`skip\_static` builds an array of items to be excluded, which is signified 
+with a leading dash and space. Files can be a partial match, so specifying an 
+extension (such as `.psd`) will cause all files with `.psd` to _not_ be copied.
+`skip\_static` is not a required key.
 
 Lastly, you'll need to be sure to set the `schema\_version` key. You may 
 already be using this for your plugin or theme. Incrementing the 
 `schema_version` will trigger Movable Type and Melody to run an upgrade, 
 which is when Config Assistant will deploy static content.
+
+On the filesystem side, you will want to create your folder and file structure 
+inside of a `static` folder in your plugin envelope. Any files inside of this 
+static folder (except those items matching `skip\_static`) will be copied 
+during installation.
 
 ### Installing the Static Content
 
@@ -421,6 +419,7 @@ When the callback is invoked, it will be invoked with the following input parame
     name: My Plugin
     version: 1.0
     schema_version: 1
+    static_version: 1
     blog_config_template: '<mt:PluginConfigForm id="MyPluginID">'
     plugin_config:
         MyPluginID:
@@ -432,9 +431,11 @@ When the callback is invoked, it will be invoked with the following input parame
                     label: "Feedburner ID"
                     hint: "This is the name of your Feedburner feed."
                     tag: 'MyPluginFeedburnerID'
-    static:
-        - large-feed-icon.png
-        - small-feed-icon.png
+    skip_static:
+        - index.html
+        - readme.txt
+        - .psd
+        - .zip
 
 # Support
 

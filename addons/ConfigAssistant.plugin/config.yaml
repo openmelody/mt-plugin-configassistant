@@ -6,12 +6,13 @@ author_name: Byrne Reese
 description: This plugin provides a simple YAML based framework for creating plugin configuration options.
 version: 1.8
 schema_version: 1
+static_version: 1
 
 system_config_template: system_config.mtml
 
 applications:
   cms:
-    menus: 
+    menus:
       design:theme_options:
         label: 'Theme Options'
         order: 1000
@@ -33,8 +34,11 @@ callbacks:
   MT::App::CMS::template_param.cfg_plugin: $ConfigAssistant::ConfigAssistant::Plugin::xfrm_cfg_plugin_param
   MT::App::CMS::template_source.cfg_plugin: $ConfigAssistant::ConfigAssistant::Plugin::xfrm_cfg_plugin
 
-
 init_app: $ConfigAssistant::ConfigAssistant::Init::init_app
+
+config_settings:
+  PluginStaticVersion:
+    type: 'HASH'
 
 config_types:
   text: 
@@ -66,47 +70,3 @@ upgrade_functions:
     # use a way big one, just so I don't have to remember to update it.
     version_limit: 999
     handler: $ConfigAssistant::ConfigAssistant::Static::upgrade
-
-static:
-  css:
-    - app.css
-  js:
-    - app.js
-  colorpicker:
-    css:
-      - colorpicker.css
-      - layout.css
-    images:
-      - blank.gif
-      - colorpicker_background.png
-      - colorpicker_hex.png
-      - colorpicker_hsb_b.png
-      - colorpicker_hsb_h.png
-      - colorpicker_hsb_s.png
-      - colorpicker_indic.gif
-      - colorpicker_overlay.png
-      - colorpicker_rgb_b.png
-      - colorpicker_rgb_g.png
-      - colorpicker_rgb_r.png
-      - colorpicker_select.gif
-      - colorpicker_submit.png
-      - custom_background.png
-      - custom_hex.png
-      - custom_hsb_b.png
-      - custom_hsb_h.png
-      - custom_hsb_s.png
-      - custom_indic.gif
-      - custom_rgb_b.png
-      - custom_rgb_g.png
-      - custom_rgb_r.png
-      - custom_submit.png
-      - select.png
-      - select2.png
-      - slider.png
-    js:
-      - colorpicker.js
-      - eye.js
-      - jquery.js
-      - layout.js
-      - utils.js
-

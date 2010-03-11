@@ -262,11 +262,10 @@ sub load_tags {
         }
         
         # Create plugin-specific tags to the static content
-        if ( $r->{'static'} ) {
+        if ( $r->{'static_version'} ) {
             # Create the plugin-specific static file path tag, such as "ConfigAssistantStaticFilePath."
             my $tag = $obj->key . 'StaticFilePath';
-            my $dir = File::Spec->catfile($app->config('StaticFilePath'), 
-                        'support', 'plugins', $obj->key) . '/';
+            my $dir = $obj->path;
             $tags->{function}->{$tag} = sub {
                 $_[0]->stash( 'field',     $tag      );
                 $_[0]->stash( 'plugin_ns', $obj->key );
