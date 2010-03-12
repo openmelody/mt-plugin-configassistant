@@ -58,7 +58,7 @@ sub upgrade {
         # the static files.
         my $static_version = $registry->{'static_version'} || '0';
         # The saved version
-        my $ver     = MT->config('PluginStaticVersion');
+        my $ver = MT->config('PluginStaticVersion');
         my $saved_version = $ver->{$plugin->id} if $ver;
         
         if ($static_version > $saved_version) {

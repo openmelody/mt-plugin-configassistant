@@ -39,6 +39,9 @@ sub init_options {
     # For each plugin, convert options into settings
     my $has_blog_settings = 0;
     my $has_sys_settings  = 0;
+    
+    # For the static_version check, to determine if an upgrade is needed.
+    my @plugins;
 
     for my $sig ( keys %MT::Plugins ) {
         my $plugin = $MT::Plugins{$sig};
@@ -299,6 +302,36 @@ sub runner {
     my $plugin     = MT->component("ConfigAssistant");
     return $method_ref->( $plugin, @_ ) if $method_ref;
     die $plugin->translate( "Failed to find [_1]::[_2]", $class, $method );
+}
+
+sub MT::Component::needs_upgrade {
+    # We need to override MT::Component::needs_upgrade because that only 
+    # checks for schema_version, because now we also want to check for 
+    # static_version.
+    my $c  = shift;
+    if ($c->schema_version) {
+        my $sv = $c->schema_version;
+        # Don't return 0 here, because we also need to check static_version.
+        #return 0 unless defined $sv;
+        my $key     = 'PluginSchemaVersion';
+        my $id      = $c->id;
+        my $ver     = MT->config($key);
+        my $cfg_ver = $ver->{$id} if $ver;
+        if ( ( !defined $cfg_ver ) || ( $cfg_ver < $sv ) ) {
+            return 1;
+        }
+    }
+    if ( $c->{'registry'}->{'static_version'} ) {
+        my $sv = $c->{'registry'}->{'static_version'};
+        my $key     = 'PluginStaticVersion';
+        my $id      = $c->id;
+        my $ver     = MT->config($key);
+        my $cfg_ver = $ver->{$id} if $ver;
+        if ( ( !defined $cfg_ver ) || ( $cfg_ver < $sv ) ) {
+            return 1;
+        }
+    }
+    0;
 }
 
 1;

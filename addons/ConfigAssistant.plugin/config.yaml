@@ -5,7 +5,6 @@ author_link: http://www.majordojo.com/
 author_name: Byrne Reese
 description: This plugin provides a simple YAML based framework for creating plugin configuration options.
 version: 1.8
-schema_version: 1
 static_version: 1
 
 system_config_template: system_config.mtml

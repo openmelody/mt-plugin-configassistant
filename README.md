@@ -302,7 +302,7 @@ be re-copied.
 
 If you want to exclude some of your static content from the copy process, 
 you can specify this with the `skip\_static` root-level key, as in the 
-previous example.
+examples.
 
     skip_static:
         - index.html
@@ -314,11 +314,6 @@ previous example.
 with a leading dash and space. Files can be a partial match, so specifying an 
 extension (such as `.psd`) will cause all files with `.psd` to _not_ be copied.
 `skip\_static` is not a required key.
-
-Lastly, you'll need to be sure to set the `schema\_version` key. You may 
-already be using this for your plugin or theme. Incrementing the 
-`schema_version` will trigger Movable Type and Melody to run an upgrade, 
-which is when Config Assistant will deploy static content.
 
 On the filesystem side, you will want to create your folder and file structure 
 inside of a `static` folder in your plugin envelope. Any files inside of this 
