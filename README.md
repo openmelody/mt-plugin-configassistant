@@ -1,4 +1,4 @@
-This plugin is allows theme and plugin developers to easily surface a form 
+This plugin allows theme and plugin developers to easily surface a form 
 within Movable Type for configuring their theme/plugin. In addition, it allows
 theme and plugin developers to define template tags by which they can access
 the values entered in by their users directly within their templates.
@@ -40,6 +40,35 @@ This plugin adds support for a new element in any plugin's `config.yaml` file ca
 your plugin applies the corresponding template set then a "Theme Options" menu item
 will automatically appear in their "Design" menu. They can click that menu item to 
 be taken directly to a page on which they can edit all of their theme's settings.
+
+Additionally, several keys exist to help you create a "welcome" tab for your theme 
+options. This area provides links that are useful for a user, including a link to your 
+theme's documentation and home page as well as attribution to you, the designer. 
+Additionally, you can include an email address to surface a PayPal donation button, 
+and a thumbnail of your theme applied to the users site will be automatically 
+generated. The following keys are available for your use, all pretty self-explanatory:
+
+* `author_name` - Your name. If unspecified, this falls back to the plugin's
+  `author_name` value, if specified.
+* `author_link` - The URL to your web site. If unspecified, this falls back to the 
+  plugin's `author_link` value, if specified.
+* `theme_link` - The URL to your theme. If unspecified, this falls back to the
+  plugin's `plugin_link` value, if specified.
+* `doc_link` - The URL to the documentation of your theme. If unspecified, this falls
+  back to the plugin's `doc_link` value, if specified.
+* `description` - A short description of your theme. If unspecified, this falls back 
+  to the plugin's `description` value, if specified.
+* `version` - The version number of your theme. If unspecified, this falls back to the
+  plugin's `version` value, if specified.
+* `paypal_email` - A valid email address that users can donate through PayPal to you.
+  If unspecified, this falls back to the root key `paypal_email` value.
+  
+Notice that each value has a fallback value that is defined by your plugin. The real 
+benefit of this is that you can have multiple template sets in your theme. Each 
+template set may have its own `version` and `description`, but may fall back to the 
+plugin-level `doc_link` for both themes, for example. See their use in the example 
+below.
+
 The `static_version` root-level element will trigger Config Assistant to copy files 
 to the `mt-static/support/plugins/[plugin key]/` folder, and the `skip\_static` 
 root-level element will let you specify files _not_ to copy..
@@ -47,10 +76,18 @@ root-level element will let you specify files _not_ to copy..
     id: MyPluginID
     name: My Plugin
     version: 1.0
-    schema_version: 1
     static_version: 1
     template_sets:
         my_awesome_theme:
+            base_path: 'templates'
+            label: 'My Awesome Theme'
+            author_name: 'Dan Wolfgang'
+            author_link: 'http://example.com'
+            theme_link: 'http://example.com/my_awesome_theme/'
+            doc_link: 'http://example.com/my_awesome_theme/docs/'
+            description: "This is my awesome theme! It's full of colors and nifty features and so much awesome!"
+            version: '1.0'
+            paypal_email: paypal@example.com
             options:
                 fieldsets:
                     homepage:
@@ -76,11 +113,14 @@ root-level element will let you specify files _not_ to copy..
                     fieldset: homepage
                     condition: > 
                       sub { return 1; }
+                    required: 1
     skip_static:
         - index.html
         - readme.txt
         - .psd
         - .zip
+
+
 
 ## Using Config Assistant for Plugin Settings
 
@@ -140,6 +180,8 @@ Each field definition supports the following properties:
 * `scope` - (for plugin settings only, all theme options are required to be
   blog specific) determines whether the config option will be rendered at the blog
   level or system level.
+* `required` - can be set to `1` to indicate a field as required, necessitating a
+  value.
 
 ### Supported Field Types
 
@@ -198,12 +240,12 @@ Allowable file format tokens:
 
 Example:
 
-   my_keyfile:
-     type: file
-     label: 'My Private Key'
-     hint: 'A private key used for signing PayPal buttons.'
-     tag: 'PrivatePayPalKey'
-     destination: my_theme/%{10}e
+    my_keyfile:
+        type: file
+        label: 'My Private Key'
+        hint: 'A private key used for signing PayPal buttons.'
+        tag: 'PrivatePayPalKey'
+        destination: my_theme/%{10}e
 
 **Example Radio Image**
 
@@ -212,7 +254,7 @@ The list of radio button is a comma-limitted list of image/value pairs (delimitt
 by a colon). Got that? The images you reference are all relative to Movable Type's
 mt-static directory. Confused? I think a sample will make it perfectly clear:
 
-      homepage_layout:
+    homepage_layout:
         type: radio-image
         label: 'Homepage Layout'
         hint: 'The layout for the homepage of your blog.'

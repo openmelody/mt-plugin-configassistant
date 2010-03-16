@@ -61,11 +61,15 @@ sub theme_options {
             my $show_label =
               defined $field->{show_label} ? $field->{show_label} : 1;
             my $label = $field->{label} ne '' ? &{$field->{label}} : '';
+            my $required = $field->{required} ? 'required' : '';
+            if ($required) {
+                $label .= ' <span class="required-flag">*</span>';
+            }
             $out .=
                 '  <div id="field-'
               . $field_id
               . '" class="field field-left-label pkg field-type-'
-              . $field->{type} . '">' . "\n";
+              . $field->{type} . ' ' . $required . '">' . "\n";
             $out .= "    <div class=\"field-header\">\n";
             $out .=
                 "      <label for=\"$field_id\">"
@@ -144,12 +148,50 @@ sub theme_options {
             value => $cfg_obj->{$field_id},
           };
     }
+    
+    # About this Theme details
+    my $ts_details = $app->registry('template_sets')->{$ts};
+    $param->{theme_label}       = $ts_details->{'label'};
+    # It's possible that a plugin could contain several template sets. So, 
+    # we want to give the creator an opportunity to give each of those their 
+    # own name, links, version, etc. So, look for theme-specific info, and 
+    # only fallback to plugin details.
+    $param->{theme_description} = $ts_details->{'description'} 
+        ? $ts_details->{'description'}  : $plugin->description;
+    $param->{theme_author_name} = $ts_details->{'author_name'} 
+        ? $ts_details->{'author_name'}  : $plugin->author_name;
+    $param->{theme_author_link} = $ts_details->{'author_link'} 
+        ? $ts_details->{'author_link'}  : $plugin->author_link;
+    $param->{theme_link}        = $ts_details->{'plugin_link'} 
+        ? $ts_details->{'theme_link'}   : $plugin->plugin_link;
+    $param->{theme_doc_link}    = $ts_details->{'doc_link'} 
+        ? $ts_details->{'doc_link'}     : $plugin->doc_link;
+    $param->{theme_version}     = $ts_details->{'version'} 
+        ? $ts_details->{'version'}      : $plugin->version;
+    $param->{paypal_email}      = $ts_details->{'paypal_email'}
+        ? $ts_details->{'paypal_email'} : $plugin->{'paypal_email'};
+    # Grab an up-to-date thumbnail to show what the site looks like.
+    $param->{theme_thumb_url}   = _theme_thumbnail();
+    # Check if the user has permission to edit templates, then check if
+    # templates are linked or not.
+    use MT::Permission;
+    my $perms = MT::Permission->load({ author_id => $app->{author}->id,
+                                       blog_id   => $app->blog->id, });
+    if ($perms->can_edit_templates) {
+        $param->{can_edit_templates} = 1;
+        use MT::Template;
+        $param->{linked_theme} = MT::Template->load(
+                            { blog_id     => $app->blog->id,
+                              linked_file => { not_null => 1 }, });
+    }
+    
     $param->{html}       = $html;
     $param->{fieldsets}  = \@loop;
     $param->{leftovers}  = \@leftovers;
     $param->{blog_id}    = $blog->id;
     $param->{plugin_sig} = $plugin->{plugin_sig};
     $param->{saved}      = $q->param('saved');
+    $param->{unlinked}   = $q->param('unlinked');
     return $app->load_tmpl( 'theme_options.tmpl', $param );
 }
 
@@ -947,6 +989,99 @@ sub tag_config_form {
     my ( $ctx, $args, $cond ) = @_;
     return
 "<p>Our sincerest apologies. This plugin uses a Config Assistant syntax which is no longer supported. Please notify the developer of the plugin.</p>";
+}
+
+sub _theme_thumbnail {
+    # We want a custom thumbnail to display on the Theme Options About tab.
+    my $app = MT->instance;
+    
+    # Craft the destination path and URL.
+    use File::Spec;
+    my $dest_path = File::Spec->catfile( 
+        $app->config('StaticFilePath'), 'support', 'plugins', 'ConfigAssistant', 
+            'theme_thumbs', $app->blog->id.'.jpg' 
+    );
+    my $dest_url = $app->static_path.'support/plugins/ConfigAssistant/theme_thumbs/'.$app->blog->id.'.jpg';
+
+    # Check if the thumbnail is cached (exists) and is less than 3 days old. 
+    # If it's older, we want a new thumb to be created.
+    if (-M $dest_path >= 3) {
+        # We've found a cached image! No need to grab a new screenshot; just 
+        # use the existing one.
+        return '<img src="'.$dest_url.'" wdith="300" height="240" title="'
+            .$app->blog->name.' on '.$app->blog->site_url.'" />';
+    }
+    else {
+        # No screenshot was found, or it's too old--so create one.
+        # First, create the destination directory, if necessary.
+        my $dir = File::Spec->catfile( 
+            $app->config('StaticFilePath'), 'support', 'plugins', 'ConfigAssistant', 
+                'theme_thumbs' 
+        );
+        if (!-d $dir) {
+            my $fmgr = MT::FileMgr->new('Local')
+                or return MT::FileMgr->errstr;
+            $fmgr->mkpath($dir)
+                or return MT::FileMgr->errstr;
+        }
+        # Now build and cache the thumbnail URL
+        # This is done with thumbalizr.com, a free online screenshot service.
+        # Their API is completely http based, so this is all we need to do to
+        # get an image from them.
+        my $thumb_url = 'http://api.thumbalizr.com/?url='.$app->blog->site_url.'&width=300';
+        use LWP::Simple;
+        my $http_response = LWP::Simple::getstore($thumb_url, $dest_path);
+        if ($http_response == 200) {
+            # success!
+            return '<img src="'.$dest_url.'" wdith="300" height="240" title="'
+                .$app->blog->name.' on '.$app->blog->site_url.'" />';
+        }
+        else {
+            # Since thumbalizr is a queued service, it's possible the thumbnail
+            # won't be available the instant we request it.
+            return '<p>A thumbnail of this theme on your site should be '
+                .'available shortly.</p>';
+        }
+    }
+}
+
+sub paypal_donate {
+    # Donating through PayPal requires a pop-up dialog so that we can break 
+    # out of MT and the normal button handling. (That is, clicking a PayPal
+    # button on Theme Options causes MT to try to save Theme Options, not 
+    # launch the PayPal link. Creating a dialog breaks out of that
+    # requirement.)
+    my $app = MT->instance;
+    my $param = {};
+    $param->{theme_label}  = $app->param('theme_label');
+    $param->{paypal_email} = $app->param('paypal_email');
+    return $app->load_tmpl( 'paypal_donate.mtml', $param );
+}
+
+sub edit_templates {
+    # Pop up the warning dialog about what it really means to "edit templates."
+    my $app = shift;
+    my $param->{blog_id} = $app->param('blog_id');
+    return $app->load_tmpl( 'edit_templates.mtml', $param );
+}
+
+sub unlink_templates {
+    # Unlink all templates.
+    my $app = shift;
+    my $blog_id = $app->param('blog_id');
+    use MT::Template;
+    my $iter = MT::Template->load_iter({ blog_id     => $blog_id,
+                                         linked_file => { not_null => 1 }, });
+    while ( my $tmpl = $iter->() ) {
+        $tmpl->linked_file(undef);
+        $tmpl->linked_file_mtime(undef);
+        $tmpl->linked_file_size(undef);
+        $tmpl->save;
+    }
+    my $return_url = $app->uri.'?__mode=theme_options&blog_id='.$blog_id
+        .'&unlinked=1';
+    my $param = { return_url => $return_url };
+    return $app->load_tmpl( 'templates_unlinked.mtml', $param );
 }
 
 1;

@@ -3,6 +3,7 @@
 
 .fieldset-options { display: none; }
 #fieldsets h3 { display: none; }
+#fieldsets #about-tab-content h3 { display: block; margin-top: 0; }
 h2#page-title span.star { display: none; }
 #content-nav ul li.changed b { font-style: italic; }
 #content-nav ul li.changed span { display: inline; }
@@ -95,3 +96,37 @@ h2#page-title span.star { display: none; }
   margin-left: 180px;
   font-size: 13px;
 }
+
+
+
+.field-header .required-flag { color: #c20000; }
+
+/* Theme Options home tab */
+
+.theme_version {
+    color: #999;
+    font-weight: normal;
+    font-size: 12px;
+}
+
+#theme_thumb {
+    float: right;
+    margin: 0 0 10px 20px;
+    border: 2px solid #ddd;
+}
+
+#theme_links,
+#template_links { margin: 20px 0 15px; }
+#theme_links a,
+#template_links a { margin-right: 10px; }
+
+#paypal_donate_container {
+    float: right;
+    margin: 0 0 0 20px;
+    width: 74px;
+    height: 25px;
+}
+
+
+
+#message-confirmation { font-weight: bold; }

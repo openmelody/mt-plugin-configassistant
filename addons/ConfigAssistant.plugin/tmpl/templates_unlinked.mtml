@@ -1,0 +1,26 @@
+<mt:SetVarBlock name="page_title">Templates Unlinked</mt:SetVarBlock>
+<mt:SetVarBlock name="html_head" append="1">
+    <link rel="stylesheet" href="<$mt:ConfigAssistantStaticWebPath$>css/app.css" type="text/css" />
+</mt:SetVarBlock>
+<mt:Include name="dialog/header.tmpl">
+
+<script type="text/javascript">
+    window.parent.location = '<mt:Var name="return_url">';
+//    closeDialog();
+//    return false;
+</script>
+
+<p>Templates for this theme have been unlinked. If everything has worked correctly, you shouldn't even be seeing this message!</p>
+
+<div class="actions-bar">
+    <div class="actions-bar-inner pkg actions">
+        <button
+            onclick="closeDialog(); return false"
+            type="submit"
+            class="cancel"
+            accesskey="x"
+            title="Cancel (x)">Close</button>
+    </div>
+</div>
+
+<mt:Include name="dialog/footer.tmpl">
