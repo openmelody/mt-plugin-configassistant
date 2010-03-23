@@ -23,7 +23,6 @@ applications:
       unlink_templates: $ConfigAssistant::ConfigAssistant::Plugin::unlink_templates
       run_static_copy:  $ConfigAssistant::ConfigAssistant::Static::manual_run
       select_theme:     $ConfigAssistant::ConfigAssistant::Theme::select_theme
-#      search_theme:     $ConfigAssistant::ConfigAssistant::Theme::search_theme
       setup_theme:      $ConfigAssistant::ConfigAssistant::Theme::setup_theme
     page_actions: $ConfigAssistant::ConfigAssistant::Theme::update_page_actions
     search_apis:

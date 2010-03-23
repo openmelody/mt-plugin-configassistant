@@ -59,7 +59,12 @@ sub upgrade {
         my $static_version = $registry->{'static_version'} || '0';
         # The saved version
         my $ver = MT->config('PluginStaticVersion');
-        my $saved_version = $ver->{$plugin->id} if $ver;
+        # Check to see if $plugin->id is valid. If it's not, we need to undef 
+        # $ver so that we don't try to grab the static_version variable.
+        # $plugin->id seems to throw an error for some Six Apart-originated
+        # plugins. I don't know why.
+        my $plugin_id = eval {$plugin->id} ? $plugin->id : undef $ver;
+        my $saved_version = $ver->{$plugin_id} if $ver;
         
         if ($static_version > $saved_version) {
             $self->progress('Copying static files for <strong>'.$plugin->name.'</strong> to mt-static/support/plugins/...');

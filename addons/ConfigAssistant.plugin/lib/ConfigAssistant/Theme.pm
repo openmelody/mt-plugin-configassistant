@@ -29,7 +29,7 @@ sub _theme_label {
     my ($set, $obj) = @_;
     return $obj->{registry}->{'template_sets'}->{$set}->{label}
         ? $obj->{registry}->{'template_sets'}->{$set}->{label}
-        : $obj->name.": $set";
+        : eval {$obj->name.': '} . $set;
 }
 
 sub _theme_thumbnail_url {
@@ -62,7 +62,7 @@ sub _theme_description {
     my ($set, $obj) = @_;
     return $obj->{registry}->{'template_sets'}->{$set}->{description}
         ? $obj->{registry}->{'template_sets'}->{$set}->{description}
-        : $obj->description;
+        : eval {$obj->description};
 }
 
 sub _theme_author_name {
@@ -75,8 +75,8 @@ sub _theme_author_name {
 }
 
 sub _theme_author_link {
-    # Grab the author name. If no template set author name, then use
-    # the parent plugin's author name.
+    # Grab the author name. If no template set author link, then use
+    # the parent plugin's author link.
     my ($set, $obj) = @_;
     return $obj->{registry}->{'template_sets'}->{$set}->{author_link}
         ? $obj->{registry}->{'template_sets'}->{$set}->{author_link}
@@ -122,6 +122,9 @@ sub _theme_docs {
 sub select_theme {
     # The user probably wants to apply a new theme; we start by browsing the
     # available themes.
+    # Save themes to the theme table, so that we can build a listing screen from them.
+    _theme_check();
+
     my $app = shift;
     # Terms may be supplied if the user is searching.
     my $search_terms = $app->param('search');
@@ -147,9 +150,6 @@ sub select_theme {
         # help. This should match anything.
         @terms = ( { ts_label => {like => "%%"}} );
     }
-
-    # Save themes to the theme table, so that we can build a listing screen from them.
-    _theme_check();
 
     # Set the number of items to appear on the theme grid. 6 fit, so that's
     # what it's set to here. However, if unset, it defaults to 25!
@@ -407,24 +407,21 @@ sub update_menus {
 }
 
 sub update_page_actions {
-    my $app = MT->instance;
-    # We only want to remove the Refresh Templates Page Action at the blog 
-    # level. We don't know for sure what templates/template sets exist at the
-    # system-level, so just removing all Refresh Templates links isn't best.
-    my $blog_id = $app->param('blog_id');
-    if ($blog_id) {
-        # Any linked templates?
-        use MT::Template;
-        my $linked_tmpl = MT::Template->load(
-                        { blog_id     => $blog_id,
-                          linked_file => '*', });
-        if ($linked_tmpl) {
-            my $core = MT->component('Core');
-            # Delete the "Refresh Templates" link at the blog level.
-            delete $core->{registry}->{applications}->{cms}->{page_actions}->{list_templates}->{'refresh_all_blog_templates'};
+    # Override the blog-level "Refresh Blog Templates" page action, causing
+    # a popup to start the theme selection process. We want to keep the
+    # Refresh Blog Templates link because it's familiar at this point.
+    return {
+        'list_templates' => {
+            refresh_all_blog_templates => {
+                label     => "Refresh Blog Templates",
+                dialog    => 'select_theme',
+                condition => sub {
+                    MT->app->blog,;
+                },
+                order => 1000,
+            },
         }
-    }
-    return {};
+    };
 }
 
 sub template_set_change {

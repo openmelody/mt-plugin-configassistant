@@ -1004,9 +1004,9 @@ sub _theme_thumbnail {
     );
     my $dest_url = $app->static_path.'support/plugins/ConfigAssistant/theme_thumbs/'.$app->blog->id.'.jpg';
 
-    # Check if the thumbnail is cached (exists) and is less than 3 days old. 
+    # Check if the thumbnail is cached (exists) and is less than 1 day old. 
     # If it's older, we want a new thumb to be created.
-    if ( (-e $dest_path) && (-M $dest_path <= 3) ) {
+    if ( (-e $dest_path) && (-M $dest_path <= 1) ) {
         # We've found a cached image! No need to grab a new screenshot; just 
         # use the existing one.
         return '<img src="'.$dest_url.'" width="300" height="240" title="'
