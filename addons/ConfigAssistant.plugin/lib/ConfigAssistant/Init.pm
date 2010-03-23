@@ -32,37 +32,6 @@ sub init_app {
     }
 }
 
-sub load_menus {
-    my $app = MT->instance;
-    # We only want to remove the Templates menu at the blog-level. We don't
-    # know for sure what templates are at the system-level, so just blanket
-    # denying access is probably not best.
-    my $blog_id = $app->param('blog_id');
-    if ($blog_id) {
-        # Any linked templates?
-        use MT::Template;
-        my $linked_tmpl = MT::Template->load(
-                        { blog_id     => $blog_id,
-                          linked_file => { not_null => 1 }, });
-        # If there are linked templates, then remove the Templates menu.
-        if ($linked_tmpl) {
-            my $menus = MT->component('Core');
-            delete $menus->{registry}->{applications}->{cms}->{menus}->{'design:template'};
-        }
-    }
-    # Now just add the Theme Options menu item.
-    return {
-        'design:theme_options' => {
-            label => 'Theme Options',
-            order => '10',
-            mode  => 'theme_options',
-            view  => 'blog',
-            permission => 'edit_templates',
-            condition => $ConfigAssistant::ConfigAssistant::Init::uses_config_assistant,
-        }
-    };
-}
-
 sub init_options {
     #    my $callback = shift;
     my $app = shift;

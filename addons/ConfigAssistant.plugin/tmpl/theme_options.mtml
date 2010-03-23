@@ -9,12 +9,14 @@
             <__trans phrase="You have saved your theme options.">
         </mtapp:statusmsg>
     </mt:if>
-    <mt:if name="unlinked">
-        <mtapp:statusmsg
-            id="options-unlinked"
-            class="success">
-            <__trans phrase="This theme&rsquo;s templates have been unlinked. You can now freely edit them.">
-        </mtapp:statusmsg>
+    <mt:if name="missing_required">
+        <mt:loop name="missing_required">
+            <mtapp:statusmsg
+                id="missing-required-field"
+                class="error">
+                The field <mt:Var name="label"> is a required field but has no value. Enter a value and save changes before publishing.
+            </mtapp:statusmsg>
+        </mt:loop>
     </mt:if>
 </mt:setvarblock>
 <mt:setvartemplate name="action_buttons">
@@ -125,6 +127,11 @@
                     class="icon-mini-left icon-mini-templates">Edit Templates</a>
             </mt:If>
         </mt:If>
+        </p>
+        <p id="apply_theme">
+            <a href="javascript:void(0)" onclick="return openDialog(null, 'select_theme', 
+                'blog_id=<mt:Var name="blog_id">')" title="Apply a new Theme" 
+                class="icon-mini-left icon-mini-view-site">Apply a new Theme</a>
         </p>
     </div>
 <mt:loop name="fieldsets">

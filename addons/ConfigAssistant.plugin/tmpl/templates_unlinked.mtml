@@ -4,18 +4,12 @@
 </mt:SetVarBlock>
 <mt:Include name="dialog/header.tmpl">
 
-<script type="text/javascript">
-    window.parent.location = '<mt:Var name="return_url">';
-//    closeDialog();
-//    return false;
-</script>
-
-<p>Templates for this theme have been unlinked. If everything has worked correctly, you shouldn't even be seeing this message!</p>
+<p>Templates for this theme have been unlinked; you can now freely edit them.</p>
 
 <div class="actions-bar">
     <div class="actions-bar-inner pkg actions">
         <button
-            onclick="closeDialog(); return false"
+            onclick="window.parent.location.href='<mt:Var name="return_url">'; closeDialog(); return false"
             type="submit"
             class="cancel"
             accesskey="x"

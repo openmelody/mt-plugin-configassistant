@@ -1,7 +1,15 @@
-This plugin allows theme and plugin developers to easily surface a form 
-within Movable Type for configuring their theme/plugin. In addition, it allows
-theme and plugin developers to define template tags by which they can access
-the values entered in by their users directly within their templates.
+The Config Assistant plugin does many things:
+
+* It allows theme and plugin developers to easily surface a form within 
+  Movable Type for configuring their theme/plugin.
+* It allows theme and plugin developers to define template tags by which they
+  can access the values entered in by their users directly within their
+  templates.
+* It helps users install a theme or plugin by copying static files into the
+  `mt-static` folder, simplifying installation.
+* It provides a Theme Chooser to help users install and set up a theme, and
+  provides theme designers with ways to communicate their theme capabilities
+  and requirements, and makes upgrading themes easier.
 
 All this **without having to know perl or how to program at all**!
 
@@ -9,9 +17,9 @@ This plugin works by allowing a developer to use their plugin's configuration
 file as a means for defining what the various settings and form elements they
 would like to expose to a user.
 
-If Config Assistant is being used within the context of a theme, then users of 
-your theme will automatically have a "Theme Options" menu item added to their 
-design menu so they can easily access the settings you define.
+Config Assistant will automatically add a "Theme Options" menu item to the user's 
+design menu so they can easily access the settings you define, and see a summary
+"About" tab describing the theme they are currently using.
 
 Config Assistant can also work with "static" content to make deploying your plugin 
 or theme easier. (If you've installed many plugins, you know that you must often 
@@ -32,6 +40,19 @@ can begin using this plugin today.
 This plugin is installed [just like any other Movable Type Plugin](http://www.majordojo.com/2008/12/the-ultimate-guide-to-installing-movable-type-plugins.php).
 
 # Reference and Documentation
+
+Config Assistant's Theme Chooser allows users to select a theme and apply it 
+to their blog.
+
+A user can visit the Design menu and choose Theme Options, then select the 
+"Apply a New Theme" link to get started. A dialog will popup with a paginated 
+view of the installed themes. Here the user can see more detail about the 
+theme (click the thumbnail) or select the theme to apply it. After selecting 
+a theme the user will be required to fill-in any fields marked "required" by 
+the theme designer to finish the process.
+
+Keep reading for details on creating a theme that takes full advantage of all 
+that Config Assistant offers!
 
 ## Using Config Assistant for Theme Options
 
@@ -62,16 +83,28 @@ generated. The following keys are available for your use, all pretty self-explan
   plugin's `version` value, if specified.
 * `paypal_email` - A valid email address that users can donate through PayPal to you.
   If unspecified, this falls back to the root key `paypal_email` value.
-  
+
 Notice that each value has a fallback value that is defined by your plugin. The real 
 benefit of this is that you can have multiple template sets in your theme. Each 
 template set may have its own `version` and `description`, but may fall back to the 
 plugin-level `doc_link` for both themes, for example. See their use in the example 
 below.
 
+Additionally, the Theme Chooser will display images to help the user select a 
+theme.
+
+* `thumbnail` - a thumbnail image of your theme, measuring 175 x 140 pixels. This 
+  image is displayed in the Theme Chooser selection grid. A plain image will be 
+  displayed if none is supplied.
+* `preview` - a larger thumbnail image of your theme, measuring 300 x 240 pixels.
+  This image is displayed in the "details" of the Theme Chooser. A plain image 
+  will be displayed if none is supplied.
+* Any option marked with the `required: 1` key:value pair will be displayed after
+  the user has selected a theme.
+  
 The `static_version` root-level element will trigger Config Assistant to copy files 
 to the `mt-static/support/plugins/[plugin key]/` folder, and the `skip\_static` 
-root-level element will let you specify files _not_ to copy..
+root-level element will let you specify files _not_ to copy.
 
     id: MyPluginID
     name: My Plugin
@@ -88,6 +121,8 @@ root-level element will let you specify files _not_ to copy..
             description: "This is my awesome theme! It's full of colors and nifty features and so much awesome!"
             version: '1.0'
             paypal_email: paypal@example.com
+            thumbnail: awesome-theme-small.png
+            preview: awesome-theme-large.png
             options:
                 fieldsets:
                     homepage:
@@ -197,7 +232,9 @@ field:
   defined by specifying a sibling element called `values` which should contain 
   a comma delimitted list of values to present in the pull down menu
 
-* `checkbox` - Produces a single checkbox, ideal for boolean values.
+* `checkbox` - Produces a single checkbox, ideal for boolean values. You probably
+  do _not_ ever want to mark this field as `required`, because that would really
+  mean "it must always be checked, or true."
 
 * `blogs` - Produces a pull down menu listing every blog in the system.
   *Warning: this is not advisable for large installations as it can dramatically
