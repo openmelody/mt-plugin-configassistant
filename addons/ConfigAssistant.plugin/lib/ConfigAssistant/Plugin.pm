@@ -176,7 +176,7 @@ sub theme_options {
     use MT::Permission;
     my $perms = MT::Permission->load({ author_id => $app->{author}->id,
                                        blog_id   => $app->blog->id, });
-    if ($perms->can_edit_templates) {
+    if ($perms && $perms->can_edit_templates) {
         $param->{can_edit_templates} = 1;
         use MT::Template;
         my $linked = MT::Template->load(
