@@ -1,0 +1,150 @@
+<mt:setvarblock name="page_title">Theme: <mt:Var name="theme_label"></mt:setvarblock>
+<mt:setvarblock name="html_title">Theme Dashboard: <mt:Var name="theme_label"></mt:setvarblock>
+<mt:setvarblock name="system_msg">
+</mt:setvarblock>
+
+<mt:SetVarBlock name="html_head" append="1">
+  <link rel="stylesheet" href="<$mt:ConfigAssistantStaticWebPath$>css/app.css" type="text/css" />
+</mt:SetVarBlock>
+
+<mt:SetVarBlock name="system_msg">
+    <mt:If name="new_theme">
+        <mtapp:statusmsg
+            id="new-theme"
+            class="success">
+            <__trans phrase="You have applied a new theme.">
+        </mtapp:statusmsg>
+    </mt:If>
+</mt:SetVarBlock>
+
+<mt:include name="include/header.tmpl">
+
+<div id="about-theme">
+    <mt:If name="theme_thumb_url">
+        <div id="theme_thumb">
+            <mt:Ignore> theme_thumb_url is a complete img tag. </mt:Ignore>
+            <mt:Var name="theme_thumb_url">
+        </div>
+    </mt:If>
+
+    <h3>About this Theme</h3>
+
+        <p id="theme_label">
+            <mt:Var name="theme_label"><mt:If name="theme_version">,
+                <span class="theme_version">version <mt:Var name="theme_version"></span>
+            </mt:If>
+        </p>
+    <mt:If name="theme_description">
+        <p id="theme_description"><mt:Var name="theme_description"></p>
+    </mt:If>
+        <ul id="theme_links">
+        <mt:If name="theme_doc_link">
+            <li>
+                <a href="<mt:Var name="theme_doc_link">" 
+                    title="Documentation for <mt:Var name="theme_label">" 
+                    class="icon-mini-left icon-mini-docs">
+                    Documentation</a>
+            </li>
+        </mt:if>
+        <mt:If name="theme_link">
+            <li>
+                <a href="<mt:Var name="theme_link">" 
+                    title="More about <mt:Var name="theme_label">" 
+                    class="icon-mini-left icon-mini-view-site">
+                    Theme Home</a>
+            </li>
+        </mt:If>
+        <mt:If name="theme_author_link">
+            <li>
+                <a href="<mt:Var name="theme_author_link">" 
+                    title="Designer of <mt:Var name="theme_label">" 
+                    class="icon-mini-left icon-mini-view-site">
+                    <mt:Var name="theme_author_name"></a>
+            </li>
+        <mt:Else>
+            <li>
+                <mt:Var name="theme_author_name">
+            </li>
+        </mt:If>
+        </ul>
+
+    <mt:If name="paypal_email">
+        <div id="paypal_donate_container">
+            <a href="javascript:void(0);" onclick="return openDialog(null, 'paypal_donate', 
+                'theme_label=<mt:Var name="theme_label" escape_js="1">&paypal_email=<mt:Var name="paypal_email" 
+                escape_js="1">')">
+                <img src="https://www.paypal.com/en_US/i/btn/btn_donate_SM.gif" />
+            </a>
+        </div>
+        <p>Support <mt:Var name="theme_author_name"> and the <mt:Var name="theme_label"> theme by making a donation to them through PayPal:
+        </p>
+    </mt:If>
+</div>
+
+<mt:If name="customizable_theme">
+    <div id="customize-theme">
+        <h3>Customize this Theme</h3>
+        <ul>
+        <mt:If name="theme_options">
+            <li>
+                <a href="<mt:Var name="script_url">?__mode=theme_options&amp;blog_id=<mt:Var name="blog_id">"
+                    title="Edit this theme's Theme Options"
+                    class="icon-mini-left icon-mini-settings">
+                    Edit Theme Options</a>
+            </li>
+        </mt:If>
+        <mt:If name="widget_sets">
+            <li>
+                <a href="<mt:Var name="script_url">?__mode=list_widget&amp;blog_id=<mt:Var name="blog_id">"
+                    title="Edit this theme's Widgets and Widget Sets"
+                    class="icon-mini-left icon-mini-settings">
+                    Create Widgets and organize Widget Sets</a>
+            </li>
+        </mt:If>
+        <mt:If name="custom_css">
+            <li>
+                <a href="<mt:Var name="script_url">?__mode=custom_css_edit&amp;blog_id=<mt:Var name="blog_id">"
+                    title="Customize CSS"
+                    class="icon-mini-left icon-mini-settings">
+                    Customize CSS</a>
+            </li>
+        </mt:If>
+        </ul>
+    </div>
+</mt:If>
+<mt:If name="can_edit_templates">
+    <div id="advanced-options">
+        <h3>Advanced Options</h3>
+        <ul>
+        <mt:If name="linked_theme">
+            <li>
+                <a href="<mt:Var name="script_uri">?__mode=list&_type=template&blog_id=<mt:Var name="blog_id">" 
+                    title="View this theme's templates" 
+                    class="icon-mini-left icon-mini-templates">View Templates</a>
+            </li>
+            <li>
+                <a href="javascript:void(0);" onclick="return openDialog(null, 'edit_templates', 
+                    '&blog_id=<mt:Var name="blog_id">')" title="Edit this theme's templates"
+                    class="icon-mini-left icon-mini-templates">Edit Templates</a>
+            </li>
+        <mt:Else>
+            <li>
+                <a href="<mt:Var name="script_uri">?__mode=list&_type=template&blog_id=<mt:Var name="blog_id">" 
+                    title="Edit this theme's templates" 
+                    class="icon-mini-left icon-mini-templates">Edit Templates</a>
+                <mt:If name="templates_modified">
+                <span class="templates-modified">The templates for this theme have been modified.</span>
+                </mt:If>
+            </li>
+        </mt:If>
+        </ul>
+    </div>
+</mt:If>
+
+    <h3 id="apply_theme">
+        <a href="javascript:void(0)" onclick="return openDialog(null, 'select_theme', 
+            'blog_id=<mt:Var name="blog_id">')" title="Apply a new Theme" 
+            class="icon-mini-left icon-mini-view-site">Apply a new Theme</a>
+    </h3>
+
+<mt:include name="include/footer.tmpl">

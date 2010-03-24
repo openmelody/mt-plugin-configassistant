@@ -18,12 +18,13 @@ applications:
       ca_config_entry:  $ConfigAssistant::ConfigAssistant::Plugin::list_entry_mini
       ca_select_entry:  $ConfigAssistant::ConfigAssistant::Plugin::select_entry
       ca_save_config:   $ConfigAssistant::ConfigAssistant::Plugin::save_config
-      paypal_donate:    $ConfigAssistant::ConfigAssistant::Plugin::paypal_donate
-      edit_templates:   $ConfigAssistant::ConfigAssistant::Plugin::edit_templates
-      unlink_templates: $ConfigAssistant::ConfigAssistant::Plugin::unlink_templates
       run_static_copy:  $ConfigAssistant::ConfigAssistant::Static::manual_run
+      paypal_donate:    $ConfigAssistant::ConfigAssistant::Theme::paypal_donate
+      edit_templates:   $ConfigAssistant::ConfigAssistant::Theme::edit_templates
+      unlink_templates: $ConfigAssistant::ConfigAssistant::Theme::unlink_templates
       select_theme:     $ConfigAssistant::ConfigAssistant::Theme::select_theme
       setup_theme:      $ConfigAssistant::ConfigAssistant::Theme::setup_theme
+      theme_dashboard:  $ConfigAssistant::ConfigAssistant::Theme::theme_dashboard
     page_actions: $ConfigAssistant::ConfigAssistant::Theme::update_page_actions
     search_apis:
       entry:

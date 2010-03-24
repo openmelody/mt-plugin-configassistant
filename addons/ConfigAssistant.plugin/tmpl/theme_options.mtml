@@ -33,9 +33,8 @@
 
 <mt:setvarblock name="content_nav">
 <ul>
-    <li class="about-tab active"><a href="#" id="about-tab"><b>About this Theme</b></a></li>
 <mt:loop name="fieldsets">
-    <li class="<$mt:var name="id"$>-tab"><a href="#" id="<$mt:var name="id"$>-tab"><b><$mt:var name="label"$> <span class="star">*</span></b></a></li>
+    <li class="<$mt:var name="id"$>-tab<mt:If name="__first__"> active</mt:If>"><a href="#" id="<$mt:var name="id"$>-tab"><b><$mt:var name="label"$> <span class="star">*</span></b></a></li>
 </mt:loop>
 </ul>
 </mt:setvarblock>
@@ -61,82 +60,6 @@
    <input type="hidden" name="magic_token" value="<mt:var name="magic_token">" />
 
 <div id="fieldsets">
-    <div id="about-tab-content" class="fieldset-options">
-    <mt:If name="theme_label">
-        <h3>
-        <mt:Var name="theme_label">
-        <mt:If name="theme_version">
-            <span class="theme_version">(version <mt:Var name="theme_version">)</span>
-        </mt:If>
-        </h3>
-    </mt:if>
-    <mt:If name="theme_thumb_url">
-        <div id="theme_thumb">
-            <mt:Ignore> theme_thumb_url is a complete img tag. </mt:Ignore>
-            <mt:Var name="theme_thumb_url">
-        </div>
-    </mt:If>
-    <mt:If name="theme_description">
-        <p id="theme_description"><mt:Var name="theme_description"></p>
-    </mt:If>
-        <p id="theme_links">
-        <mt:If name="theme_doc_link">
-            <a href="<mt:Var name="theme_doc_link">" 
-                title="Documentation for <mt:Var name="theme_label">" 
-                class="icon-mini-left icon-mini-docs">
-                Documentation</a>
-        </mt:if>
-        <mt:If name="theme_link">
-            <a href="<mt:Var name="theme_link">" 
-                title="More about <mt:Var name="theme_label">" 
-                class="icon-mini-left icon-mini-view-site">
-                Theme Home</a>
-        </mt:If>
-        <mt:If name="theme_author_link">
-            <a href="<mt:Var name="theme_author_link">" 
-                title="Designer of <mt:Var name="theme_label">" 
-                class="icon-mini-left icon-mini-view-site">
-                <mt:Var name="theme_author_name"></a>
-        <mt:Else>
-            <mt:Var name="theme_author_name">
-        </mt:If>
-        </p>
-    <mt:If name="paypal_email">
-        <div id="paypal_donate_container">
-            <a href="javascript:void(0);" onclick="return openDialog(null, 'paypal_donate', 
-                'theme_label=<mt:Var name="theme_label" escape_js="1">&paypal_email=<mt:Var name="paypal_email" 
-                escape_js="1">')">
-                <img src="https://www.paypal.com/en_US/i/btn/btn_donate_SM.gif" />
-            </a>
-        </div>
-        <p>Support <mt:Var name="theme_author_name"> and the <mt:Var name="theme_label"> theme by making a donation through PayPal:
-        </p>
-    </mt:If>
-        <p id="template_links">
-        <mt:If name="can_edit_templates">
-            <mt:If name="linked_theme">
-                <a href="javascript:void(0);" onclick="return openDialog(null, 'edit_templates', 
-                    '&blog_id=<mt:Var name="blog_id">')" title="Edit this theme's templates"
-                    class="icon-mini-left icon-mini-templates">Edit Templates</a>
-                <a href="<mt:Var name="script_uri">?__mode=list&_type=template&blog_id=<mt:Var name="blog_id">" 
-                    title="View this themes templates" 
-                    class="icon-mini-left icon-mini-templates">View Templates</a>
-            <mt:Else>
-                <a href="<mt:Var name="script_uri">?__mode=list&_type=template&blog_id=<mt:Var name="blog_id">" 
-                    title="Edit this themes templates" 
-                    class="icon-mini-left icon-mini-templates">Edit Templates</a>
-                <mt:If name="templates_modified">
-                <span class="templates-modified">The templates for this theme have been modified.</span>
-                </mt:If>
-            </mt:If>
-        </mt:If>
-        </p>
-        <p id="apply_theme">
-            <a href="javascript:void(0)" onclick="return openDialog(null, 'select_theme', 
-                'blog_id=<mt:Var name="blog_id">')" title="Apply a new Theme" 
-                class="icon-mini-left icon-mini-view-site">Apply a new Theme</a>
-        </p>
-    </div>
 <mt:loop name="fieldsets">
   <div id="<$mt:var name="id"$>-tab-content" class="fieldset-options">
     <h3><$mt:var name="label"$></h3>

@@ -17,9 +17,14 @@ This plugin works by allowing a developer to use their plugin's configuration
 file as a means for defining what the various settings and form elements they
 would like to expose to a user.
 
-Config Assistant will automatically add a "Theme Options" menu item to the user's 
-design menu so they can easily access the settings you define, and see a summary
-"About" tab describing the theme they are currently using.
+Config Assistant will automatically add a "Theme Dashboard" menu item to the 
+user's Design menu. The Theme Dashboard provides at-a-glance detail of the 
+theme being used, along with links to help the user navigate and customize the
+theme. The Theme Dashboard will also provide a "Custom CSS" link if the Custom 
+CSS plugin is used and defined within the selected theme.
+
+Config Assistant will also automatically add a "Theme Options" menu item to the user's 
+Design menu so they can easily access the settings you define.
 
 Config Assistant can also work with "static" content to make deploying your plugin 
 or theme easier. (If you've installed many plugins, you know that you must often 
@@ -44,7 +49,7 @@ This plugin is installed [just like any other Movable Type Plugin](http://www.ma
 Config Assistant's Theme Chooser allows users to select a theme and apply it 
 to their blog.
 
-A user can visit the Design menu and choose Theme Options, then select the 
+A user can visit the Design menu and choose Theme Dashboard, then select the 
 "Apply a New Theme" link to get started. A dialog will popup with a paginated 
 view of the installed themes. Here the user can see more detail about the 
 theme (click the thumbnail) or select the theme to apply it. After selecting 
@@ -374,13 +379,13 @@ annoying step that has to be done. But no more! Config Assistant can be used
 to help your plugin or theme copy static content to its permanent home in the 
 `mt-static/` folder!
 
-Within your plugin, use the `static\_version` root-level key to cause Config 
+Within your plugin, use the `static_version` root-level key to cause Config 
 Assistant to work with your static content. This key should be an integer, and 
 should be incremented when you've changed your static content and want it to 
 be re-copied.
 
 If you want to exclude some of your static content from the copy process, 
-you can specify this with the `skip\_static` root-level key, as in the 
+you can specify this with the `skip_static` root-level key, as in the 
 examples.
 
     skip_static:
@@ -389,19 +394,19 @@ examples.
         - .psd
         - .zip
 
-`skip\_static` builds an array of items to be excluded, which is signified 
+`skip_static` builds an array of items to be excluded, which is signified 
 with a leading dash and space. Files can be a partial match, so specifying an 
 extension (such as `.psd`) will cause all files with `.psd` to _not_ be copied.
-`skip\_static` is not a required key.
+`skip_static` is not a required key.
 
 On the filesystem side, you will want to create your folder and file structure 
 inside of a `static` folder in your plugin envelope. Any files inside of this 
-static folder (except those items matching `skip\_static`) will be copied 
+static folder (except those items matching `skip_static`) will be copied 
 during installation.
 
 ### Installing the Static Content
 
-When installing your new plugin or theme, the `schema_version` will trigger 
+When installing your new plugin or theme, the `static_version` will trigger 
 Movable Type or Melody to run an upgrade. During the upgrade, Config 
 Assistant will copy static content to the `mt-static/support/plugins/` 
 folder, and will create a folder for its contents. (For example, after 
