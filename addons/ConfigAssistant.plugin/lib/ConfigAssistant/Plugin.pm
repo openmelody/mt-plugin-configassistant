@@ -171,18 +171,36 @@ sub theme_options {
     $param->{paypal_email}      = ConfigAssistant::Theme::_theme_paypal_email($ts, $plugin);
     # Grab an up-to-date thumbnail to show what the site looks like.
     $param->{theme_thumb_url}   = _theme_thumbnail($ts, $plugin);
-    # Check if the user has permission to edit templates, then check if
-    # templates are linked or not.
-    use MT::Permission;
-    my $perms = MT::Permission->load({ author_id => $app->{author}->id,
-                                       blog_id   => $app->blog->id, });
-    if ($perms && $perms->can_edit_templates) {
-        $param->{can_edit_templates} = 1;
-        use MT::Template;
-        my $linked = MT::Template->load(
-                            { blog_id     => $app->blog->id,
-                              linked_file => '*', });
-        if ($linked) { $param->{linked_theme} = 1; }
+
+    # Are the templates linked? We use this to show/hide the Edit/View
+    # Templates links.
+    use MT::Template;
+    my $linked = MT::Template->load(
+                        { blog_id     => $app->blog->id,
+                          linked_file => '*', });
+    if ($linked) {
+        # These templates *are* linked.
+        $param->{linked_theme} = 1;
+    }
+    else {
+        # These templates are *not* linked. Because they are not linked,
+        # it's possible the user has edited them. Return a message saying
+        # that. We can figure out which templates are edited by comparing
+        # the created_on and modified_on dates.
+        # So, first grab templates in the current blog that are not 
+        # backups and that have had modifications made (modified_on col).
+        my $iter = MT::Template->load_iter(
+                        { blog_id    => $app->blog->id,
+                          type => {not_like => 'backup'},
+                          modified_on => {not_null => 1}, });
+        while ( my $tmpl = $iter->() ) { 
+            if ($tmpl->modified_on > $tmpl->created_on) {
+                $param->{templates_modified} = 1;
+                # Once a single modified template has been found there's
+                # no reason to search anymore.
+                last;
+            }
+        }
     }
     
     $param->{html}       = $html;

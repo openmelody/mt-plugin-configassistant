@@ -125,6 +125,9 @@
                 <a href="<mt:Var name="script_uri">?__mode=list&_type=template&blog_id=<mt:Var name="blog_id">" 
                     title="Edit this themes templates" 
                     class="icon-mini-left icon-mini-templates">Edit Templates</a>
+                <mt:If name="templates_modified">
+                <span class="templates-modified">The templates for this theme have been modified.</span>
+                </mt:If>
             </mt:If>
         </mt:If>
         </p>
