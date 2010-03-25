@@ -7,9 +7,6 @@ The Config Assistant plugin does many things:
   templates.
 * It helps users install a theme or plugin by copying static files into the
   `mt-static` folder, simplifying installation.
-* It provides a Theme Chooser to help users install and set up a theme, and
-  provides theme designers with ways to communicate their theme capabilities
-  and requirements, and makes upgrading themes easier.
 
 All this **without having to know perl or how to program at all**!
 
@@ -17,14 +14,8 @@ This plugin works by allowing a developer to use their plugin's configuration
 file as a means for defining what the various settings and form elements they
 would like to expose to a user.
 
-Config Assistant will automatically add a "Theme Dashboard" menu item to the 
-user's Design menu. The Theme Dashboard provides at-a-glance detail of the 
-theme being used, along with links to help the user navigate and customize the
-theme. The Theme Dashboard will also provide a "Custom CSS" link if the Custom 
-CSS plugin is used and defined within the selected theme.
-
-Config Assistant will also automatically add a "Theme Options" menu item to the user's 
-Design menu so they can easily access the settings you define.
+Config Assistant will also automatically add a "Theme Options" menu item to the 
+user's Design menu so they can easily access the settings you define.
 
 Config Assistant can also work with "static" content to make deploying your plugin 
 or theme easier. (If you've installed many plugins, you know that you must often 
@@ -46,19 +37,6 @@ This plugin is installed [just like any other Movable Type Plugin](http://www.ma
 
 # Reference and Documentation
 
-Config Assistant's Theme Chooser allows users to select a theme and apply it 
-to their blog.
-
-A user can visit the Design menu and choose Theme Dashboard, then select the 
-"Apply a New Theme" link to get started. A dialog will popup with a paginated 
-view of the installed themes. Here the user can see more detail about the 
-theme (click the thumbnail) or select the theme to apply it. After selecting 
-a theme the user will be required to fill-in any fields marked "required" by 
-the theme designer to finish the process.
-
-Keep reading for details on creating a theme that takes full advantage of all 
-that Config Assistant offers!
-
 ## Using Config Assistant for Theme Options
 
 This plugin adds support for a new element in any plugin's `config.yaml` file called
@@ -67,46 +45,6 @@ your plugin applies the corresponding template set then a "Theme Options" menu i
 will automatically appear in their "Design" menu. They can click that menu item to 
 be taken directly to a page on which they can edit all of their theme's settings.
 
-Additionally, several keys exist to help you create a "welcome" tab for your theme 
-options. This area provides links that are useful for a user, including a link to your 
-theme's documentation and home page as well as attribution to you, the designer. 
-Additionally, you can include an email address to surface a PayPal donation button, 
-and a thumbnail of your theme applied to the users site will be automatically 
-generated. The following keys are available for your use, all pretty self-explanatory:
-
-* `author_name` - Your name. If unspecified, this falls back to the plugin's
-  `author_name` value, if specified.
-* `author_link` - The URL to your web site. If unspecified, this falls back to the 
-  plugin's `author_link` value, if specified.
-* `theme_link` - The URL to your theme. If unspecified, this falls back to the
-  plugin's `plugin_link` value, if specified.
-* `doc_link` - The URL to the documentation of your theme. If unspecified, this falls
-  back to the plugin's `doc_link` value, if specified.
-* `description` - A short description of your theme. If unspecified, this falls back 
-  to the plugin's `description` value, if specified.
-* `version` - The version number of your theme. If unspecified, this falls back to the
-  plugin's `version` value, if specified.
-* `paypal_email` - A valid email address that users can donate through PayPal to you.
-  If unspecified, this falls back to the root key `paypal_email` value.
-
-Notice that each value has a fallback value that is defined by your plugin. The real 
-benefit of this is that you can have multiple template sets in your theme. Each 
-template set may have its own `version` and `description`, but may fall back to the 
-plugin-level `doc_link` for both themes, for example. See their use in the example 
-below.
-
-Additionally, the Theme Chooser will display images to help the user select a 
-theme.
-
-* `thumbnail` - a thumbnail image of your theme, measuring 175 x 140 pixels. This 
-  image is displayed in the Theme Chooser selection grid. A plain image will be 
-  displayed if none is supplied.
-* `preview` - a larger thumbnail image of your theme, measuring 300 x 240 pixels.
-  This image is displayed in the "details" of the Theme Chooser. A plain image 
-  will be displayed if none is supplied.
-* Any option marked with the `required: 1` key:value pair will be displayed after
-  the user has selected a theme.
-  
 The `static_version` root-level element will trigger Config Assistant to copy files 
 to the `mt-static/support/plugins/[plugin key]/` folder, and the `skip\_static` 
 root-level element will let you specify files _not_ to copy.
@@ -119,15 +57,6 @@ root-level element will let you specify files _not_ to copy.
         my_awesome_theme:
             base_path: 'templates'
             label: 'My Awesome Theme'
-            author_name: 'Dan Wolfgang'
-            author_link: 'http://example.com'
-            theme_link: 'http://example.com/my_awesome_theme/'
-            doc_link: 'http://example.com/my_awesome_theme/docs/'
-            description: "This is my awesome theme! It's full of colors and nifty features and so much awesome!"
-            version: '1.0'
-            paypal_email: paypal@example.com
-            thumbnail: awesome-theme-small.png
-            preview: awesome-theme-large.png
             options:
                 fieldsets:
                     homepage:

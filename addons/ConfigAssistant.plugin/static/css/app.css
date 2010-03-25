@@ -101,23 +101,13 @@ h2#page-title span.star { display: none; }
 
 /* Theme Options home tab */
 
-.theme_version {
-    color: #999;
-    font-weight: normal;
-    font-size: 12px;
-}
-
 #theme_thumb {
     float: right;
     margin: 0 0 10px 20px;
     border: 2px solid #ddd;
 }
 
-#theme_links,
-#template_links,
 #apply_theme { margin: 20px 0 15px; }
-#theme_links a,
-#template_links a,
 #apply_theme a { margin-right: 10px; }
 
 #paypal_donate_container {

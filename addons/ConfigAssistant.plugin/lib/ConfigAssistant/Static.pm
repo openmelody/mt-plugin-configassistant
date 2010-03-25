@@ -113,8 +113,6 @@ sub _build_file_hash {
     return $dirth;
 }
 
-
-
 sub _traverse_hash {
     my $dir_hash = shift;
     my $plugin   = shift;

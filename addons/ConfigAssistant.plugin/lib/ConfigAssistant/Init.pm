@@ -283,6 +283,28 @@ sub load_tags {
     return $tags;
 }
 
+sub update_menus {
+    # Now just add the Theme Options menu item to the top of the Design menu.
+    return {
+        'design:theme_options' => {
+            label      => 'Theme Options',
+            order      => '10',
+            mode       => 'theme_options',
+            view       => 'blog',
+            permission => 'edit_templates',
+            condition  => sub {
+                my $blog = MT->instance->blog;
+                return 0 if !$blog;
+                my $ts = MT->instance->blog->template_set;
+                return 0 if !$ts;
+                my $app = MT::App->instance;
+                return 1 if $app->registry('template_sets')->{$ts}->{options};
+                return 0;
+            },
+        }
+    };
+}
+
 sub runner {
     my $method = shift;
     my $class  = shift;

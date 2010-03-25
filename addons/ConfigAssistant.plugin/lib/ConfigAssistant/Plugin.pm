@@ -21,9 +21,20 @@ sub theme_options {
     my $ts        = $blog->template_set;
     my $plugin    = find_theme_plugin($ts);
     my $cfg       = $app->registry('template_sets')->{$ts}->{options};
-    # If there are no Theme Options, redirect to the Theme Dashboard
+    # If there are no Theme Options in the selected blog, we need to redirect
+    # the user. (They could have gotten here by jumping from a blog with Theme
+    # Options to a blog without Theme Options.)
     if (!$cfg) {
-        my $redirect = $app->mt_uri.'?__mode=theme_dashboard&blog_id='.$blog->id;
+        # If the Theme Manager plugin is installed, redirect to the Theme
+        # Dashboard. Otherwise, just redirect to the Blog Dashboard.
+        my $redirect;
+        my $plugin_tm = MT->component('ThemeManager');
+        if ( $plugin_tm ) {
+            $redirect = $app->mt_uri.'?__mode=theme_dashboard&blog_id='.$blog->id;
+        }
+        else {
+            $redirect = $app->mt_uri.'?__mode=dashboard&blog_id='.$blog->id;
+        }
         return $app->redirect($redirect);
     }
     my $types     = $app->registry('config_types');
