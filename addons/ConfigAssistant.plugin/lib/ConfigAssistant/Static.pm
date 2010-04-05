@@ -11,30 +11,39 @@ sub manual_run {
     # haven't correctly set permissions on the support folder.
     my $app = shift;
     my (@messages, $message);
-    
-    # We need to look at all plugins and decide if they have registry
-    # entries, and therefore static entries.
-    for my $sig ( keys %MT::Plugins ) {
-        my $plugin   = $MT::Plugins{$sig}{object};
-        my $registry = $plugin->{registry};
 
-        # Do *not* check static versions, because we want the static copy
-        # to run for all plugins.
-        if ($registry->{'static_version'}) {
-            push @messages, 'Copying static files for <strong>'.$plugin->name.'</strong>...';
-            # Build a hash of the directory structure within the static folder.
-            my $static_dir = {};
-            $static_dir->{'static'} = File::Spec->catfile($plugin->path, 'static');
-            my $dir_hash = _build_file_hash($static_dir->{'static'});
+    # Static File Path must be set in order to copy files.
+    if ( $app->config('StaticFilePath') ) {
+        # We need to look at all plugins and decide if they have registry
+        # entries, and therefore static entries.
+        for my $sig ( keys %MT::Plugins ) {
+            my $plugin   = $MT::Plugins{$sig}{object};
+            my $registry = $plugin->{registry};
 
-            my $skip = $registry->{'skip_static'};
-            my @skip_files;
-            foreach my $item (@$skip) {
-                push @skip_files, $item;
+            # Do *not* check static versions, because we want the static copy
+            # to run for all plugins.
+            if ($registry->{'static_version'}) {
+                push @messages, 'Copying static files for <strong>'.$plugin->name.'</strong>...';
+                # Build a hash of the directory structure within the static folder.
+                my $static_dir = {};
+                $static_dir->{'static'} = File::Spec->catfile($plugin->path, 'static');
+                my $dir_hash = _build_file_hash($static_dir->{'static'});
+
+                my $skip = $registry->{'skip_static'};
+                my @skip_files;
+                foreach my $item (@$skip) {
+                    push @skip_files, $item;
+                }
+                push @messages, _traverse_hash($dir_hash, $plugin, '', @skip_files);
             }
-            push @messages, _traverse_hash($dir_hash, $plugin, '', @skip_files);
         }
     }
+    else {
+        # Static File Path wasn't set--warn the user.
+        push @messages, 'The <code>StaticFilePath</code> Configuration '
+                        .'Directive must be set for static file copy to run.';
+    }
+    
     my $message = join('<br />', @messages);
     
     $app->build_page('copy_static_files.mtml', { status => $message, });
@@ -43,57 +52,65 @@ sub manual_run {
 sub upgrade {
     my $self = shift;
     my $app  = MT->instance;
+    
+    # Static File Path must be set in order to copy files.
+    if ( $app->config('StaticFilePath') ) {
+        use MT::ConfigMgr;
+        my $cfg = MT::ConfigMgr->instance;
 
-    use MT::ConfigMgr;
-    my $cfg = MT::ConfigMgr->instance;
+        # We need to look at all plugins and decide if they have registry
+        # entries, and therefore static entries.
+        for my $sig ( keys %MT::Plugins ) {
+            my $plugin   = $MT::Plugins{$sig}{object};
+            my $registry = $plugin->{registry};
 
-    # We need to look at all plugins and decide if they have registry
-    # entries, and therefore static entries.
-    for my $sig ( keys %MT::Plugins ) {
-        my $plugin   = $MT::Plugins{$sig}{object};
-        my $registry = $plugin->{registry};
-
-        # Grab the plugin's static_version, and check if it's newer than the
-        # version currently installed. If it is, then we want to install
-        # the static files.
-        my $static_version = $registry->{'static_version'} || '0';
-        # The saved version
-        my $ver = MT->config('PluginStaticVersion');
-        # Check to see if $plugin->id is valid. If it's not, we need to undef 
-        # $ver so that we don't try to grab the static_version variable.
-        # $plugin->id seems to throw an error for some Six Apart-originated
-        # plugins. I don't know why.
-        my $plugin_id = eval {$plugin->id} ? $plugin->id : undef $ver;
-        my $saved_version = $ver->{$plugin_id} if $ver;
+            # Grab the plugin's static_version, and check if it's newer than the
+            # version currently installed. If it is, then we want to install
+            # the static files.
+            my $static_version = $registry->{'static_version'} || '0';
+            # The saved version
+            my $ver = MT->config('PluginStaticVersion');
+            # Check to see if $plugin->id is valid. If it's not, we need to undef 
+            # $ver so that we don't try to grab the static_version variable.
+            # $plugin->id seems to throw an error for some Six Apart-originated
+            # plugins. I don't know why.
+            my $plugin_id = eval {$plugin->id} ? $plugin->id : undef $ver;
+            my $saved_version = $ver->{$plugin_id} if $ver;
         
-        if ($static_version > $saved_version) {
-            $self->progress('Copying static files for <strong>'.$plugin->name.'</strong> to mt-static/support/plugins/...');
+            if ($static_version > $saved_version) {
+                $self->progress('Copying static files for <strong>'.$plugin->name.'</strong> to mt-static/support/plugins/...');
 
-            # Create the plugin's directory.
-            my $message = _make_dir($plugin->key);
-            $self->progress($message);
+                # Create the plugin's directory.
+                my $message = _make_dir($plugin->key);
+                $self->progress($message);
 
-            # Build a hash of the directory structure within the static folder.
-            my $static_dir = {};
-            $static_dir->{'static'} = File::Spec->catfile($plugin->path, 'static');
-            my $dir_hash = _build_file_hash($static_dir->{'static'});
+                # Build a hash of the directory structure within the static folder.
+                my $static_dir = {};
+                $static_dir->{'static'} = File::Spec->catfile($plugin->path, 'static');
+                my $dir_hash = _build_file_hash($static_dir->{'static'});
 
-            my $skip = $registry->{'skip_static'};
-            my @skip_files;
-            foreach my $item (@$skip) {
-                push @skip_files, $item;
+                my $skip = $registry->{'skip_static'};
+                my @skip_files;
+                foreach my $item (@$skip) {
+                    push @skip_files, $item;
+                }
+
+                # Process all of the files found in the static folder.
+                my @messages = _traverse_hash($dir_hash, $plugin, '', @$skip);
+                $message = join('<br />', @messages);
+                $self->progress($message);
+
+                # Update mt_config with the new static_version.
+                my $plugin_id = $plugin->id;
+                $cfg->set('PluginStaticVersion', $plugin_id.'='.$static_version, 1);
+                $self->progress($self->translate_escape("Plugin '[_1]' upgraded successfully to version [_2] (static version [_3]).", $plugin->label, $plugin->version || '-', $static_version));
             }
-
-            # Process all of the files found in the static folder.
-            my @messages = _traverse_hash($dir_hash, $plugin, '', @$skip);
-            $message = join('<br />', @messages);
-            $self->progress($message);
-
-            # Update mt_config with the new static_version.
-            my $plugin_id = $plugin->id;
-            $cfg->set('PluginStaticVersion', $plugin_id.'='.$static_version, 1);
-            $self->progress($self->translate_escape("Plugin '[_1]' upgraded successfully to version [_2] (static version [_3]).", $plugin->label, $plugin->version || '-', $static_version));
         }
+    }
+    else {
+        # Static File Path wasn't set--warn the user.
+        $self->progress( 'The <code>StaticFilePath</code> Configuration '
+                        .'Directive must be set for static file copy to run.' );
     }
     # Always return true so that the upgrade can continue.
     1;
