@@ -3,6 +3,7 @@ package ConfigAssistant::Init;
 use strict;
 use ConfigAssistant::Util qw( find_theme_plugin find_option_plugin );
 use File::Spec;
+use Sub::Install;
 
 sub plugin {
     return MT->component('ConfigAssistant');
@@ -12,6 +13,7 @@ sub init_app {
     my $plugin = shift;
     my ($app) = @_;
     return if $app->id eq 'wizard';
+
     init_options($app);
     my $r = $plugin->registry;
     $r->{tags} = sub { load_tags( $app, $plugin ) };
@@ -25,11 +27,20 @@ sub init_app {
         # runs it sees it and will run the upgrade_function.
         # If this isn't the upgrade screen, just quit.
         my $cfg = MT->config('PluginSchemaVersion');
-        if ( $cfg->{$plugin->id} == '' ) {
+        if ( $cfg->{$plugin->id} eq '' ) {
             # There is no schema version set. Set one!
             $cfg->{$plugin->id} = '0.1';
         }
     }
+
+    require Sub::Install;
+    # TODO - This should not have to reinstall a subroutine. It should invoke 
+    #        a callback.
+    Sub::Install::reinstall_sub( {
+        code => \&needs_upgrade,
+        into => 'MT::Component',
+        as   => 'needs_upgrade'
+    });
 }
 
 sub init_options {
@@ -257,7 +268,8 @@ sub load_tags {
         # Create plugin-specific tags to the static content
         if ( $r->{'static_version'} ) {
             # Create the plugin-specific static file path tag, such as "ConfigAssistantStaticFilePath."
-            my $tag = $obj->key . 'StaticFilePath';
+            my $tag;
+            $tag = $obj->key . 'StaticFilePath';
             my $dir = $obj->path;
             $tags->{function}->{$tag} = sub {
                 $_[0]->stash( 'field',     $tag      );
@@ -266,7 +278,7 @@ sub load_tags {
                 $_[0]->stash( 'default',   $dir      );
             };
             # Create the plugin-specific static web path tag, such as "ConfigAssistantStaticWebPath."
-            my $tag = $obj->key . 'StaticWebPath';
+            $tag = $obj->key . 'StaticWebPath';
             my $url = $app->config('StaticWebPath').'/support/plugins/'.$obj->key.'/';
             $tags->{function}->{$tag} = sub {
                 $_[0]->stash( 'field',     $tag      );
@@ -316,7 +328,7 @@ sub runner {
     die $plugin->translate( "Failed to find [_1]::[_2]", $class, $method );
 }
 
-sub MT::Component::needs_upgrade {
+sub needs_upgrade {
     # We need to override MT::Component::needs_upgrade because that only 
     # checks for schema_version, because now we also want to check for 
     # static_version.
