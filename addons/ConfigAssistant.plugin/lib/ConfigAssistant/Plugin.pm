@@ -7,7 +7,6 @@ use MT::Util
   qw( relative_date offset_time offset_time_list epoch2ts ts2epoch format_ts encode_html dirify );
 use ConfigAssistant::Util
   qw( find_theme_plugin find_template_def find_option_def find_option_plugin process_file_upload );
-
 # use MT::Log::Log4perl qw( l4mtdump ); use Log::Log4perl qw( :resurrect );
 our $logger;
 
@@ -22,11 +21,27 @@ sub theme_options {
     my $ts        = $blog->template_set;
     my $plugin    = find_theme_plugin($ts);
     my $cfg       = $app->registry('template_sets')->{$ts}->{options};
+    # If there are no Theme Options in the selected blog, we need to redirect
+    # the user. (They could have gotten here by jumping from a blog with Theme
+    # Options to a blog without Theme Options.)
+    if (!$cfg) {
+        # If the Theme Manager plugin is installed, redirect to the Theme
+        # Dashboard. Otherwise, just redirect to the Blog Dashboard.
+        my $redirect;
+        my $plugin_tm = MT->component('ThemeManager');
+        if ( $plugin_tm ) {
+            $redirect = $app->mt_uri.'?__mode=theme_dashboard&blog_id='.$blog->id;
+        }
+        else {
+            $redirect = $app->mt_uri.'?__mode=dashboard&blog_id='.$blog->id;
+        }
+        return $app->redirect($redirect);
+    }
     my $types     = $app->registry('config_types');
     my $fieldsets = $cfg->{fieldsets};
     my $scope     = 'blog:' . $app->blog->id;
 
-    my $cfg_obj = $plugin->get_config_hash($scope);
+    my $cfg_obj = eval {$plugin->get_config_hash($scope)};
 
     require MT::Template::Context;
     my $ctx = MT::Template::Context->new();
@@ -37,6 +52,7 @@ sub theme_options {
 
     # this is a localized stash for field HTML
     my $fields;
+    my @missing_required;
 
     foreach my $optname (
         sort {
@@ -61,11 +77,21 @@ sub theme_options {
             my $show_label =
               defined $field->{show_label} ? $field->{show_label} : 1;
             my $label = $field->{label} ne '' ? &{$field->{label}} : '';
+            my $required = $field->{required} ? 'required' : '';
+            if ($required) {
+                if (!$value) {
+                    # There is no value for this field, and it's a required
+                    # field, so we need to tell the user to fix it!
+                    push @missing_required, { label => $label };
+                }
+                # Append the required flag.
+                $label .= ' <span class="required-flag">*</span>';
+            }
             $out .=
                 '  <div id="field-'
               . $field_id
               . '" class="field field-left-label pkg field-type-'
-              . $field->{type} . '">' . "\n";
+              . $field->{type} . ' ' . $required . '">' . "\n";
             $out .= "    <div class=\"field-header\">\n";
             $out .=
                 "      <label for=\"$field_id\">"
@@ -144,13 +170,16 @@ sub theme_options {
             value => $cfg_obj->{$field_id},
           };
     }
+    
+    
     $param->{html}       = $html;
     $param->{fieldsets}  = \@loop;
     $param->{leftovers}  = \@leftovers;
     $param->{blog_id}    = $blog->id;
     $param->{plugin_sig} = $plugin->{plugin_sig};
     $param->{saved}      = $q->param('saved');
-    return $app->load_tmpl( 'theme_options.tmpl', $param );
+    $param->{missing_required} = \@missing_required;
+    return $app->load_tmpl( 'theme_options.mtml', $param );
 }
 
 # Code for this method taken from MT::CMS::Plugin
@@ -792,7 +821,7 @@ sub plugin_options {
     $param->{plugin_sig}  = $plugin->{plugin_sig};
 
     return MT->component('ConfigAssistant')
-      ->load_tmpl( 'plugin_options.tmpl', $param );
+      ->load_tmpl( 'plugin_options.mtml', $param );
 }
 
 sub entry_search_api_prep {
@@ -932,9 +961,9 @@ END_TMPL
 
     my $slug2 = <<END_TMPL;
 <mt:setvarblock name="html_head" append="1">
-  <link rel="stylesheet" href="<mt:StaticWebPath>plugins/ConfigAssistant/app.css" type="text/css" />
+  <link rel="stylesheet" href="<mt:ConfigAssistantStaticWebPath>css/app.css" type="text/css" />
   <script src="<mt:StaticWebPath>jquery/jquery.js" type="text/javascript"></script>
-  <script src="<mt:StaticWebPath>plugins/ConfigAssistant/app.js" type="text/javascript"></script>
+  <script src="<mt:ConfigAssistantStaticWebPath>js/app.js" type="text/javascript"></script>
 </mt:setvarblock>
 END_TMPL
 

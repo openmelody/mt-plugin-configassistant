@@ -1,0 +1,8 @@
+<mtapp:setting
+    id="button"
+    label="Re-run Static Copy"
+    show_hint="0">
+    <p>Config Assistant will normally run during the upgrade process of any plugin to copy any static files. However, you can re-run Config Assistant's Static Copy by clicking this link: <a href="javascript:void(0)" onclick="return openDialog(false, 'run_static_copy')">Copy static files</a>.</p>
+    <p>By clicking the link, Config Assistant will attempt to copy any static files to the correct location in the <code>mt-static/support/plugins/</code> folder. This could be a lengthy process, and feedback isn't given until the process is complete.</p>
+    <p>Note that the most likely reason for needing to re-run Config Assistant's Static Copy through this link is that the <code>mt-static/support/</code> folder doesn't have adequate permissions. You'll need to give the <code>mt-static/support/</code> folder permissions that will allow the web server write access to it.</p>
+</mtapp:setting>

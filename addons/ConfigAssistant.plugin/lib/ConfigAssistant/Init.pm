@@ -2,6 +2,7 @@ package ConfigAssistant::Init;
 
 use strict;
 use ConfigAssistant::Util qw( find_theme_plugin find_option_plugin );
+use File::Spec;
 
 sub plugin {
     return MT->component('ConfigAssistant');
@@ -14,16 +15,33 @@ sub init_app {
     init_options($app);
     my $r = $plugin->registry;
     $r->{tags} = sub { load_tags( $app, $plugin ) };
+    
+    # Static files only get copied during an upgrade.
+    if ($app->id eq 'upgrade') {
+        # Because no schema version is set, the upgrade process doesn't run
+        # during the plugin's initial install. But, we need it to so that
+        # static files will get copied. Check if PluginschemaVersion has been
+        # set for Config Assistant. If not, set it. That way, when the upgrade
+        # runs it sees it and will run the upgrade_function.
+        # If this isn't the upgrade screen, just quit.
+        my $cfg = MT->config('PluginSchemaVersion');
+        if ( $cfg->{$plugin->id} == '' ) {
+            # There is no schema version set. Set one!
+            $cfg->{$plugin->id} = '0.1';
+        }
+    }
 }
 
 sub init_options {
-
     #    my $callback = shift;
     my $app = shift;
 
     # For each plugin, convert options into settings
     my $has_blog_settings = 0;
     my $has_sys_settings  = 0;
+    
+    # For the static_version check, to determine if an upgrade is needed.
+    my @plugins;
 
     for my $sig ( keys %MT::Plugins ) {
         my $plugin = $MT::Plugins{$sig};
@@ -123,16 +141,6 @@ sub _option_exists {
     elsif ( ref $obj->{'registry'}->{'settings'} eq 'HASH' ) {
         return $obj->{'registry'}->{'settings'}->{$opt} ? 1 : 0;
     }
-    return 0;
-}
-
-sub uses_config_assistant {
-    my $blog = MT->instance->blog;
-    return 0 if !$blog;
-    my $ts = MT->instance->blog->template_set;
-    return 0 if !$ts;
-    my $app = MT::App->instance;
-    return 1 if $app->registry('template_sets')->{$ts}->{options};
     return 0;
 }
 
@@ -245,12 +253,56 @@ sub load_tags {
                 };
             }
         }
+        
+        # Create plugin-specific tags to the static content
+        if ( $r->{'static_version'} ) {
+            # Create the plugin-specific static file path tag, such as "ConfigAssistantStaticFilePath."
+            my $tag = $obj->key . 'StaticFilePath';
+            my $dir = $obj->path;
+            $tags->{function}->{$tag} = sub {
+                $_[0]->stash( 'field',     $tag      );
+                $_[0]->stash( 'plugin_ns', $obj->key );
+                $_[0]->stash( 'scope',     'system'  );
+                $_[0]->stash( 'default',   $dir      );
+            };
+            # Create the plugin-specific static web path tag, such as "ConfigAssistantStaticWebPath."
+            my $tag = $obj->key . 'StaticWebPath';
+            my $url = $app->config('StaticWebPath').'/support/plugins/'.$obj->key.'/';
+            $tags->{function}->{$tag} = sub {
+                $_[0]->stash( 'field',     $tag      );
+                $_[0]->stash( 'plugin_ns', $obj->key );
+                $_[0]->stash( 'scope',     'system'  );
+                $_[0]->stash( 'default',   $url      );
+            };
+        }
     }
 
     $tags->{function}{'PluginConfigForm'} =
       '$ConfigAssistant::ConfigAssistant::Plugin::tag_config_form';
 
     return $tags;
+}
+
+sub update_menus {
+    # Now just add the Theme Options menu item to the top of the Design menu.
+    return {
+        'design:theme_options' => {
+            label      => 'Theme Options',
+            order      => '10',
+            mode       => 'theme_options',
+            view       => 'blog',
+            permission => 'edit_templates',
+            condition  => sub {
+                my $blog = MT->instance->blog;
+                return 0 if !$blog;
+                my $ts = MT->instance->blog->template_set;
+                return 0 if !$ts;
+                my $app = MT::App->instance;
+                return 1 if $app->registry('template_sets')->{$ts}->{options};
+                return 0;
+            },
+        }
+    };
 }
 
 sub runner {
@@ -262,6 +314,36 @@ sub runner {
     my $plugin     = MT->component("ConfigAssistant");
     return $method_ref->( $plugin, @_ ) if $method_ref;
     die $plugin->translate( "Failed to find [_1]::[_2]", $class, $method );
+}
+
+sub MT::Component::needs_upgrade {
+    # We need to override MT::Component::needs_upgrade because that only 
+    # checks for schema_version, because now we also want to check for 
+    # static_version.
+    my $c  = shift;
+    if ($c->schema_version) {
+        my $sv = $c->schema_version;
+        # Don't return 0 here, because we also need to check static_version.
+        #return 0 unless defined $sv;
+        my $key     = 'PluginSchemaVersion';
+        my $id      = $c->id;
+        my $ver     = MT->config($key);
+        my $cfg_ver = $ver->{$id} if $ver;
+        if ( ( !defined $cfg_ver ) || ( $cfg_ver < $sv ) ) {
+            return 1;
+        }
+    }
+    if ( $c->{'registry'}->{'static_version'} ) {
+        my $sv = $c->{'registry'}->{'static_version'};
+        my $key     = 'PluginStaticVersion';
+        my $id      = $c->id;
+        my $ver     = MT->config($key);
+        my $cfg_ver = $ver->{$id} if $ver;
+        if ( ( !defined $cfg_ver ) || ( $cfg_ver < $sv ) ) {
+            return 1;
+        }
+    }
+    0;
 }
 
 1;

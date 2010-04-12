@@ -1,7 +1,12 @@
-This plugin is allows theme and plugin developers to easily surface a form 
-within Movable Type for configuring their theme/plugin. In addition, it allows
-theme and plugin developers to define template tags by which they can access
-the values entered in by their users directly within their templates.
+The Config Assistant plugin does many things:
+
+* It allows theme and plugin developers to easily surface a form within 
+  Movable Type for configuring their theme/plugin.
+* It allows theme and plugin developers to define template tags by which they
+  can access the values entered in by their users directly within their
+  templates.
+* It helps users install a theme or plugin by copying static files into the
+  `mt-static` folder, simplifying installation.
 
 All this **without having to know perl or how to program at all**!
 
@@ -9,9 +14,15 @@ This plugin works by allowing a developer to use their plugin's configuration
 file as a means for defining what the various settings and form elements they
 would like to expose to a user.
 
-If Config Assistant is being used within the context of a theme, then users of 
-your theme will automatically have a "Theme Options" menu item added to their 
-design menu so they can easily access the settings you define.
+Config Assistant will also automatically add a "Theme Options" menu item to the 
+user's Design menu so they can easily access the settings you define.
+
+Config Assistant can also work with "static" content to make deploying your plugin 
+or theme easier. (If you've installed many plugins, you know that you must often 
+copy content to `[MT Home]/plugins/` and `[MT Home]/mt-static/plugins/` -- Config 
+Assistant can help simplify this!) In addition to copying static files to their 
+`mt-static` home, plugin-specific template tags are created for the plugin's static 
+file path and static web path location.
 
 The sample config file below should give you a quick understanding of how you
 can begin using this plugin today.
@@ -34,10 +45,18 @@ your plugin applies the corresponding template set then a "Theme Options" menu i
 will automatically appear in their "Design" menu. They can click that menu item to 
 be taken directly to a page on which they can edit all of their theme's settings.
 
+The `static_version` root-level element will trigger Config Assistant to copy files 
+to the `mt-static/support/plugins/[plugin key]/` folder, and the `skip\_static` 
+root-level element will let you specify files _not_ to copy.
+
     id: MyPluginID
     name: My Plugin
+    version: 1.0
+    static_version: 1
     template_sets:
         my_awesome_theme:
+            base_path: 'templates'
+            label: 'My Awesome Theme'
             options:
                 fieldsets:
                     homepage:
@@ -63,15 +82,26 @@ be taken directly to a page on which they can edit all of their theme's settings
                     fieldset: homepage
                     condition: > 
                       sub { return 1; }
+                    required: 1
+    skip_static:
+        - index.html
+        - readme.txt
+        - .psd
+        - .zip
+
+
 
 ## Using Config Assistant for Plugin Settings
 
 To use Config Assistant as the rendering and enablement platform for plugin
 settings, use the same `options` struct you would for theme options, but use
-it as a root level element. For example:
+it as a root level element. The `static` element is also valid here. For example:
 
     id: MyPluginID
     name: My Plugin
+    version: 1.0
+    schema_version: 1
+    static_version: 1
     options:
       fieldsets:
         homepage:
@@ -84,6 +114,11 @@ it as a root level element. For example:
         hint: "This is the name of your Feedburner feed."
         tag: 'MyPluginFeedburnerID'
         fieldset: feed
+    skip_static:
+        - index.html
+        - readme.txt
+        - .psd
+        - .zip
 
 Using this method for plugin options completely obviates the need for developers 
 to specify the following elements in their plugin's config.yaml files:
@@ -114,6 +149,8 @@ Each field definition supports the following properties:
 * `scope` - (for plugin settings only, all theme options are required to be
   blog specific) determines whether the config option will be rendered at the blog
   level or system level.
+* `required` - can be set to `1` to indicate a field as required, necessitating a
+  value.
 
 ### Supported Field Types
 
@@ -129,7 +166,9 @@ field:
   defined by specifying a sibling element called `values` which should contain 
   a comma delimitted list of values to present in the pull down menu
 
-* `checkbox` - Produces a single checkbox, ideal for boolean values.
+* `checkbox` - Produces a single checkbox, ideal for boolean values. You probably
+  do _not_ ever want to mark this field as `required`, because that would really
+  mean "it must always be checked, or true."
 
 * `blogs` - Produces a pull down menu listing every blog in the system.
   *Warning: this is not advisable for large installations as it can dramatically
@@ -172,12 +211,12 @@ Allowable file format tokens:
 
 Example:
 
-   my_keyfile:
-     type: file
-     label: 'My Private Key'
-     hint: 'A private key used for signing PayPal buttons.'
-     tag: 'PrivatePayPalKey'
-     destination: my_theme/%{10}e
+    my_keyfile:
+        type: file
+        label: 'My Private Key'
+        hint: 'A private key used for signing PayPal buttons.'
+        tag: 'PrivatePayPalKey'
+        destination: my_theme/%{10}e
 
 **Example Radio Image**
 
@@ -186,7 +225,7 @@ The list of radio button is a comma-limitted list of image/value pairs (delimitt
 by a colon). Got that? The images you reference are all relative to Movable Type's
 mt-static directory. Confused? I think a sample will make it perfectly clear:
 
-      homepage_layout:
+    homepage_layout:
         type: radio-image
         label: 'Homepage Layout'
         hint: 'The layout for the homepage of your blog.'
@@ -258,6 +297,75 @@ options:
       Feedburner is disabled!
     </mt:IfFeedburner>
 
+## Deploying Static Content
+
+### Preparing the Static Content
+
+If you've installed many plugins, you know that you must often copy content 
+to `[MT Home]/plugins/` and `[MT Home]/mt-static/plugins/`. For new users 
+this can be a confusing task, and for experienced users it's one more 
+annoying step that has to be done. But no more! Config Assistant can be used 
+to help your plugin or theme copy static content to its permanent home in the 
+`mt-static/` folder!
+
+Within your plugin, use the `static_version` root-level key to cause Config 
+Assistant to work with your static content. This key should be an integer, and 
+should be incremented when you've changed your static content and want it to 
+be re-copied.
+
+If you want to exclude some of your static content from the copy process, 
+you can specify this with the `skip_static` root-level key, as in the 
+examples.
+
+    skip_static:
+        - index.html
+        - readme.txt
+        - .psd
+        - .zip
+
+`skip_static` builds an array of items to be excluded, which is signified 
+with a leading dash and space. Files can be a partial match, so specifying an 
+extension (such as `.psd`) will cause all files with `.psd` to _not_ be copied.
+`skip_static` is not a required key.
+
+On the filesystem side, you will want to create your folder and file structure 
+inside of a `static` folder in your plugin envelope. Any files inside of this 
+static folder (except those items matching `skip_static`) will be copied 
+during installation.
+
+### Installing the Static Content
+
+When installing your new plugin or theme, the `static_version` will trigger 
+Movable Type or Melody to run an upgrade. During the upgrade, Config 
+Assistant will copy static content to the `mt-static/support/plugins/` 
+folder, and will create a folder for its contents. (For example, after 
+installing Config Assistant, its static files can be found in 
+`mt-static/support/plugins/ConfigAssistant/`.)
+
+Note that the `mt-static/support/` folder must have adequate permissions to 
+be writable by the web server; Movable Type and Melody will warn you if it 
+does not. Also note that this path is different from where you often install 
+static content, in `mt-static/plugins/`.
+
+### Plugin-Specific Static Template Tags
+
+Two template tags are created for your plugin or theme, to help you type less 
+and keep code clean: `[Plugin ID]StaticFilePath` and 
+`[Plugin ID]StaticWebPath`. For example, Config Assistant makes available 
+`ConfigAssistantStaticFilePath` and `ConfigAssistantStaticWebPath`.
+
+These tags will output the file path and the URL to a plugin's static content, 
+based on the `StaticFilePath` and `StaticWebPath` configuration directives. 
+These tags are really just shortcuts. You could use either of the following to 
+publish a link to the image `photo.jpg` in your theme, for example:
+
+    <mt:StaticWebPath>support/plugins/MyPlugin/images/photo.jpg
+    <mt:MyPluginStaticWebPath>images/photo.jpg
+
+both of which would output
+
+    http://example.com/mt/mt-static/support/plugins/MyPlugin/images/photo.jpg
+
 ## Callbacks
 
 Config Assistant supports a number of callbacks to give developers the ability
@@ -315,6 +423,11 @@ When the callback is invoked, it will be invoked with the following input parame
 
 # Sample config.yaml
 
+    id: MyPluginID
+    name: My Plugin
+    version: 1.0
+    schema_version: 1
+    static_version: 1
     blog_config_template: '<mt:PluginConfigForm id="MyPluginID">'
     plugin_config:
         MyPluginID:
@@ -326,6 +439,11 @@ When the callback is invoked, it will be invoked with the following input parame
                     label: "Feedburner ID"
                     hint: "This is the name of your Feedburner feed."
                     tag: 'MyPluginFeedburnerID'
+    skip_static:
+        - index.html
+        - readme.txt
+        - .psd
+        - .zip
 
 # Support
 

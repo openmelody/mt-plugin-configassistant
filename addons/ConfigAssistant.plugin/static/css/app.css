@@ -3,6 +3,7 @@
 
 .fieldset-options { display: none; }
 #fieldsets h3 { display: none; }
+#fieldsets #about-tab-content h3 { display: block; margin-top: 0; }
 h2#page-title span.star { display: none; }
 #content-nav ul li.changed b { font-style: italic; }
 #content-nav ul li.changed span { display: inline; }
@@ -94,4 +95,127 @@ h2#page-title span.star { display: none; }
 #list-entries-dialog .listing-filter select {
   margin-left: 180px;
   font-size: 13px;
+}
+
+.field-header .required-flag { color: #c20000; }
+
+/* Theme Options home tab */
+
+#theme_thumb {
+    float: right;
+    margin: 0 0 10px 20px;
+    border: 2px solid #ddd;
+}
+
+#apply_theme { margin: 20px 0 15px; }
+#apply_theme a { margin-right: 10px; }
+
+#paypal_donate_container {
+    float: right;
+    margin: 0 0 0 20px;
+    width: 74px;
+    height: 25px;
+}
+
+
+
+#message-confirmation { font-weight: bold; }
+
+
+/* Theme Chooser */
+
+#status {
+    display: none;
+    position: absolute;
+    top: 110px;
+    left: 160px;
+}
+
+#status-inner {
+    background: url(../images/status-bg.png);
+    width: 250px;
+    height: 100px;
+    padding: 50px 20px;
+    text-align: center;
+    top: 100px;
+    left: 205px;
+}
+
+#status-inner p { margin-bottom: 15px; }
+
+/* Select a Theme */
+
+.theme-gallery-container {
+    position: relative;
+}
+
+.theme-gallery-container-inner  {
+    height:330px;
+/*    overflow:auto; */
+}
+
+.ts-container {
+    float: left;
+    margin: 0 40px 15px 0;
+}
+
+.ts-container-inner {
+    width: 175px;
+    height: 150px;
+    overflow: hidden;
+    padding: 3px 0px 0px;
+}
+
+.radio-button {
+    float: left;
+    margin: 3px 5px 0 0;
+}
+
+.ts-container.last {
+    margin: 0;
+    clear: right;
+}
+
+.ts-details {
+    display: none;
+    position: absolute;
+    width: 590px;
+    height: 336px;
+    top: 0;
+    left: 0;
+    background: #fff;
+    padding: 10px;
+}
+
+.ts-details img.close {
+    cursor: pointer;
+    float: right;
+    margin: 0;
+}
+
+.ts-details img.preview {
+    float: left;
+    margin: 0 20px 0 0;
+    border: 3px solid #e8eff5;
+}
+
+.ts-details h2 { margin-top: 0; }
+
+.ts-details ul {
+    margin-left : 340px;
+    list-style-type: disc;
+}
+
+
+/* Setup Theme */
+
+.dialog .fieldset-options { display: block; }
+
+#setup-required-fields {
+    height: 318px;
+    overflow: auto;
+}
+
+.dialog .field-left-label {
+    width: 580px;
 }

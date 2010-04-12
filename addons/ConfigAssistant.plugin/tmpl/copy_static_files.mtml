@@ -1,0 +1,28 @@
+<mt:setvarblock name="html_head" append="1">
+</mt:setvarblock>
+
+<mt:setvarblock name="page_title">Copying Static Files</mt:setvarblock>
+
+<mt:setvar name="complete" value="1">
+
+<mt:include name="dialog/header.tmpl">
+
+<div id="box" style="overflow: auto; height: 365px; border: 1px solid #ccc; padding: 3px 3px 3px 5px;">
+    <mt:Var name="status">
+</div>
+
+<form method="post" action="<mt:var name="mt_url">" id="completed-action">
+    <input type="hidden" name="installed" value="1">
+    <div class="actions-bar">
+        <div class="actions-bar-inner pkg actions right">
+            <button
+                onclick="closeDialog(); return false"
+                type="submit"
+                class="cancel"
+                accesskey="x"
+                title="Close (x)">Close</button>
+        </div>
+    </div>
+</form>
+
+<mt:include name="dialog/footer.tmpl">

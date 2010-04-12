@@ -9,6 +9,15 @@
             <__trans phrase="You have saved your theme options.">
         </mtapp:statusmsg>
     </mt:if>
+    <mt:if name="missing_required">
+        <mt:loop name="missing_required">
+            <mtapp:statusmsg
+                id="missing-required-field"
+                class="error">
+                The field <mt:Var name="label"> is a required field but has no value. Enter a value and save changes before publishing.
+            </mtapp:statusmsg>
+        </mt:loop>
+    </mt:if>
 </mt:setvarblock>
 <mt:setvartemplate name="action_buttons">
     <button
@@ -25,17 +34,17 @@
 <mt:setvarblock name="content_nav">
 <ul>
 <mt:loop name="fieldsets">
-<li class="<$mt:var name="id"$><mt:if name="__first__"> active</mt:if>"><a href="#" title="<$mt:var name="id"$>"><b><$mt:var name="label"$> <span class="star">*</span></b></a></li>
+    <li class="<$mt:var name="id"$>-tab<mt:If name="__first__"> active</mt:If>"><a href="#" id="<$mt:var name="id"$>-tab"><b><$mt:var name="label"$> <span class="star">*</span></b></a></li>
 </mt:loop>
 </ul>
 </mt:setvarblock>
 
 <mt:setvarblock name="html_head" append="1">
-  <link rel="stylesheet" href="<$mt:StaticWebPath$>plugins/ConfigAssistant/app.css" type="text/css" />
-  <link rel="stylesheet" href="<$mt:StaticWebPath$>plugins/ConfigAssistant/colorpicker/css/colorpicker.css" type="text/css" />
+  <link rel="stylesheet" href="<$mt:ConfigAssistantStaticWebPath$>css/app.css" type="text/css" />
+  <link rel="stylesheet" href="<$mt:ConfigAssistantStaticWebPath$>colorpicker/css/colorpicker.css" type="text/css" />
   <script src="<$mt:StaticWebPath$>jquery/jquery.js" type="text/javascript"></script>
-  <script src="<$mt:StaticWebPath$>plugins/ConfigAssistant/app.js" type="text/javascript"></script>
-  <script src="<$mt:StaticWebPath$>plugins/ConfigAssistant/colorpicker/js/colorpicker.js" type="text/javascript"></script>
+  <script src="<$mt:ConfigAssistantStaticWebPath$>js/app.js" type="text/javascript"></script>
+  <script src="<$mt:ConfigAssistantStaticWebPath$>colorpicker/js/colorpicker.js" type="text/javascript"></script>
   <script type="text/javascript">
   </script>
 </mt:setvarblock>
@@ -52,7 +61,7 @@
 
 <div id="fieldsets">
 <mt:loop name="fieldsets">
-  <div id="<$mt:var name="id"$>" class="fieldset-options">
+  <div id="<$mt:var name="id"$>-tab-content" class="fieldset-options">
     <h3><$mt:var name="label"$></h3>
     <$mt:var name="content"$>
   </div>

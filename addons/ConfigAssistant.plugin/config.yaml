@@ -3,25 +3,23 @@ id: ConfigAssistant
 key: ConfigAssistant
 author_link: http://www.majordojo.com/
 author_name: Byrne Reese
-description: This plugin provides a simple YAML based framework for creating plugin configuration forms.
-version: 1.7.1
+description: This plugin provides a simple YAML based framework for creating plugin and theme configuration options.
+version: 1.8
+static_version: 1
+schema_version: 1
+
+system_config_template: system_config.mtml
 
 applications:
   cms:
-    menus: 
-      design:theme_options:
-        label: 'Theme Options'
-        order: 1000
-        mode: theme_options
-        view: blog
-        permission: edit_templates
-        condition: $ConfigAssistant::ConfigAssistant::Init::uses_config_assistant
+    menus: $ConfigAssistant::ConfigAssistant::Init::update_menus
     methods:
-      theme_options:   $ConfigAssistant::ConfigAssistant::Plugin::theme_options
-      ca_config_entry: $ConfigAssistant::ConfigAssistant::Plugin::list_entry_mini
-      ca_select_entry: $ConfigAssistant::ConfigAssistant::Plugin::select_entry
-      ca_save_config:  $ConfigAssistant::ConfigAssistant::Plugin::save_config
-    search_apis: 
+      theme_options:    $ConfigAssistant::ConfigAssistant::Plugin::theme_options
+      ca_config_entry:  $ConfigAssistant::ConfigAssistant::Plugin::list_entry_mini
+      ca_select_entry:  $ConfigAssistant::ConfigAssistant::Plugin::select_entry
+      ca_save_config:   $ConfigAssistant::ConfigAssistant::Plugin::save_config
+      run_static_copy:  $ConfigAssistant::ConfigAssistant::Static::manual_run
+    search_apis:
       entry:
         setup_terms_args: $ConfigAssistant::ConfigAssistant::Plugin::entry_search_api_prep
 
@@ -29,8 +27,11 @@ callbacks:
   MT::App::CMS::template_param.cfg_plugin: $ConfigAssistant::ConfigAssistant::Plugin::xfrm_cfg_plugin_param
   MT::App::CMS::template_source.cfg_plugin: $ConfigAssistant::ConfigAssistant::Plugin::xfrm_cfg_plugin
 
-
 init_app: $ConfigAssistant::ConfigAssistant::Init::init_app
+
+config_settings:
+  PluginStaticVersion:
+    type: 'HASH'
 
 config_types:
   text: 
@@ -55,3 +56,10 @@ config_types:
     handler: $ConfigAssistant::ConfigAssistant::Plugin::type_entry
   tagged-entry:
     handler: $ConfigAssistant::ConfigAssistant::Plugin::type_tagged_entry
+
+upgrade_functions:
+  static_copy:
+    # A version_limit is required to trigger the upgrade function. So, just
+    # use a way big one, just so I don't have to remember to update it.
+    version_limit: 999
+    handler: $ConfigAssistant::ConfigAssistant::Static::upgrade
