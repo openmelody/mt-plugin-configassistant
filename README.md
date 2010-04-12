@@ -338,6 +338,6 @@ This plugin is not necessary in Melody, as this is core component of that platfo
 Configuration Assistant Plugin for Movable Type and Melody
 Author: Byrne Reese   
 Copyright 2008 Six Apart, Ltd.   
-Copyright 2009 Byrne Reese   
+Copyright 2009-2010 Byrne Reese   
 License: Artistic, licensed under the same terms as Perl itself   
 
