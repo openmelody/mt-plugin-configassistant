@@ -8,8 +8,6 @@ version: 1.8
 static_version: 1
 schema_version: 1
 
-system_config_template: system_config.mtml
-
 applications:
   cms:
     menus: $ConfigAssistant::ConfigAssistant::Init::update_menus

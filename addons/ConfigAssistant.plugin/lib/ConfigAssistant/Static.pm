@@ -6,49 +6,6 @@ use MT;
 use MT::FileMgr;
 use File::Spec;
 
-sub manual_run {
-    # The manual run is something that the admin may need to use if they
-    # haven't correctly set permissions on the support folder.
-    my $app = shift;
-    my (@messages, $message);
-
-    # Static File Path must be set in order to copy files.
-    if ( $app->config('StaticFilePath') ) {
-        # We need to look at all plugins and decide if they have registry
-        # entries, and therefore static entries.
-        for my $sig ( keys %MT::Plugins ) {
-            my $plugin   = $MT::Plugins{$sig}{object};
-            my $registry = $plugin->{registry};
-
-            # Do *not* check static versions, because we want the static copy
-            # to run for all plugins.
-            if ($registry->{'static_version'}) {
-                push @messages, 'Copying static files for <strong>'.$plugin->name.'</strong>...';
-                # Build a hash of the directory structure within the static folder.
-                my $static_dir = {};
-                $static_dir->{'static'} = File::Spec->catfile($plugin->path, 'static');
-                my $dir_hash = _build_file_hash($static_dir->{'static'});
-
-                my $skip = $registry->{'skip_static'};
-                my @skip_files;
-                foreach my $item (@$skip) {
-                    push @skip_files, $item;
-                }
-                push @messages, _traverse_hash($dir_hash, $plugin, '', @skip_files);
-            }
-        }
-    }
-    else {
-        # Static File Path wasn't set--warn the user.
-        push @messages, 'The <code>StaticFilePath</code> Configuration '
-                        .'Directive must be set for static file copy to run.';
-    }
-    
-    my $message = join('<br />', @messages);
-    
-    $app->build_page('copy_static_files.mtml', { status => $message, });
-}
-
 sub upgrade {
     my $self = shift;
     my $app  = MT->instance;
@@ -81,8 +38,7 @@ sub upgrade {
                 $self->progress('Copying static files for <strong>'.$plugin->name.'</strong> to mt-static/support/plugins/...');
 
                 # Create the plugin's directory.
-                my $message = _make_dir($plugin->key);
-                $self->progress($message);
+                $self->progress( _make_dir($plugin->key, $self) );
 
                 # Build a hash of the directory structure within the static folder.
                 my $static_dir = {};
@@ -96,8 +52,8 @@ sub upgrade {
                 }
 
                 # Process all of the files found in the static folder.
-                my @messages = _traverse_hash($dir_hash, $plugin, '', @$skip);
-                $message = join('<br />', @messages);
+                my @messages = _traverse_hash($dir_hash, $plugin, '', $self, @$skip);
+                my $message = join('<br />', @messages);
                 $self->progress($message);
 
                 # Update mt_config with the new static_version.
@@ -109,7 +65,7 @@ sub upgrade {
     }
     else {
         # Static File Path wasn't set--warn the user.
-        $self->progress( 'The <code>StaticFilePath</code> Configuration '
+        $self->error( 'The <code>StaticFilePath</code> Configuration '
                         .'Directive must be set for static file copy to run.' );
     }
     # Always return true so that the upgrade can continue.
@@ -134,6 +90,7 @@ sub _traverse_hash {
     my $dir_hash = shift;
     my $plugin   = shift;
     my $dir      = shift;
+    my $self     = shift;
     my @skip     = @_;
     my (@messages, $message);
     my $app = MT->instance;
@@ -147,7 +104,7 @@ sub _traverse_hash {
             push @messages, $message;
             # Now investigate the next level of the registry, to see if 
             # another directory is needed, or if there are files to copy.
-            my @result = _traverse_hash($dir_hash->{$cur_item}, $plugin, $dir, @skip);
+            my @result = _traverse_hash($dir_hash->{$cur_item}, $plugin, $dir, $self, @skip);
             push @messages, @result;
         }
         else {
@@ -164,7 +121,7 @@ sub _traverse_hash {
                 my $src = File::Spec->catfile($plugin->path, 'static', $dir, $cur_item);
                 my $dest = File::Spec->catfile($app->config('StaticFilePath'), 
                             'support', 'plugins', $plugin->key, $dir, $cur_item);
-                $message = _write_file($src, $dest);
+                $message = _write_file($src, $dest, $self);
                 push @messages, $message;
             }
         }
@@ -175,6 +132,8 @@ sub _traverse_hash {
 sub _make_dir {
     # Create the required directory.
     my $dir = shift;
+    my $self = @_;
+#    my ($dir, $self) = @_;
     my $fmgr = MT::FileMgr->new('Local')
         or return MT::FileMgr->errstr;
 
@@ -185,17 +144,17 @@ sub _make_dir {
         my $app = MT->instance;
         my $static_file_path = $app->config('StaticFilePath');
         $dir =~ s!$static_file_path/support/plugins/(.*)!$1!;
-        return "Created folder $dir/.";
+        return "Created folder $dir.";
     }
     else {
-        return '<span style="color: #990000;">'.$fmgr->errstr.'</span>';
+        $self->error($fmgr->errstr);
     }
     return;
 }
 
 sub _write_file {
     # Actually copy the file from plugins/static/ to the mt-static/support/plugins/ area.
-    my ($src, $dest) = @_;
+    my ($src, $dest, $self) = @_;
     my $fmgr = MT::FileMgr->new('Local')
         or return MT::FileMgr->errstr;
 
@@ -205,7 +164,7 @@ sub _write_file {
     # Write the file to its new home, but only if some data was read.
     if ($src_data) {
         my $bytes = $fmgr->put_data($src_data, $dest)
-            or return '<span style="color: #990000;">'.$fmgr->errstr.'</span>';
+            or return $self->error($fmgr->errstr);
         # Only provide a "copied" message if the file was successfully written.
         if ($bytes) {
             my $app = MT->instance;
