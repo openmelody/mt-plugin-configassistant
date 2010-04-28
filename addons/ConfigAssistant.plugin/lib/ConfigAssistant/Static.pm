@@ -38,7 +38,7 @@ sub upgrade {
                 $self->progress('Copying static files for <strong>'.$plugin->name.'</strong> to mt-static/support/plugins/...');
 
                 # Create the plugin's directory.
-                $self->progress( _make_dir($plugin->key, $self) );
+                $self->progress( _make_dir($plugin->id, $self) );
 
                 # Build a hash of the directory structure within the static folder.
                 my $static_dir = {};
@@ -99,7 +99,7 @@ sub _traverse_hash {
         if ($subfolders ne '') {
             # Create the specified directory
             my $dir = File::Spec->catfile($dir, $cur_item);
-            my $dir_w_plugin = File::Spec->catfile($plugin->key, $dir);
+            my $dir_w_plugin = File::Spec->catfile($plugin->id, $dir);
             $message = _make_dir($dir_w_plugin);
             push @messages, $message;
             # Now investigate the next level of the registry, to see if 
@@ -120,7 +120,7 @@ sub _traverse_hash {
             if ($process_file) {
                 my $src = File::Spec->catfile($plugin->path, 'static', $dir, $cur_item);
                 my $dest = File::Spec->catfile($app->config('StaticFilePath'), 
-                            'support', 'plugins', $plugin->key, $dir, $cur_item);
+                            'support', 'plugins', $plugin->id, $dir, $cur_item);
                 $message = _write_file($src, $dest, $self);
                 push @messages, $message;
             }
