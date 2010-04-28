@@ -279,7 +279,7 @@ sub load_tags {
             };
             # Create the plugin-specific static web path tag, such as "ConfigAssistantStaticWebPath."
             $tag = $obj->id . 'StaticWebPath';
-            my $url = $app->config('StaticWebPath').'/support/plugins/'.$obj->id.'/';
+            my $url = $app->config('StaticWebPath').'support/plugins/'.$obj->id.'/';
             $tags->{function}->{$tag} = sub {
                 $_[0]->stash( 'field',     $tag     );
                 $_[0]->stash( 'plugin_ns', $obj->id );
