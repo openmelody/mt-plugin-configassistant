@@ -347,6 +347,9 @@ be writable by the web server; Movable Type and Melody will warn you if it
 does not. Also note that this path is different from where you often install 
 static content, in `mt-static/plugins/`.
 
+Developers may have reason to reinstall the static content; this can be done 
+by running `./tools/static-copy`.
+
 ### Plugin-Specific Static Template Tags
 
 Two template tags are created for your plugin or theme, to help you type less 
