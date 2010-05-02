@@ -159,11 +159,11 @@ sub _write_file {
         or return MT::FileMgr->errstr;
 
     # Grab the file specified.
-    my $src_data = $fmgr->get_data($src)
+    my $src_data = $fmgr->get_data($src, 'upload')
         or return '<span style="color: #990000;">'.$fmgr->errstr.'</span>';
     # Write the file to its new home, but only if some data was read.
     if ($src_data) {
-        my $bytes = $fmgr->put_data($src_data, $dest)
+        my $bytes = $fmgr->put_data($src_data, $dest, 'upload')
             or return $self->error($fmgr->errstr);
         # Only provide a "copied" message if the file was successfully written.
         if ($bytes) {
