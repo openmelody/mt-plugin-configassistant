@@ -10,6 +10,43 @@ use ConfigAssistant::Util
 # use MT::Log::Log4perl qw( l4mtdump ); use Log::Log4perl qw( :resurrect );
 our $logger;
 
+sub tag_plugin_static_web_path {
+    my ( $ctx, $args, $cond ) = @_;
+    my $sig = $args->{'component'};
+    my $obj    = $MT::Plugins{$sig}{object};
+    my $r = $obj->{registry};
+    if ( $r->{'static_version'} ) {
+        my $url = MT->config('StaticWebPath').'support/plugins/'.$obj->id.'/';
+        return $url;
+    } else {
+        # TODO - perhaps this should default to: mt-static/plugins/$sig?
+        return $ctx->error(
+            MT->translate(
+                "The plugin you specified in '[_1]' has not registered a static directory. Please use <mt:StaticWebPath> instead.",
+                $_[0]->stash('tag')
+            )
+        );
+    }
+}
+
+sub tag_plugin_static_file_path {
+    my ( $ctx, $args, $cond ) = @_;
+    my $sig = $args->{'component'};
+    my $obj    = $MT::Plugins{$sig}{object};
+    my $r = $obj->{registry};
+    if ( $r->{'static_version'} ) {
+        my $url = $obj->path;
+        return $url;
+    } else {
+        return $ctx->error(
+            MT->translate(
+                "The plugin you specified in '[_1]' has not registered a static directory. Please use <mt:StaticFilePath> instead.",
+                $_[0]->stash('tag')
+            )
+        );
+    }
+}
+
 sub theme_options {
     my $app     = shift;
     my ($param) = @_;

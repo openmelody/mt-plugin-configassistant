@@ -272,6 +272,7 @@ sub load_tags {
             $tag = $obj->id . 'StaticFilePath';
             my $dir = $obj->path;
             $tags->{function}->{$tag} = sub {
+                MT->log("The usage of the tag '$tag' has been deprecated. Please use mt:PluginStaticFilePath instead");
                 $_[0]->stash( 'field',     $tag     );
                 $_[0]->stash( 'plugin_ns', $obj->id );
                 $_[0]->stash( 'scope',     'system' );
@@ -281,6 +282,7 @@ sub load_tags {
             $tag = $obj->id . 'StaticWebPath';
             my $url = $app->config('StaticWebPath').'support/plugins/'.$obj->id.'/';
             $tags->{function}->{$tag} = sub {
+                MT->log("The usage of the tag '$tag' has been deprecated. Please use mt:PluginStaticWebPath instead");
                 $_[0]->stash( 'field',     $tag     );
                 $_[0]->stash( 'plugin_ns', $obj->id );
                 $_[0]->stash( 'scope',     'system' );
@@ -291,6 +293,10 @@ sub load_tags {
 
     $tags->{function}{'PluginConfigForm'} =
       '$ConfigAssistant::ConfigAssistant::Plugin::tag_config_form';
+    $tags->{function}{'PluginStaticWebPath'} =
+      '$ConfigAssistant::ConfigAssistant::Plugin::tag_plugin_static_web_path';
+    $tags->{function}{'PluginStaticFilePath'} =
+      '$ConfigAssistant::ConfigAssistant::Plugin::tag_plugin_static_file_path';
 
     return $tags;
 }
