@@ -22,8 +22,9 @@ sub tag_plugin_static_web_path {
         # TODO - perhaps this should default to: mt-static/plugins/$sig?
         return $ctx->error(
             MT->translate(
-                "The plugin you specified in '[_1]' has not registered a static directory. Please use <mt:StaticWebPath> instead.",
-                $_[0]->stash('tag')
+                "The plugin you specified '[_2]' in '[_1]' has not registered a static directory. Please use <mt:StaticWebPath> instead.",
+                $ctx->stash('tag'),
+                $sig
             )
         );
     }
@@ -35,7 +36,7 @@ sub tag_plugin_static_file_path {
     my $obj    = $MT::Plugins{$sig}{object};
     my $r = $obj->{registry};
     if ( $r->{'static_version'} ) {
-        my $url = $obj->path;
+        my $url = File::Spec->catdir( MT->config('StaticFilePath'), 'support', 'plugins', $obj->id );
         return $url;
     } else {
         return $ctx->error(
