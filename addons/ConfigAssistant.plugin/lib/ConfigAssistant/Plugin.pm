@@ -13,9 +13,8 @@ our $logger;
 sub tag_plugin_static_web_path {
     my ( $ctx, $args, $cond ) = @_;
     my $sig = $args->{'component'};
-    my $obj    = $MT::Plugins{$sig}{object};
-    my $r = $obj->{registry};
-    if ( $r->{'static_version'} ) {
+    my $obj = MT->component($sig);
+    if ( $obj->registry('static_version') ) {
         my $url = MT->config('StaticWebPath').'support/plugins/'.$obj->id.'/';
         return $url;
     } else {
@@ -33,9 +32,8 @@ sub tag_plugin_static_web_path {
 sub tag_plugin_static_file_path {
     my ( $ctx, $args, $cond ) = @_;
     my $sig = $args->{'component'};
-    my $obj    = $MT::Plugins{$sig}{object};
-    my $r = $obj->{registry};
-    if ( $r->{'static_version'} ) {
+    my $obj = MT->component($sig);
+    if ( $obj->registry('static_version') ) {
         my $url = File::Spec->catdir( MT->config('StaticFilePath'), 'support', 'plugins', $obj->id );
         return $url;
     } else {
