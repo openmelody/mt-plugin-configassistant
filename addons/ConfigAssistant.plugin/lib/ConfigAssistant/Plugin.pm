@@ -14,26 +14,33 @@ sub tag_plugin_static_web_path {
     my ( $ctx, $args, $cond ) = @_;
     my $sig = $args->{'component'};
     my $obj = MT->component($sig);
-    if ( $obj->registry('static_version') ) {
+    if ( !$obj ) {
+        return $ctx->error(
+            MT->translate("The plugin you specified '[_2]' in '[_1]' could not be found.",
+                          $ctx->stash('tag'), $sig)
+        );
+    } elsif ( $obj->registry('static_version') ) {
         my $url = MT->config('StaticWebPath').'support/plugins/'.$obj->id.'/';
         return $url;
     } else {
-        # TODO - perhaps this should default to: mt-static/plugins/$sig?
+        # TODO - perhaps this should default to: mt-static/plugins/$sig? 
         return $ctx->error(
-            MT->translate(
-                "The plugin you specified '[_2]' in '[_1]' has not registered a static directory. Please use <mt:StaticWebPath> instead.",
-                $ctx->stash('tag'),
-                $sig
-            )
+            MT->translate("The plugin you specified '[_2]' in '[_1]' has not registered a static directory. Please use <mt:StaticWebPath> instead.",
+                          $ctx->stash('tag'), $sig )
         );
-    }
+   }
 }
 
 sub tag_plugin_static_file_path {
     my ( $ctx, $args, $cond ) = @_;
     my $sig = $args->{'component'};
     my $obj = MT->component($sig);
-    if ( $obj->registry('static_version') ) {
+    if ( !$obj ) {
+        return $ctx->error(
+            MT->translate("The plugin you specified '[_2]' in '[_1]' could not be found.",
+                          $ctx->stash('tag'), $sig)
+        );
+    } elsif ( $obj->registry('static_version') ) {
         my $url = File::Spec->catdir( MT->config('StaticFilePath'), 'support', 'plugins', $obj->id );
         return $url;
     } else {
