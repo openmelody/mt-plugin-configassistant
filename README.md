@@ -194,7 +194,43 @@ field:
   asset. An additional field property is supported for file types: `destination`
   which can be used to customize the path/url of the uploaded file. See "Example
   File" below. Files uploaded are uploaded into a path relative to the
-  mt-static/support directory.
+  mt-static/support directory. Also, for each option of type file that defined,
+  an additional template tag is created for you which gives you access to the 
+  asset created for you when the file is uploaded. See "Asset Template Tags" 
+  below.
+
+**Asset Template Tags**
+
+For each option of type `file` that is defined, two template tags are defined.
+The first is the one specified by the user using the `tag` parameter associated
+with the option in the `config.yaml`. This template tag will return the Asset ID
+of the asset created for you.
+
+The second template tag is `<TAGNAME>Asset`. This template tag is a container or
+block tag that adds the uploaded asset to the current context allowing you to
+use all of the asset related template tags in conjunction with the uploaded file.
+For example, look at this `config.yaml`:
+
+    my_keyfile:
+        type: file
+        label: 'My Private Key'
+        hint: 'A private key used for signing PayPal buttons.'
+        tag: 'PrivatePayPalKey'
+        destination: my_theme/%{10}e
+
+This will create two template tags:
+
+1. `<$mt:PrivatePayPalKey$>`
+2. `<mt:PrivatePayPalKeyAsset></mt:PrivatePayPalKeyAsset>`
+
+You can use them like so:
+
+    <p>The asset ID of my key file is: <$mt:PrivatePayPalKey$></p>
+    <p>The URL to my key file is: 
+      <mt:PrivatePayPalKeyAsset>
+        <$mt:AssetURL$>
+      </mt:PrivatePayPalKeyAsset>
+    </p>
 
 **Example File**
 
@@ -450,7 +486,7 @@ When the callback is invoked, it will be invoked with the following input parame
 
 # Support
 
-http://forums.movabletype.org/codesixapartcom/project-support/
+http://help.endevver.com/
 
 # Info
 

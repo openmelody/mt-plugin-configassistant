@@ -227,6 +227,18 @@ sub load_tags {
                             runner( '_hdlr_field_value',
                                 'ConfigAssistant::Plugin', @_ );
                         };
+                        if ($option->{'type'} eq 'file') {
+                            $tags->{block}->{$tag . 'Asset'} = sub {
+                                my $blog = $_[0]->stash('blog');
+                                my $bset = $blog->template_set;
+                                $_[0]->stash( 'field', $bset . '_' . $opt );
+                                $_[0]->stash( 'plugin_ns',
+                                              find_theme_plugin($bset)->id );
+                                $_[0]->stash( 'scope', 'blog' );
+                                runner( '_hdlr_field_asset',
+                                        'ConfigAssistant::Plugin', @_ );
+                            };
+                        }
                     }
                 }
             }
@@ -262,6 +274,18 @@ sub load_tags {
                     runner( '_hdlr_field_value', 'ConfigAssistant::Plugin',
                         @_ );
                 };
+                if ($option->{'type'} eq 'file') {
+                    $tags->{block}->{$tag . 'Asset'} = sub {
+                        my $blog = $_[0]->stash('blog');
+                        my $bset = $blog->template_set;
+                        $_[0]->stash( 'field', $bset . '_' . $opt );
+                        $_[0]->stash( 'plugin_ns',
+                                      find_theme_plugin($bset)->id );
+                        $_[0]->stash( 'scope', 'blog' );
+                        runner( '_hdlr_field_asset',
+                                'ConfigAssistant::Plugin', @_ );
+                    };
+                }
             }
         }
         

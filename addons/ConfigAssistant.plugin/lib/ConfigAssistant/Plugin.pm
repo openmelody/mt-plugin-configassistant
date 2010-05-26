@@ -679,6 +679,42 @@ sub _hdlr_field_value {
     return $value;
 }
 
+sub _hdlr_field_asset {
+    my $plugin = shift;
+    my ( $ctx, $args, $cond ) = @_;
+    my $plugin_ns = $ctx->stash('plugin_ns');
+    my $scope     = $ctx->stash('scope') || 'blog';
+    my $field     = $ctx->stash('field')
+      or return _no_field($ctx);
+
+    #    MT->log("Fetching value for $field in $scope for $plugin_ns");
+
+    $plugin = MT->component($plugin_ns);    # is this necessary?
+
+    my $value;
+    my $blog = $ctx->stash('blog');
+    if ( !$blog ) {
+        my $blog_id = $ctx->var('blog_id');
+        $blog = MT->model('blog')->load($blog_id);
+    }
+    if ( $blog && $blog->id && $scope eq 'blog' ) {
+        $value = $plugin->get_config_value( $field, 'blog:' . $blog->id );
+    }
+    else {
+        $value = $plugin->get_config_value($field);
+    }
+    my $asset = MT->model('asset')->load( $value );
+    my $out;
+    if ($asset) {
+        local $ctx->{'__stash'}->{'asset'} = $asset;
+        defined( $out = $ctx->slurp( $args, $cond ) ) or return;
+        return $out;
+    } else {
+        require MT::Template::ContextHandlers;
+        return MT::Template::Context::_hdlr_pass_tokens_else(@_);
+    }
+}
+
 sub _hdlr_field_cond {
     my $plugin = shift;
     my ( $ctx, $args ) = @_;
