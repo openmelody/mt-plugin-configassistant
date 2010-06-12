@@ -4,9 +4,11 @@ use strict;
 
 use Carp qw( croak );
 use MT::Util
-  qw( relative_date offset_time offset_time_list epoch2ts ts2epoch format_ts encode_html dirify );
+  qw( relative_date offset_time offset_time_list epoch2ts ts2epoch format_ts 
+      encode_html decode_html dirify );
 use ConfigAssistant::Util
   qw( find_theme_plugin find_template_def find_option_def find_option_plugin process_file_upload );
+use JSON;
 # use MT::Log::Log4perl qw( l4mtdump ); use Log::Log4perl qw( :resurrect );
 our $logger;
 
@@ -395,12 +397,49 @@ sub type_colorpicker {
     });</script>\n";
 }
 
+sub type_link_group {
+    my $app = shift;
+    my ( $ctx, $field_id, $field, $value ) = @_;
+    my $static = $app->config->StaticWebPath;
+    $value = '"[]"' if ($value eq '');
+    eval "\$value = $value";
+
+    my $list = JSON::from_json($value);
+    my $html;
+    $html = "      <div id=\"$field_id-link-group\" class=\"link-group-container pkg\">"
+        . "<ul>";
+    foreach (@$list) {
+        $html .= '<li class="pkg"><a class="link" href="'.$_->{'url'}.'">'.$_->{'label'}.'</a> <a class="remove" href="javascript:void(0);"><img src="'.$static.'/images/icon_close.png" /></a> <a class="edit" href="javascript:void(0);">edit</a></li>';
+    }
+    $html .= "<li class=\"last\"><button class=\"add-link\">Add Link</button></li>"
+        . "</ul>"
+        . "</div>"
+        . "<input type=\"hidden\" id=\"$field_id\" name=\"$field_id\" value=\""
+        . encode_html( $value, 1 )    # The additional "1" will escape HTML entities properly
+        . "\" />\n<script type=\"text/javascript\">\n";
+    $html .= "  \$('#'+'$field_id-link-group button.add-link').click( handle_edit_click );\n";
+    $html .= "  \$('#'+'$field_id-link-group').parents('form').submit( function (){
+    var struct = Array();
+    \$(this).find('#'+'$field_id-link-group ul li a.link').each( function(i, e) {
+      var u = \$(this).attr('href');
+      var l = \$(this).html();
+      struct.push( { 'url': u, 'label': l } );
+    });
+    var json = \$.toJSON(struct);
+    \$('#'+'$field_id').val( json );
+  });
+  \$('#'+'$field_id-link-group ul li a.remove').click( handle_delete_click );
+  \$('#'+'$field_id-link-group ul li a.edit').click( handle_edit_click );
+</script>\n";
+    return $html;
+}
+
 sub type_textarea {
     my $app = shift;
     my ( $ctx, $field_id, $field, $value ) = @_;
     my $out;
     $out = "      <textarea name=\"$field_id\" class=\"full-width\" rows=\""
-      . $field->{rows} . "\" />";
+      . $field->{rows} . "\">";
     $out .= encode_html( $value, 1 )
       ;        # The additional "1" will escape HTML entities properly
     $out .= "</textarea>\n";
@@ -412,7 +451,7 @@ sub type_entry {
     my ( $ctx, $field_id, $field, $value ) = @_;
     my $out;
     my $entry      = MT->model('entry')->load($value);
-    my $entry_name = $entry ? $entry->title : '';
+    my $entry_name = ($entry ? $entry->title : '') || '';
     my $blog_id    = $field->{all_blogs} ? 0 : $app->blog->id;
     unless ( $ctx->var('entry_chooser_js') ) {
         $out .= <<EOH;
@@ -653,27 +692,9 @@ sub type_checkbox {
 sub _hdlr_field_value {
     my $plugin = shift;
     my ( $ctx, $args ) = @_;
-    my $plugin_ns = $ctx->stash('plugin_ns');
-    my $scope     = $ctx->stash('scope') || 'blog';
     my $field     = $ctx->stash('field')
       or return _no_field($ctx);
-
-    #    MT->log("Fetching value for $field in $scope for $plugin_ns");
-
-    $plugin = MT->component($plugin_ns);    # is this necessary?
-
-    my $value;
-    my $blog = $ctx->stash('blog');
-    if ( !$blog ) {
-        my $blog_id = $ctx->var('blog_id');
-        $blog = MT->model('blog')->load($blog_id);
-    }
-    if ( $blog && $blog->id && $scope eq 'blog' ) {
-        $value = $plugin->get_config_value( $field, 'blog:' . $blog->id );
-    }
-    else {
-        $value = $plugin->get_config_value($field);
-    }
+    my $value = _get_field_value( $ctx );
     return $args->{default}
       if ( $args->{default} && ( !$value || $value eq '' ) );
     return $value;
@@ -682,15 +703,27 @@ sub _hdlr_field_value {
 sub _hdlr_field_asset {
     my $plugin = shift;
     my ( $ctx, $args, $cond ) = @_;
-    my $plugin_ns = $ctx->stash('plugin_ns');
-    my $scope     = $ctx->stash('scope') || 'blog';
     my $field     = $ctx->stash('field')
       or return _no_field($ctx);
+    my $value = _get_field_value( $ctx );
+    my $asset = MT->model('asset')->load( $value );
+    my $out;
+    if ($asset) {
+        local $ctx->{'__stash'}->{'asset'} = $asset;
+        defined( $out = $ctx->slurp( $args, $cond ) ) or return;
+        return $out;
+    } else {
+        require MT::Template::ContextHandlers;
+        return MT::Template::Context::_hdlr_pass_tokens_else(@_);
+    }
+}
 
-    #    MT->log("Fetching value for $field in $scope for $plugin_ns");
-
-    $plugin = MT->component($plugin_ns);    # is this necessary?
-
+sub _get_field_value {
+    my ($ctx) = @_;
+    my $plugin_ns = $ctx->stash('plugin_ns');
+    my $scope     = $ctx->stash('scope') || 'blog';
+    my $field     = $ctx->stash('field');
+    my $plugin = MT->component($plugin_ns);    # is this necessary?
     my $value;
     my $blog = $ctx->stash('blog');
     if ( !$blog ) {
@@ -703,11 +736,29 @@ sub _hdlr_field_asset {
     else {
         $value = $plugin->get_config_value($field);
     }
-    my $asset = MT->model('asset')->load( $value );
-    my $out;
-    if ($asset) {
-        local $ctx->{'__stash'}->{'asset'} = $asset;
-        defined( $out = $ctx->slurp( $args, $cond ) ) or return;
+    return $value;
+}
+
+sub _hdlr_field_link_group {
+    my $plugin = shift;
+    my ( $ctx, $args, $cond ) = @_;
+    my $field     = $ctx->stash('field')
+      or return _no_field($ctx);
+    my $value = _get_field_value( $ctx );
+
+    eval "\$value = $value";
+    my $list = JSON::from_json($value);
+    if (@$list > 0) {
+        my $out = '';
+        my $vars = $ctx->{__stash}{vars};
+        my $count = 0;
+        foreach (@$list) {
+            local $vars->{'link_label'} = $_->{'label'};
+            local $vars->{'link_url'} = $_->{'url'};
+            local $vars->{'__first__'} = ($count++ == 0);
+            local $vars->{'__last__'} = ($count == @$list);
+            defined( $out .= $ctx->slurp( $args, $cond ) ) or return;
+        }
         return $out;
     } else {
         require MT::Template::ContextHandlers;
