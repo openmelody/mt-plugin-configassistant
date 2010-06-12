@@ -190,6 +190,11 @@ field:
 
 * `colorpicker` - Produces a color wheel pop-up for selecting a color or hex value.
 
+* `link-group` - Produces an ordered list of links manually entered by the user.
+  Options of this type will have defined for them an additional template tag
+  to make it easier to loop over the links entered by the user in your templates.
+  See "Link Group Template Tags" below.
+
 * `file` - Allows a user to upload a file, which in turn gets converted into an
   asset. An additional field property is supported for file types: `destination`
   which can be used to customize the path/url of the uploaded file. See "Example
@@ -198,6 +203,47 @@ field:
   an additional template tag is created for you which gives you access to the 
   asset created for you when the file is uploaded. See "Asset Template Tags" 
   below.
+
+**Link Group Tags**
+
+For each option of type `link-group` that is defined, two template tags are defined.
+The first is the one specified by the user using the `tag` parameter associated
+with the option in the `config.yaml`. This template tag will be useless to most users
+as it will return a JSON encoded data structure containing all the links entered by
+the user.
+
+The second template tag is the useful one. It is called `<TAGNAME>Links`. This template 
+tag is a container or block tag that loops over each of the links entered by the user.
+Inside each iteration of the loop the following template variables are defined for you:
+
+* `__first__` True only if the current link is the first one in the list.
+* `__last__` - True only if the current link is the last one in the list.
+* `link_label` - The label associated with the current link.
+* `link_url` - The URL associated with the current link.
+
+For example, look at this `config.yaml`:
+
+    my_links:
+        type: link-group
+        label: 'My Favorite Links'
+        tag: 'MyFavorites'
+
+This will create two template tags:
+
+1. `<$mt:MyFavorites$>`
+2. `<mt:MyFavoritesLinks></mt:MyFavoritesLinks>`
+
+You can use them like so:
+
+    <p>My favorite links are: 
+      <mt:MyFavoritesLinks>
+        <mt:if name="__first__"><ul></mt:if>
+        <li><a href="<$mt:var name="link_url"$>"><$mt:var name="link_label"$></a></li>
+        <mt:if name="__last__"></ul></mt:if>
+      <mt:Else>
+        I have no favorite links.
+      </mt:MyFavoritesLinks>
+    </p>
 
 **Asset Template Tags**
 
