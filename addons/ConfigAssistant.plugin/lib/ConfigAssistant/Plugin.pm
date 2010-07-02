@@ -745,8 +745,9 @@ sub _hdlr_field_link_group {
     my $field     = $ctx->stash('field')
       or return _no_field($ctx);
     my $value = _get_field_value( $ctx );
-
+    $value = '"[]"' if (!$value || $value eq '');
     eval "\$value = $value";
+    if ($@) { $value = '[]'; }
     my $list = JSON::from_json($value);
     if (@$list > 0) {
         my $out = '';
