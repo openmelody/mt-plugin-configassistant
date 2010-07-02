@@ -420,6 +420,7 @@ sub type_link_group {
     $html .= "  \$('#'+'$field_id-link-group button.add-link').click( handle_edit_click );\n";
     $html .= "  \$('#'+'$field_id-link-group').parents('form').submit( function (){
     var struct = Array();
+    \$(this).find('#'+'$field_id-link-group ul li button').trigger('click');
     \$(this).find('#'+'$field_id-link-group ul li a.link').each( function(i, e) {
       var u = \$(this).attr('href');
       var l = \$(this).html();
