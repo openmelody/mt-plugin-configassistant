@@ -401,9 +401,9 @@ sub type_link_group {
     my $app = shift;
     my ( $ctx, $field_id, $field, $value ) = @_;
     my $static = $app->config->StaticWebPath;
-    $value = '"[]"' if ($value eq '');
+    $value = '"[]"' if (!$value || $value eq '');
     eval "\$value = $value";
-
+    if ($@) { $value = '[]'; }
     my $list = JSON::from_json($value);
     my $html;
     $html = "      <div id=\"$field_id-link-group\" class=\"link-group-container pkg\">"
