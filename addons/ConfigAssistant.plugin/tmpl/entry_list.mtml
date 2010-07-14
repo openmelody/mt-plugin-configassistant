@@ -1,6 +1,6 @@
 <mt:unless name="json">
 <$mt:setvar name="screen_type" value="dialog-screen insert-asset-dialog"$>
-<mt:setvarblock name="page_title"><mt:if name="is_image"><__trans phrase="Select Image"><mt:else><__trans phrase="Select Entry"></mt:if></mt:setvarblock>
+<mt:setvarblock name="page_title"><mt:if name="is_image"><__trans phrase="Select Image"><mt:else><mt:if name="obj_type" eq="entry"><__trans phrase="Select Entry"><mt:else><__trans phrase="Select Page"></mt:if></mt:if></mt:setvarblock>
 <mt:setvarblock name="html_head" append="1">
     <script type="text/javascript" src="<mt:var name="static_uri">js/tc/client.js"></script>
     <script type="text/javascript" src="<mt:var name="static_uri">js/tc/json.js"></script>

@@ -188,6 +188,9 @@ field:
   user will be constricted to searching entries in the current blog, or all
   blogs on the system.
 
+* `page` - Operates identically to the `entry` type except that it pulls up a list
+  of pages in the selected blog (as opposed to entries).
+
 * `colorpicker` - Produces a color wheel pop-up for selecting a color or hex value.
 
 * `link-group` - Produces an ordered list of links manually entered by the user.

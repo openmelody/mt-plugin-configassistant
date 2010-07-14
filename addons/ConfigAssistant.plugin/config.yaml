@@ -52,6 +52,8 @@ config_types:
     handler: $ConfigAssistant::ConfigAssistant::Plugin::type_radio_image
   entry:
     handler: $ConfigAssistant::ConfigAssistant::Plugin::type_entry
+  page:
+    handler: $ConfigAssistant::ConfigAssistant::Plugin::type_page
   tagged-entry:
     handler: $ConfigAssistant::ConfigAssistant::Plugin::type_tagged_entry
   link-group:

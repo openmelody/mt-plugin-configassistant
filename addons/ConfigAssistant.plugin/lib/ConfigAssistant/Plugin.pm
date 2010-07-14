@@ -447,12 +447,20 @@ sub type_textarea {
     return $out;
 }
 
+sub type_page {
+    my $app = shift;
+    my ( $ctx, $field_id, $field, $value ) = @_;
+    $ctx->stash('object_class','page');
+    return type_entry($app,@_);
+}
+
 sub type_entry {
     my $app = shift;
     my ( $ctx, $field_id, $field, $value ) = @_;
     my $out;
-    my $entry      = MT->model('entry')->load($value);
-    my $entry_name = ($entry ? $entry->title : '') || '';
+    my $obj_class  = $ctx->stash('object_class') || 'entry';
+    my $obj      = MT->model($obj_class)->load($value);
+    my $obj_name = ($obj ? $obj->title : '') || '';
     my $blog_id    = $field->{all_blogs} ? 0 : $app->blog->id;
     unless ( $ctx->var('entry_chooser_js') ) {
         $out .= <<EOH;
@@ -469,13 +477,14 @@ sub type_entry {
 EOH
         $ctx->var( 'entry_chooser_js', 1 );
     }
+    my $label = $obj->class_label;
     $out .= <<EOH;
 <div class="pkg">
   <input name="$field_id" id="$field_id" class="hidden" type="hidden" value="$value" />
   <button type="submit"
-          onclick="return openDialog(this.form, 'ca_config_entry', 'blog_id=$blog_id&edit_field=$field_id&status=2')">Choose Entry</button>
+          onclick="return openDialog(this.form, 'ca_config_entry', 'blog_id=$blog_id&edit_field=$field_id&status=2&class=$obj_class')">Choose $label</button>
   <div id="${field_id}_preview" class="preview">
-    $entry_name
+    $obj_name
   </div>
 </div>
 EOH
@@ -979,10 +988,9 @@ sub entry_search_api_prep {
 sub list_entry_mini {
     my $app = shift;
 
-    my $blog_id = $app->param('blog_id') || 0;
-
-    my $type = 'entry';
-    my $pkg = $app->model($type) or return "Invalid request.";
+    my $blog_id  = $app->param('blog_id') || 0;
+    my $obj_type = $app->param('class') || 'entry';
+    my $pkg      = $app->model($obj_type) or return "Invalid request: unknown class $obj_type";
 
     my $terms;
     $terms->{blog_id} = $blog_id if $blog_id;
@@ -995,9 +1003,10 @@ sub list_entry_mini {
 
     my $plugin = MT->component('ConfigAssistant') or die "OMG NO COMPONENT!?!";
     my $tmpl = $plugin->load_tmpl('entry_list.mtml');
+    $tmpl->param('obj_type',$obj_type);
     return $app->listing(
         {
-            type     => 'entry',
+            type     => $obj_type,
             template => $tmpl,
             params   => {
                 panel_searchable => 1,
@@ -1037,10 +1046,11 @@ sub list_entry_mini {
 sub select_entry {
     my $app = shift;
 
-    my $entry_id = $app->param('id')
+    my $class = $app->param('class') || 'entry';
+    my $obj_id = $app->param('id')
       or return $app->errtrans('No id');
-    my $entry = MT->model('entry')->load($entry_id)
-      or return $app->errtrans( 'No entry #[_1]', $entry_id );
+    my $obj = MT->model($class)->load($obj_id)
+      or return $app->errtrans( 'No entry #[_1]', $obj_id );
     my $edit_field = $app->param('edit_field')
       or return $app->errtrans('No edit_field');
 
@@ -1048,8 +1058,10 @@ sub select_entry {
     my $tmpl = $plugin->load_tmpl(
         'select_entry.mtml',
         {
-            entry_id    => $entry->id,
-            entry_title => $entry->title,
+            class_type  => $class,
+            class_label => $obj->class_label,
+            entry_id    => $obj->id,
+            entry_title => $obj->title,
             edit_field  => $edit_field,
         }
     );
