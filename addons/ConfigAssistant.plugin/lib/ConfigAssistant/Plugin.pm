@@ -252,7 +252,12 @@ sub save_config {
     my @params = $q->param;
     foreach (@params) {
         next if $_ =~ m/^(__mode|return_args|plugin_sig|magic_token|blog_id)$/;
-        $param->{$_} = $q->param($_);
+        my @vals = $q->param($_);
+        if ($#vals > 0) {
+            $param->{$_} = \@vals;
+        } else {
+            $param->{$_} = $vals[0];
+        }
     }
     if ( $profile && $profile->{object} ) {
         my $plugin = $profile->{object};
@@ -681,12 +686,42 @@ sub type_blogs {
     return $out;
 }
 
+sub in_array {
+    my ($arr,$search_for) = @_;
+    foreach my $value (@$arr) {
+        return 1 if $value eq $search_for;
+    }
+    return 0;
+}
+
+
 sub type_checkbox {
     my $app = shift;
     my ( $ctx, $field_id, $field, $value ) = @_;
     my $out;
-    $out .= "      <input type=\"checkbox\" name=\"$field_id\" value=\"1\" "
-      . ( $value ? "checked " : "" ) . "/>\n";
+    if ($field->{values}) {
+        my $delimiter = $field->{delimiter} || ',';
+        my @values = split( $delimiter, $field->{values} );
+        $out .= "      <ul>\n";
+        foreach (@values) {
+            my $checked = 0;
+            if (ref($value) eq 'ARRAY') {
+                $checked = in_array($value,$_);
+            } else {
+                $checked = $value eq $_;
+            }
+            $out .=
+                "        <li><input type=\"checkbox\" name=\"$field_id\" value=\"$_\""
+                . ( $checked ? " checked=\"checked\"" : "" )
+                . " class=\"rb\" /> "
+                . $_
+                . "</li>\n";
+        }
+        $out .= "      </ul>\n";
+    } else {
+        $out .= "      <input type=\"checkbox\" name=\"$field_id\" value=\"1\" "
+            . ( $value ? "checked " : "" ) . "/>\n";
+    }
     return $out;
 }
 
