@@ -35,6 +35,14 @@ can begin using this plugin today.
 
 This plugin is installed [just like any other Movable Type Plugin](http://www.majordojo.com/2008/12/the-ultimate-guide-to-installing-movable-type-plugins.php).
 
+One important note is that this plugin should be installed into Movable Type's 
+`addons` directory. Installing this plugin into any other directory will 
+potentially cripple your installation. So please be careful. 
+
+Also be aware that if you are upgrading from a previous version, you should 
+remove any copy of Config Assistant from your plugins directory if one is 
+installed there.
+
 # Reference and Documentation
 
 ## Using Config Assistant for Theme Options
@@ -166,9 +174,11 @@ field:
   defined by specifying a sibling element called `values` which should contain 
   a comma delimitted list of values to present in the pull down menu
 
-* `checkbox` - Produces a single checkbox, ideal for boolean values. You probably
-  do _not_ ever want to mark this field as `required`, because that would really
-  mean "it must always be checked, or true."
+* `checkbox` - Produces a single checkbox, ideal for boolean values, or a set
+  of checkboxes. When using this type to display multiple checkboxes, use the
+  `values` field option to provide a list of checkbox labels/values. Use the
+  `delimiter` field option to specify how your list of checkbox options are
+  separated. See "Working with Checkboxes."
 
 * `blogs` - Produces a pull down menu listing every blog in the system.
   *Warning: this is not advisable for large installations as it can dramatically
@@ -318,6 +328,46 @@ mt-static directory. Confused? I think a sample will make it perfectly clear:
         values: >
           "plugins/Foo/layout-1.png":"Layout 1","plugins/Foo/layout-2.png":"Layout 2"
 
+**Working with Checkboxes**
+
+The option type of `checkbox` has two modes:
+
+* a boolean mode (a single checkbox either on or off)
+* a multi-select mode (multiple choices and options)
+
+A single checkbox is ideal when needing to collect boolean values from users. For 
+example, here is a theme option to enable/disable advertising on a web site:
+
+    enable_ads:
+      type: checkbox
+      label: 'Enable Advertising?'
+      hint: 'Check this box if you want advertising to be displayed on your web site'
+      tag: 'IfAdsEnabled?'
+
+Your template tag should then be:
+
+    <mt:IfAdsEnabled>
+       <!-- insert ad javascript -->
+    </mt:IfAdsEnabled>
+
+Sometimes however you need to use checkboxes to allow the user to select multiple
+options that all relate to one another. Here is an example of how to use this field
+to allow users to specify which areas of a site should have ads enabled:
+
+    enable_ads:
+      type: checkbox
+      label: 'Enable Advertising?'
+      hint: 'Check this box if you want advertising to be displayed on your web site'
+      tag: 'AdsEnabled'
+      delimiter: ';'
+      values: 'Homepage;System: Profile, Reg, Auth;Entries;Pages'
+
+Your template tag would then look like this:
+
+    <mt:if tag="AdsEnabled" like="System: Profile, Reg, Auth">
+       <!-- insert ad javascript -->
+    </mt:if>
+    
 ### Defining Custom Field Types
 
 To define your own form field type, you first need to register your type and 
