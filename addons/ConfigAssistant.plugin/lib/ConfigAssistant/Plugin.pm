@@ -254,6 +254,7 @@ sub save_config {
         next if $_ =~ m/^(__mode|return_args|plugin_sig|magic_token|blog_id)$/;
         my @vals = $q->param($_);
         if ($#vals > 0) {
+            # TODO - should this join items together?
             $param->{$_} = \@vals;
         } else {
             $param->{$_} = $vals[0];
@@ -761,6 +762,46 @@ sub _hdlr_field_asset {
         require MT::Template::ContextHandlers;
         return MT::Template::Context::_hdlr_pass_tokens_else(@_);
     }
+}
+
+sub _hdlr_field_array_loop {
+    my $plugin = shift;
+    my ( $ctx, $args, $cond ) = @_;
+    my $field     = $ctx->stash('field')
+      or return _no_field($ctx);
+    my $values = _get_field_value( $ctx );
+    my $out = '';
+    my $count = 0;
+    if (@$values > 0) {
+        my $vars = $ctx->{__stash}{vars};
+        foreach (@$values) {
+            local $vars->{'value'} = $_;
+            local $vars->{'__first__'} = ($count++ == 0);
+            local $vars->{'__last__'} = ($count == @$values);
+            defined( $out .= $ctx->slurp( $args, $cond ) ) or return;
+        }
+        return $out;
+    } else {
+        require MT::Template::ContextHandlers;
+        return MT::Template::Context::_hdlr_pass_tokens_else(@_);
+    }
+}
+
+sub _hdlr_field_array_contains {
+    my $plugin = shift;
+    my ( $ctx, $args, $cond ) = @_;
+    my $field     = $ctx->stash('field')
+      or return _no_field($ctx);
+    my $value = $args->{'value'};
+    my $array = _get_field_value( $ctx );
+    foreach (@$array) {
+        MT->log("Does array contain $value? (currently checking $_)");
+        if ($_ eq $value) {
+            return $ctx->slurp( $args, $cond );
+        }
+    }
+    require MT::Template::ContextHandlers;
+    return MT::Template::Context::_hdlr_pass_tokens_else(@_);
 }
 
 sub _get_field_value {
