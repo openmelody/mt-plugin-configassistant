@@ -362,12 +362,23 @@ to allow users to specify which areas of a site should have ads enabled:
       delimiter: ';'
       values: 'Homepage;System: Profile, Reg, Auth;Entries;Pages'
 
-Your template tag would then look like this:
+You can then check to see if the theme option contains a specific value like so:
 
-    <mt:if tag="AdsEnabled" like="System: Profile, Reg, Auth">
+    <mt:AdsEnabledContains value="System: Profile, Reg, Auth">
        <!-- insert ad javascript -->
-    </mt:if>
-    
+    <mt:else>
+       <!-- do nothing? -->
+    </mt:AdsEnabledContains>
+
+Or you can loop over all the selected values that have been checked:
+
+    <ul>
+    <mt:AdsEnabledLoop>
+      <li>You checked <$mt:var name="value"$>.</li>
+    </mt:AdsEnabledLoop>
+    </ul>
+
+
 ### Defining Custom Field Types
 
 To define your own form field type, you first need to register your type and 
