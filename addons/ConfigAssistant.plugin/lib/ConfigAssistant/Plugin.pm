@@ -795,7 +795,7 @@ sub _hdlr_field_array_contains {
     my $value = $args->{'value'};
     my $array = _get_field_value( $ctx );
     foreach (@$array) {
-        MT->log("Does array contain $value? (currently checking $_)");
+        #MT->log("Does array contain $value? (currently checking $_)");
         if ($_ eq $value) {
             return $ctx->slurp( $args, $cond );
         }
