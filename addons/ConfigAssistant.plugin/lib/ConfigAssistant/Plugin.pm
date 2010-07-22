@@ -735,6 +735,40 @@ sub type_checkbox {
     return $out;
 }
 
+sub type_category {
+    my $app = shift;
+    my ( $ctx, $field_id, $field, $value ) = @_;
+    $value = defined($value) ? $value: 0;
+    my $out;
+    my $obj_class = $ctx->stash('object_class') || 'category';
+    my @cats = MT->model($obj_class)->load({ blog_id => $app->blog->id },
+                                           { sort => 'label' });
+    $out .= "      <select name=\"$field_id\">\n";
+    $out .=
+        "        <option value=\"0\" "
+      . ( 0 == $value ? " selected" : "" )
+      . ">None Selected</option>\n";
+    foreach (@cats) {
+        $out .=
+            "        <option value=\""
+          . $_->id . "\" "
+          . ( $value == $_->id ? " selected" : "" ) . ">"
+          . $_->label
+          . "</option>\n";
+    }
+    $out .= "      </select>\n";
+    return $out;
+}
+
+sub type_folder {
+    my $app = shift;
+    my ( $ctx, $field_id, $field, $value ) = @_;
+    $ctx->stash('object_class','folder');
+    return type_category($app,@_);
+}
+
+
+
 sub _hdlr_field_value {
     my $plugin = shift;
     my ( $ctx, $args ) = @_;

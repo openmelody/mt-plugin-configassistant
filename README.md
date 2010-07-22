@@ -201,6 +201,12 @@ field:
 * `page` - Operates identically to the `entry` type except that it pulls up a list
   of pages in the selected blog (as opposed to entries).
 
+* `category` - Produces the ability to select a single category via a drop-down 
+  listing.
+
+* `folder` - Produces the ability to select a single folder via a drop-down 
+  listing.
+
 * `colorpicker` - Produces a color wheel pop-up for selecting a color or hex value.
 
 * `link-group` - Produces an ordered list of links manually entered by the user.
