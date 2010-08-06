@@ -269,8 +269,8 @@ field:
 * `separator` - Sometimes you will want to divide your options into smaller
   sections, and the `separator` facilitates that. This is a special type of
   field because there is no editable form to interact with and is
-  informational only. Only the `label`, `hint`, and `order` keys are valid
-  with this field type.
+  informational only. Only the `label`, `hint`, `order`, and `fieldset` keys 
+  are valid with this field type.
 
 **Link Group Tags**
 
