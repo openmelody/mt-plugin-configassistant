@@ -69,8 +69,11 @@ root-level element will let you specify files _not_ to copy.
                 fieldsets:
                     homepage:
                         label: 'Homepage Options'
+                        hint: 'These options only affect the home page.'
+                        order: 1
                     feed:
                         label: 'Feed Options'
+                        order: 2
                 feedburner_id:
                     type: text
                     label: "Feedburner ID"
@@ -135,9 +138,48 @@ to specify the following elements in their plugin's config.yaml files:
 * `blog_config_template`
 * `system_config_template`
 
+## Fieldsets
+
+Fields can be grouped by fieldset, and fieldsets are "tabbed" on the Theme Options screen. This provides an easy way to organize all of your fields and present them to the user in a clear fashion.
+
+    options:
+        fieldsets:
+            homepage:
+                label: 'Homepage Options'
+                hint: 'These options only affect the home page.'
+                order: 1
+            feed:
+                label: 'Feed Options'
+                order: 2
+
+In this example two fieldsets have been defined: `homepage` and `feed`, and this will generate two tabs of options on the Theme Options screen. Note that the fieldset keys (in this case `homepage` and `feed`) must be unique within your theme or plugin.
+
+### Fieldset Properties
+
+* `label` - is the description displayed on the tab, and is also displayed at the top of the page.
+* `hint` - is a space for you to provide more detail about the contents of this fieldset. It is displayed just above all of the fields in this fieldset
+* `order` - Use integers to sort the order of your fieldsets on the tabbed interface.
+
 ## Fields
 
-Each field definition supports the following properties:
+Fields are easily defined with properties.
+
+    options:
+        feedburner_id:
+            type: text
+            label: "Feedburner ID"
+            hint: "This is the name of your Feedburner feed."
+            tag: 'MyPluginFeedburnerID'
+            fieldset: feed
+        use_feedburner:
+            type: checkbox
+            label: "Use Feedburner?"
+            tag: 'IfFeedburner?'
+            fieldset: feed
+
+In this example two options, or fields, have been defined: `feedburner_id` and `use_feedburner`. Note that the option keys (in this case `feedburner_id` and `use_feedburner`) must be unique within your theme or plugin.
+
+### Field Properties
 
 * `type` - the type of the field. Supported values are: text, textarea, select,
   checkbox, blogs
@@ -151,6 +193,7 @@ Each field definition supports the following properties:
   to hide it.
 * `default` - a static value or a code reference which will determine the proper
    default value for the option
+* `fieldset` - specify which fieldset a field belongs to.
 * `order` - the sort order for the field within its fieldset
 * `republish` - a list of template identifiers (delimitted by a comma) that reference
   templates that should be rebuilt when a theme option changes
@@ -222,6 +265,12 @@ field:
   an additional template tag is created for you which gives you access to the 
   asset created for you when the file is uploaded. See "Asset Template Tags" 
   below.
+
+* `separator` - Sometimes you will want to divide your options into smaller
+  sections, and the `separator` facilitates that. This is a special type of
+  field because there is no editable form to interact with and is
+  informational only. Only the `label`, `hint`, and `order` keys are valid
+  with this field type.
 
 **Link Group Tags**
 
@@ -588,7 +637,7 @@ When the callback is invoked, it will be invoked with the following input parame
         MyPluginID:
             fieldset_1:
                 label: "This is a label for my fieldset"
-                description: "This is some text to display below my fieldset label"
+                hint: "This is some text to display below my fieldset label"
                 feedburner_id:
                     type: text
                     label: "Feedburner ID"

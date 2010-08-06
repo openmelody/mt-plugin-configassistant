@@ -115,7 +115,34 @@ sub theme_options {
         }
 
         my $field_id = $ts . '_' . $optname;
-        if ( $types->{ $field->{'type'} } ) {
+
+        if ( $field->{'type'} eq 'separator' ) {
+            # The separator "type" is handled specially here because it's not
+            # really a "config type"-- it isn't editable and no data is saved
+            # or retrieved. It just displays a separator and some info.
+            my $out;
+            my $show_label =
+              defined $field->{show_label} ? $field->{show_label} : 1;
+            my $label = $field->{label} ne '' ? &{$field->{label}} : '';
+            $out .=
+                '  <div id="field-'
+              . $field_id
+              . '" class="field field-top-label pkg field-type-'
+              . $field->{type} . '">' . "\n";
+            $out .= "    <div class=\"field-header\">\n";
+            $out .= "        <h3>$label</h3>\n" if $show_label;
+            $out .= "    </div>\n";
+            $out .= "    <div class=\"field-content\">\n";
+            if ( $field->{hint} ) {
+                $out .= "       <div>" . $field->{hint} . "</div>\n";
+            }
+            $out .= "    </div>\n";
+            $out .= "  </div>\n";
+            $field->{fieldset} = '__global' unless defined $field->{fieldset};
+            my $fs = $field->{fieldset};
+            push @{ $fields->{$fs} }, $out;
+        }
+        elsif ( $types->{ $field->{'type'} } ) {
             my $value = delete $cfg_obj->{$field_id};
             my $out;
             $field->{fieldset} = '__global' unless defined $field->{fieldset};
@@ -179,6 +206,7 @@ sub theme_options {
     {
         next unless $fields->{$set} || $fieldsets->{$set}->{template};
         my $label     = &{ $fieldsets->{$set}->{label} };
+        my $hint      = $fieldsets->{$set}->{hint};
         my $innerhtml = '';
         if ( my $tmpl = $fieldsets->{$set}->{template} ) {
             my $txt = $plugin->load_tmpl($tmpl);
@@ -204,6 +232,7 @@ sub theme_options {
             '__first__' => ( $count++ == 0 ),
             id          => dirify($label),
             label       => $label,
+            hint        => $hint,
             content     => $innerhtml,
           };
     }
@@ -444,11 +473,12 @@ sub type_link_group {
 sub type_textarea {
     my $app = shift;
     my ( $ctx, $field_id, $field, $value ) = @_;
+    my $rows = $field->{rows} || '';
     my $out;
     $out = "      <textarea name=\"$field_id\" class=\"full-width\" rows=\""
-      . $field->{rows} . "\">";
-    $out .= encode_html( $value, 1 )
-      ;        # The additional "1" will escape HTML entities properly
+      . $rows . "\">";
+    # The additional "1" below will escape HTML entities properly
+    $out .= encode_html( $value, 1 ); 
     $out .= "</textarea>\n";
     return $out;
 }
@@ -767,6 +797,11 @@ sub type_folder {
     return type_category($app,@_);
 }
 
+sub type_separator {
+    my $app = shift;
+    my ( $ctx, $field_id, $field, $value ) = @_;
+    return "<h3>$field_id</h3>";
+}
 
 
 sub _hdlr_field_value {
@@ -976,7 +1011,33 @@ sub plugin_options {
         }
 
         my $field_id = $optname;
-        if ( $types->{ $field->{'type'} } ) {
+
+        if ( $field->{'type'} eq 'separator' ) {
+            # The separator "type" is handled specially here because it's not
+            # really a "config type"-- it isn't editable and no data is saved
+            # or retrieved. It just displays a separator and some info.
+            my $out;
+            my $show_label =
+              defined $field->{show_label} ? $field->{show_label} : 1;
+            my $label = $field->{label} ne '' ? &{$field->{label}} : '';
+            $out .=
+                '  <div id="field-'
+              . $field_id
+              . '" class="field field-top-label pkg field-type-'
+              . $field->{type} . '">' . "\n";
+            $out .= "   <div class=\"field-header\">\n";
+            $out .= "       <h3>$label</h3>\n" if $show_label;
+            $out .= "   </div>\n";
+            $out .= "   <div class=\"field-content\">\n";
+            if ( $field->{hint} ) {
+                $out .= "       <div>" . $field->{hint} . "</div>\n";
+            }
+            $out .= "  </div>\n";
+            $field->{fieldset} = '__global' unless defined $field->{fieldset};
+            my $fs = $field->{fieldset};
+            push @{ $fields->{$fs} }, $out;
+        }
+        elsif ( $types->{ $field->{'type'} } ) {
             my $value = delete $cfg_obj->{$field_id};
             my $out;
             $field->{fieldset} = '__global' unless defined $field->{fieldset};
@@ -1005,6 +1066,7 @@ sub plugin_options {
             }
             $out .= "    </div>\n";
             $out .= "  </div>\n";
+
             my $fs = $field->{fieldset};
             push @{ $fields->{$fs} }, $out;
         }
