@@ -195,7 +195,7 @@ In this example two options, or fields, have been defined: `feedburner_id` and `
    default value for the option
 * `fieldset` - specify which fieldset a field belongs to.
 * `order` - the sort order for the field within its fieldset
-* `republish` - a list of template identifiers (delimitted by a comma) that reference
+* `republish` - a list of template identifiers (delimited by a comma) that reference
   templates that should be rebuilt when a theme option changes
 * `scope` - (for plugin settings only, all theme options are required to be
   blog specific) determines whether the config option will be rendered at the blog
@@ -213,9 +213,13 @@ field:
 * `textarea` - Produces a multi-line text box. You can specify the `rows` sibling 
   element to control the size/height of the text box.
 
-* `select` - Produces a pull-down menu or arbitrary values. Those values are
+* `select` - Produces a pull-down menu of arbitrary values. Those values are
   defined by specifying a sibling element called `values` which should contain 
-  a comma delimitted list of values to present in the pull down menu
+  a comma delimited list of values to present in the pull down menu.
+
+* `radio` - Produces a set of radio buttons of arbitrary values. Those values
+  are defined by specifying a sibling element called `values` which should 
+  contain a comma delimited list of values to present as radio buttons.
 
 * `checkbox` - Produces a single checkbox, ideal for boolean values, or a set
   of checkboxes. When using this type to display multiple checkboxes, use the
@@ -371,7 +375,7 @@ Example:
 **Example Radio Image**
 
 The `radio-image` type supports a special syntax for the `values` attribute. 
-The list of radio button is a comma-limitted list of image/value pairs (delimitted 
+The list of radio button is a comma-delimited list of image/value pairs (delimited 
 by a colon). Got that? The images you reference are all relative to Movable Type's
 mt-static directory. Confused? I think a sample will make it perfectly clear:
 
