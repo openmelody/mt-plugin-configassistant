@@ -10,6 +10,9 @@
 <mt:loop name="fieldsets">
   <div id="<$mt:var name="id"$>" class="fieldset-options">
     <h3><$mt:var name="label"$></h3>
+    <mt:If name="hint">
+      <div class="fieldset-description"><mt:Var name="hint"></div>
+    </mt:If>
     <$mt:var name="content"$>
   </div>
 </mt:loop>

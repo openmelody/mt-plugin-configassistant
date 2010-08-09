@@ -797,12 +797,6 @@ sub type_folder {
     return type_category($app,@_);
 }
 
-sub type_separator {
-    my $app = shift;
-    my ( $ctx, $field_id, $field, $value ) = @_;
-    return "<h3>$field_id</h3>";
-}
-
 
 sub _hdlr_field_value {
     my $plugin = shift;
@@ -1090,6 +1084,7 @@ sub plugin_options {
     {
         next unless $fields->{$set} || $fieldsets->{$set}->{template};
         my $label     = &{ $fieldsets->{$set}->{label} };
+        my $hint      = $fieldsets->{$set}->{hint};
         my $innerhtml = '';
         if ( my $tmpl = $fieldsets->{$set}->{template} ) {
             my $txt = $plugin->load_tmpl($tmpl);
@@ -1115,6 +1110,7 @@ sub plugin_options {
             '__first__' => ( $count++ == 0 ),
             id          => dirify($label),
             label       => $label,
+            hint        => $hint,
             content     => $innerhtml,
           };
     }
