@@ -270,13 +270,22 @@ sub save_config {
         # BEGIN - contents of MT::Plugin->save_config
         my $pdata = $plugin->get_config_obj($scope);
         $scope =~ s/:.*//;
-        my @vars = $plugin->config_vars($scope);
         my $data = $pdata->data() || {};
 
         my $repub_queue;
         my $plugin_changed = 0;
+
+        my @vars = $plugin->config_vars($scope);
         foreach my $var (@vars) {
             my $opt = find_option_def($app, $var);
+
+            # TODO - this should be pluggable. Field types should register a pre_save handler
+            #        or something
+            if ($opt->{type} eq 'checkbox') {
+                if (ref($param->{$var}) ne 'ARRAY' && $opt->{'values'}) {
+                    $param->{$var} = [ $param->{$var} ]; # Could this be a leak or be weakened?
+                }
+            }
             if ($opt->{type} eq 'file') {
                 my $result = process_file_upload( $app, $var, 'support', $opt->{destination} );
                 if ( $result->{status} == ConfigAssistant::Util::ERROR() ) {
@@ -483,7 +492,7 @@ sub type_entry {
 EOH
         $ctx->var( 'entry_chooser_js', 1 );
     }
-    my $label = $obj->class_label;
+    my $label = MT->model($obj_class)->class_label;
     $out .= <<EOH;
 <div class="pkg">
   <input name="$field_id" id="$field_id" class="hidden" type="hidden" value="$value" />
