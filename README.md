@@ -545,7 +545,7 @@ Movable Type or Melody to run an upgrade. During the upgrade, Config
 Assistant will copy static content to the `mt-static/support/plugins/` 
 folder, and will create a folder for its contents. (For example, after 
 installing Config Assistant, its static files can be found in 
-`mt-static/support/plugins/ConfigAssistant/`.)
+`mt-static/support/plugins/configassistant/`.)
 
 Note that the `mt-static/support/` folder must have adequate permissions to 
 be writable by the web server; Movable Type and Melody will warn you if it 
@@ -558,9 +558,11 @@ by running `./tools/static-copy`.
 ### Plugin-Specific Static Template Tags
 
 Two template tags are created for your plugin or theme, to help you type less 
-and keep code clean: `[Plugin ID]StaticFilePath` and 
-`[Plugin ID]StaticWebPath`. For example, Config Assistant makes available 
-`ConfigAssistantStaticFilePath` and `ConfigAssistantStaticWebPath`.
+and keep code clean: `PluginStaticFilePath` and 
+`PluginStaticWebPath`. Use them with the `component` argument and supply your 
+plugin's ID to link to your static content. For example, Config Assistant can 
+use `<mt:PluginStaticFilePath component="configassistant">` and 
+`<mt:ConfigAssistantStaticWebPath component="configassistant">`.
 
 These tags will output the file path and the URL to a plugin's static content, 
 based on the `StaticFilePath` and `StaticWebPath` configuration directives. 
@@ -568,7 +570,7 @@ These tags are really just shortcuts. You could use either of the following to
 publish a link to the image `photo.jpg` in your theme, for example:
 
     <mt:StaticWebPath>support/plugins/MyPlugin/images/photo.jpg
-    <mt:MyPluginStaticWebPath>images/photo.jpg
+    <mt:PluginStaticWebPath component="MyPlugin">images/photo.jpg
 
 both of which would output
 

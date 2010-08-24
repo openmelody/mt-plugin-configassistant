@@ -372,7 +372,9 @@ sub load_tags {
             };
             # Create the plugin-specific static web path tag, such as "ConfigAssistantStaticWebPath."
             $tag = $obj->id . 'StaticWebPath';
-            my $url = $app->config('StaticWebPath').'support/plugins/'.$obj->id.'/';
+            my $url = $app->config('StaticWebPath');
+            $url   .= '/' unless $url =~ m!/$!;
+            $url   .= 'support/plugins/'.$obj->id.'/';
             $tags->{function}->{$tag} = sub {
                 MT->log("The usage of the tag '$tag' has been deprecated. Please use mt:PluginStaticWebPath instead");
                 $_[0]->stash( 'field',     $tag     );
