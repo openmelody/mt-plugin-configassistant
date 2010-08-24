@@ -41,6 +41,7 @@ sub init_app {
         into => 'MT::Component',
         as   => 'needs_upgrade'
     });
+    return 1;
 }
 
 sub init_options {
@@ -53,7 +54,6 @@ sub init_options {
     
     # For the static_version check, to determine if an upgrade is needed.
     my @plugins;
-
     for my $sig ( keys %MT::Plugins ) {
         my $plugin = $MT::Plugins{$sig};
         my $obj    = $MT::Plugins{$sig}{object};
@@ -105,7 +105,8 @@ sub init_options {
                 }
             }
         }    # end foreach (@sets)
-         # Now register settings for each plugin option, and register a plugin_config_form
+
+        # Now register settings for each plugin option, and register a plugin_config_form
         my @options = keys %{ $r->{'options'} };
         foreach my $opt (@options) {
             next if ( $opt eq 'fieldsets' );
