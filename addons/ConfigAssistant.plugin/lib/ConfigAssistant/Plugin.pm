@@ -22,7 +22,7 @@ sub tag_plugin_static_web_path {
                           $ctx->stash('tag'), $sig)
         );
     } elsif ( $obj->registry('static_version') ) {
-        my $url = $app->config('StaticWebPath');
+        my $url = MT->config('StaticWebPath');
         $url   .= '/' unless $url =~ m!/$!;
         $url   .= 'support/plugins/'.$obj->id.'/';
         return $url;
