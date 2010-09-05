@@ -7,6 +7,8 @@ description: This plugin provides a simple YAML based framework for creating plu
 version: 1.8.4
 static_version: 1
 schema_version: 1
+l10n_lexicon:
+  ja: l10n_ja.yaml
 
 applications:
   cms:

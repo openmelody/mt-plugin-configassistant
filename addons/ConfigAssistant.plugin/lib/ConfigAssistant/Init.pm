@@ -306,7 +306,7 @@ sub update_menus {
     return {
         'design:theme_options' => {
             label      => 'Theme Options',
-            order      => '10',
+            order      => '600',
             mode       => 'theme_options',
             view       => 'blog',
             permission => 'edit_templates',

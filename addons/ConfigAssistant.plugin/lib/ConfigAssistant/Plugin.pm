@@ -1003,11 +1003,12 @@ sub xfrm_cfg_plugin {
       <button
         mt:mode="save_plugin_config"
         type="submit"
-        class="primary-button"><__trans phrase="Save Changes"></button>
+        class="save action primary-button"><__trans phrase="Save Changes"></button>
 <mt:if name="plugin_settings_id">
       <button
         onclick="resetPlugin(getByID('plugin-<mt:var name="plugin_id">-form')); return false"
-        type="submit"><__trans phrase="Reset to Defaults"></button>
+        type="submit"
+        class="reset action"><__trans phrase="Reset to Defaults"></button>
 </mt:if>
     </div>
   </div>
@@ -1019,7 +1020,7 @@ END_TMPL
     my $slug2 = <<END_TMPL;
 <mt:setvarblock name="html_head" append="1">
   <link rel="stylesheet" href="<mt:ConfigAssistantStaticWebPath>css/app.css" type="text/css" />
-  <script src="<mt:StaticWebPath>jquery/jquery.js" type="text/javascript"></script>
+  <mt:ignore><script src="<mt:StaticWebPath>jquery/jquery.js" type="text/javascript"></script></mt:ignore>
   <script src="<mt:ConfigAssistantStaticWebPath>js/app.js" type="text/javascript"></script>
 </mt:setvarblock>
 END_TMPL

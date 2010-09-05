@@ -1,4 +1,4 @@
-<mt:setvarblock name="page_title"><__trans phrase="Theme Options"> &gt; <span></span></mt:setvarblock>
+<mt:setvarblock name="page_title"><__trans phrase="Theme Options"> &gt; <span></span>(ConfigAssistant)</mt:setvarblock>
 <mt:setvarblock name="html_title"><__trans phrase="Edit Theme Options"></mt:setvarblock>
 <mt:var name="position_actions_bottom" value="1">
 <mt:setvarblock name="system_msg">
@@ -45,6 +45,8 @@
   <script src="<$mt:StaticWebPath$>jquery/jquery.js" type="text/javascript"></script>
   <script src="<$mt:ConfigAssistantStaticWebPath$>js/app.js" type="text/javascript"></script>
   <script src="<$mt:ConfigAssistantStaticWebPath$>colorpicker/js/colorpicker.js" type="text/javascript"></script>
+  <script src="<$mt:StaticWebPath$>jqueryui/ui.datepicker.js" type="text/javascript"></script>
+  <script src="<$mt:StaticWebPath$>jquery/jquery.mt.js" type="text/javascript"></script>
   <script type="text/javascript">
   </script>
 </mt:setvarblock>
@@ -79,8 +81,8 @@
          <button
            mt:mode="ca_save_config"
            type="submit"
-           class="primary-button"
-           >Save Changes</button>
+           class="primary-button action"
+           ><__trans phrase="Save Changes"></button>
        </div>
      </div>
    </div>
