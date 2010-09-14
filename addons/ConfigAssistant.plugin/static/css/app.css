@@ -44,7 +44,7 @@ h2#page-title span.star { display: none; }
   position: relative;
   width: 36px;
   height: 36px;
-  background: url(colorpicker/images/select.png);
+  background: url(../colorpicker/images/select.png);
 }
 .colorpicker-container div {
   position: absolute;
@@ -52,7 +52,7 @@ h2#page-title span.star { display: none; }
   left: 3px;
   width: 30px;
   height: 30px;
-  background: url(colorpicker/images/select.png) center;
+  background: url(../colorpicker/images/select.png) center;
 }
 
 #theme-options #container .actions-bar-wrapper {
