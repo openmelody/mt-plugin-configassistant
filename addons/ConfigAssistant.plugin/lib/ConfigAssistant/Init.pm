@@ -302,11 +302,14 @@ sub load_tags {
 }
 
 sub update_menus {
+#    my $mtversion = '5.03';
     # Now just add the Theme Options menu item to the top of the Design menu.
     return {
+#        if ($mtversion >= '5') {
+
         'design:theme_options' => {
             label      => 'Theme Options',
-            order      => '600',
+                order      => '500',
             mode       => 'theme_options',
             view       => 'blog',
             permission => 'edit_templates',
@@ -320,6 +323,25 @@ sub update_menus {
                 return 0;
             },
         }
+
+#        } else {
+#            'design:theme_options' => {
+#                label      => 'Theme Options',
+#                order      => '10',
+#                mode       => 'theme_options',
+#                view       => 'blog',
+#                permission => 'edit_templates',
+#                condition  => sub {
+#                    my $blog = MT->instance->blog;
+#                    return 0 if !$blog;
+#                    my $ts = MT->instance->blog->template_set;
+#                    return 0 if !$ts;
+#                    my $app = MT::App->instance;
+#                    return 1 if $app->registry('template_sets')->{$ts}->{options};
+#                    return 0;
+#                },
+#            }
+#        }
     };
 }
 

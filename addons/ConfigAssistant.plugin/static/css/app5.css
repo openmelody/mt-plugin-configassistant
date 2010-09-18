@@ -1,8 +1,8 @@
 #list-plugins .fieldset-options { display: block; }
 #list-plugins #fieldsets h3 { display: block; }
 
-.fieldset-options { display: none; }
-#fieldsets h3 { display: none; }
+/*.fieldset-options { display: none; }
+#fieldsets h3 { display: none; }*/
 #fieldsets #about-tab-content h3 { display: block; margin-top: 0; }
 h2#page-title span.star { display: none; }
 #content-nav ul li.changed b { font-style: italic; }
