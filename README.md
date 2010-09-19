@@ -29,7 +29,7 @@ can begin using this plugin today.
 
 # Prerequisites
 
-* Movable Type 5.0 or higher
+* Movable Type 4.1 or higher (Include 5.0)
 
 # Installation
 
