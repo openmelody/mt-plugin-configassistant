@@ -214,7 +214,6 @@ sub theme_options {
           };
     }
     
-    
     $param->{html}       = $html;
     $param->{fieldsets}  = \@loop;
     $param->{leftovers}  = \@leftovers;
@@ -222,7 +221,7 @@ sub theme_options {
     $param->{plugin_sig} = $plugin->{plugin_sig};
     $param->{saved}      = $q->param('saved');
     $param->{missing_required} = \@missing_required;
-    $param->{mtversion}  = '5.03';
+    $param->{mtversion}  = substr(MT->version_number, 0, 3);
     return $app->load_tmpl( 'theme_options.mtml', $param );
 }
 
