@@ -4,7 +4,7 @@ key: ConfigAssistant
 author_link: http://www.majordojo.com/
 author_name: Byrne Reese
 description: This plugin provides a simple YAML based framework for creating plugin and theme configuration options.
-version: 1.10.8
+version: 1.10.9
 static_version: 3
 schema_version: 1
 

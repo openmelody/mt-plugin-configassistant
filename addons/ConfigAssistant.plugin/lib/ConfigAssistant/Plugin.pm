@@ -449,8 +449,10 @@ sub type_link_group {
     my $static = $app->config->StaticWebPath;
     $value = '"[]"' if (!$value || $value eq '');
     eval "\$value = $value";
-    if ($@) { $value = '[]'; }
-    my $list = JSON::from_json($value);
+    if ($@) { $value = '"[]"'; }
+    my $list;
+    eval { $list = JSON::from_json($value) };
+    if ($@) { $list = []; }
     my $html;
     $html = "      <div id=\"$field_id-link-group\" class=\"link-group-container pkg\">"
         . "<ul>";
