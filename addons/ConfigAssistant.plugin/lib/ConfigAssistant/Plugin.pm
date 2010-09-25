@@ -362,8 +362,11 @@ sub type_file {
     my $html = "";
     if ($value) {
         my $asset = MT->model('asset')->load( $value );
+        my $mtversion  = substr(MT->version_number, 0, 3);
+        my $asset_url = $asset->url;
+        if ( $mtversion >= 5 ) { $asset_url =~ s/support\/support|support\\support/support/; }
         if ($asset) {
-            $html .= "<p>".($asset->label ? $asset->label : $asset->file_name)." <a target=\"_new\" href=\"".$asset->url."\">view</a></p>";
+            $html .= "<p>".($asset->label ? $asset->label : $asset->file_name)." <a target=\"_new\" href=\"".$asset_url."\">view</a></p>";
         } else {
             $html .= "<p>File not found.</p>";
         }
