@@ -32,7 +32,8 @@ sub upgrade {
             # $plugin->id seems to throw an error for some Six Apart-originated
             # plugins. I don't know why.
             my $plugin_id = eval {$plugin->id} ? $plugin->id : undef $ver;
-            my $saved_version = $ver->{$plugin_id} if $ver;
+            my $saved_version;
+            $saved_version = $ver->{$plugin_id} if $ver;
         
             if ($static_version > $saved_version) {
                 $self->progress('Copying static files for <strong>'.$plugin->name.'</strong> to mt-static/support/plugins/...');

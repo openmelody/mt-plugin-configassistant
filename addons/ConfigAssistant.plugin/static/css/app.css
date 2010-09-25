@@ -2,12 +2,21 @@
 #list-plugins #fieldsets h3 { display: block; }
 
 .fieldset-options { display: none; }
+.fieldset-description { padding-bottom: 15px; }
+
 #fieldsets h3 { display: none; }
 #fieldsets #about-tab-content h3 { display: block; margin-top: 0; }
 h2#page-title span.star { display: none; }
 #content-nav ul li.changed b { font-style: italic; }
 #content-nav ul li.changed span { display: inline; }
 #content-nav ul li span { display: none; }
+
+#fieldsets .field-type-separator h3 {
+    display: block;
+    padding-top: 8px;
+    padding-bottom: 3px;
+    border-bottom: 1px solid #cddee7;
+}
 
 .field-type-radio-image .field-content .hint {
   text-align: left;
@@ -35,7 +44,7 @@ h2#page-title span.star { display: none; }
   position: relative;
   width: 36px;
   height: 36px;
-  background: url(colorpicker/images/select.png);
+  background: url(../colorpicker/images/select.png);
 }
 .colorpicker-container div {
   position: absolute;
@@ -43,7 +52,7 @@ h2#page-title span.star { display: none; }
   left: 3px;
   width: 30px;
   height: 30px;
-  background: url(colorpicker/images/select.png) center;
+  background: url(../colorpicker/images/select.png) center;
 }
 
 #theme-options #container .actions-bar-wrapper {

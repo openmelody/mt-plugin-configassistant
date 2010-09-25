@@ -41,14 +41,15 @@
 
 <mt:setvarblock name="html_head" append="1">
 <mt:if name="mtversion" gt="5.0">
-  <link rel="stylesheet" href="<$mt:ConfigAssistantStaticWebPath$>css/app5.css" type="text/css" />
+  <link rel="stylesheet" href="<$mt:PluginStaticWebPath component="configassistant"$>css/app5.css" type="text/css" />
 <mt:else>
-  <link rel="stylesheet" href="<$mt:ConfigAssistantStaticWebPath$>css/app.css" type="text/css" />
+  <link rel="stylesheet" href="<$mt:PluginStaticWebPath component="configassistant"$>css/app.css" type="text/css" />
 </mt:if>
-  <link rel="stylesheet" href="<$mt:ConfigAssistantStaticWebPath$>colorpicker/css/colorpicker.css" type="text/css" />
+  <link rel="stylesheet" href="<$mt:PluginStaticWebPath component="configassistant"$>colorpicker/css/colorpicker.css" type="text/css" />
   <script src="<$mt:StaticWebPath$>jquery/jquery.js" type="text/javascript"></script>
-  <script src="<$mt:ConfigAssistantStaticWebPath$>js/app.js" type="text/javascript"></script>
-  <script src="<$mt:ConfigAssistantStaticWebPath$>colorpicker/js/colorpicker.js" type="text/javascript"></script>
+  <script src="<$mt:PluginStaticWebPath component="configassistant"$>js/app.js" type="text/javascript"></script>
+  <script src="<$mt:PluginStaticWebPath component="configassistant"$>colorpicker/js/colorpicker.js" type="text/javascript"></script>
+  <script src="<$mt:PluginStaticWebPath component="configassistant"$>js/jquery.json-2.2.min.js" type="text/javascript"></script>
   <script src="<$mt:StaticWebPath$>jqueryui/ui.datepicker.js" type="text/javascript"></script>
   <script src="<$mt:StaticWebPath$>jquery/jquery.mt.js" type="text/javascript"></script>
   <script type="text/javascript">
@@ -69,6 +70,9 @@
 <mt:loop name="fieldsets">
   <div id="<$mt:var name="id"$>-tab-content" class="fieldset-options">
     <h3><$mt:var name="label"$></h3>
+  <mt:If name="hint">
+    <div class="fieldset-description"><mt:Var name="hint"></div>
+  </mt:If>
     <$mt:var name="content"$>
   </div>
 </mt:loop>

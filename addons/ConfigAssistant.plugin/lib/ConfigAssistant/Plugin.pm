@@ -4,9 +4,11 @@ use strict;
 
 use Carp qw( croak );
 use MT::Util
-  qw( relative_date offset_time offset_time_list epoch2ts ts2epoch format_ts encode_html dirify );
+  qw( relative_date offset_time offset_time_list epoch2ts ts2epoch format_ts 
+      encode_html decode_html dirify );
 use ConfigAssistant::Util
   qw( find_theme_plugin find_template_def find_option_def find_option_plugin process_file_upload );
+use JSON;
 # use MT::Log::Log4perl qw( l4mtdump ); use Log::Log4perl qw( :resurrect );
 our $logger;
 
@@ -20,7 +22,9 @@ sub tag_plugin_static_web_path {
                           $ctx->stash('tag'), $sig)
         );
     } elsif ( $obj->registry('static_version') ) {
-        my $url = MT->config('StaticWebPath').'support/plugins/'.$obj->id.'/';
+        my $url = MT->config('StaticWebPath');
+        $url   .= '/' unless $url =~ m!/$!;
+        $url   .= 'support/plugins/'.$obj->id.'/';
         return $url;
     } else {
         # TODO - perhaps this should default to: mt-static/plugins/$sig? 
@@ -113,7 +117,34 @@ sub theme_options {
         }
 
         my $field_id = $ts . '_' . $optname;
-        if ( $types->{ $field->{'type'} } ) {
+
+        if ( $field->{'type'} eq 'separator' ) {
+            # The separator "type" is handled specially here because it's not
+            # really a "config type"-- it isn't editable and no data is saved
+            # or retrieved. It just displays a separator and some info.
+            my $out;
+            my $show_label =
+              defined $field->{show_label} ? $field->{show_label} : 1;
+            my $label = $field->{label} ne '' ? &{$field->{label}} : '';
+            $out .=
+                '  <div id="field-'
+              . $field_id
+              . '" class="field field-top-label pkg field-type-'
+              . $field->{type} . '">' . "\n";
+            $out .= "    <div class=\"field-header\">\n";
+            $out .= "        <h3>$label</h3>\n" if $show_label;
+            $out .= "    </div>\n";
+            $out .= "    <div class=\"field-content\">\n";
+            if ( $field->{hint} ) {
+                $out .= "       <div>" . $field->{hint} . "</div>\n";
+            }
+            $out .= "    </div>\n";
+            $out .= "  </div>\n";
+            $field->{fieldset} = '__global' unless defined $field->{fieldset};
+            my $fs = $field->{fieldset};
+            push @{ $fields->{$fs} }, $out;
+        }
+        elsif ( $types->{ $field->{'type'} } ) {
             my $value = delete $cfg_obj->{$field_id};
             my $out;
             $field->{fieldset} = '__global' unless defined $field->{fieldset};
@@ -177,6 +208,7 @@ sub theme_options {
     {
         next unless $fields->{$set} || $fieldsets->{$set}->{template};
         my $label     = &{ $fieldsets->{$set}->{label} };
+        my $hint      = $fieldsets->{$set}->{hint};
         my $innerhtml = '';
         if ( my $tmpl = $fieldsets->{$set}->{template} ) {
             my $txt = $plugin->load_tmpl($tmpl);
@@ -202,6 +234,7 @@ sub theme_options {
             '__first__' => ( $count++ == 0 ),
             id          => dirify($label),
             label       => $label,
+            hint        => $hint,
             content     => $innerhtml,
           };
     }
@@ -213,6 +246,7 @@ sub theme_options {
             value => $cfg_obj->{$field_id},
           };
     }
+    
     
     $param->{html}       = $html;
     $param->{fieldsets}  = \@loop;
@@ -250,7 +284,13 @@ sub save_config {
     my @params = $q->param;
     foreach (@params) {
         next if $_ =~ m/^(__mode|return_args|plugin_sig|magic_token|blog_id)$/;
-        $param->{$_} = $q->param($_);
+        my @vals = $q->param($_);
+        if ($#vals > 0) {
+            # TODO - should this join items together?
+            $param->{$_} = \@vals;
+        } else {
+            $param->{$_} = $vals[0];
+    }
     }
     if ( $profile && $profile->{object} ) {
         my $plugin = $profile->{object};
@@ -262,13 +302,22 @@ sub save_config {
         # BEGIN - contents of MT::Plugin->save_config
         my $pdata = $plugin->get_config_obj($scope);
         $scope =~ s/:.*//;
-        my @vars = $plugin->config_vars($scope);
         my $data = $pdata->data() || {};
 
         my $repub_queue;
         my $plugin_changed = 0;
+
+        my @vars = $plugin->config_vars($scope);
         foreach my $var (@vars) {
             my $opt = find_option_def($app, $var);
+
+            # TODO - this should be pluggable. Field types should register a pre_save handler
+            #        or something
+            if ($opt->{type} eq 'checkbox') {
+                if (ref($param->{$var}) ne 'ARRAY' && $opt->{'values'}) {
+                    $param->{$var} = [ $param->{$var} ]; # Could this be a leak or be weakened?
+                }
+            }
             if ($opt->{type} eq 'file') {
                 my $result = process_file_upload( $app, $var, 'support', $opt->{destination} );
                 if ( $result->{status} == ConfigAssistant::Util::ERROR() ) {
@@ -398,24 +447,73 @@ sub type_colorpicker {
     });</script>\n";
 }
 
+sub type_link_group {
+    my $app = shift;
+    my ( $ctx, $field_id, $field, $value ) = @_;
+    my $static = $app->config->StaticWebPath;
+    $value = '"[]"' if (!$value || $value eq '');
+    eval "\$value = $value";
+    if ($@) { $value = '"[]"'; }
+    my $list;
+    eval { $list = JSON::from_json($value) };
+    if ($@) { $list = []; }
+    my $html;
+    $html = "      <div id=\"$field_id-link-group\" class=\"link-group-container pkg\">"
+        . "<ul>";
+    foreach (@$list) {
+        $html .= '<li class="pkg"><a class="link" href="'.$_->{'url'}.'">'.$_->{'label'}.'</a> <a class="remove" href="javascript:void(0);"><img src="'.$static.'/images/icon_close.png" /></a> <a class="edit" href="javascript:void(0);">edit</a></li>';
+    }
+    $html .= "<li class=\"last\"><button class=\"add-link\">Add Link</button></li>"
+        . "</ul>"
+        . "</div>"
+        . "<input type=\"hidden\" id=\"$field_id\" name=\"$field_id\" value=\""
+        . encode_html( $value, 1 )    # The additional "1" will escape HTML entities properly
+        . "\" />\n<script type=\"text/javascript\">\n";
+    $html .= "  \$('#'+'$field_id-link-group button.add-link').click( handle_edit_click );\n";
+    $html .= "  \$('#'+'$field_id-link-group').parents('form').submit( function (){
+    var struct = Array();
+    \$(this).find('#'+'$field_id-link-group ul li button').trigger('click');
+    \$(this).find('#'+'$field_id-link-group ul li a.link').each( function(i, e) {
+      var u = \$(this).attr('href');
+      var l = \$(this).html();
+      struct.push( { 'url': u, 'label': l } );
+    });
+    var json = \$.toJSON(struct);
+    \$('#'+'$field_id').val( json );
+  });
+  \$('#'+'$field_id-link-group ul li a.remove').click( handle_delete_click );
+  \$('#'+'$field_id-link-group ul li a.edit').click( handle_edit_click );
+</script>\n";
+    return $html;
+}
+
 sub type_textarea {
     my $app = shift;
     my ( $ctx, $field_id, $field, $value ) = @_;
+    my $rows = $field->{rows} || '';
     my $out;
     $out = "      <textarea name=\"$field_id\" class=\"full-width\" rows=\""
-      . $field->{rows} . "\" />";
-    $out .= encode_html( $value, 1 )
-      ;        # The additional "1" will escape HTML entities properly
+      . $rows . "\">";
+    # The additional "1" below will escape HTML entities properly
+    $out .= encode_html( $value, 1 ); 
     $out .= "</textarea>\n";
     return $out;
+}
+
+sub type_page {
+    my $app = shift;
+    my ( $ctx, $field_id, $field, $value ) = @_;
+    $ctx->stash('object_class','page');
+    return type_entry($app,@_);
 }
 
 sub type_entry {
     my $app = shift;
     my ( $ctx, $field_id, $field, $value ) = @_;
     my $out;
-    my $entry      = MT->model('entry')->load($value);
-    my $entry_name = $entry ? $entry->title : '';
+    my $obj_class  = $ctx->stash('object_class') || 'entry';
+    my $obj      = MT->model($obj_class)->load($value);
+    my $obj_name = ($obj ? $obj->title : '') || '';
     my $blog_id    = $field->{all_blogs} ? 0 : $app->blog->id;
     unless ( $ctx->var('entry_chooser_js') ) {
         $out .= <<EOH;
@@ -432,13 +530,14 @@ sub type_entry {
 EOH
         $ctx->var( 'entry_chooser_js', 1 );
     }
+    my $label = MT->model($obj_class)->class_label;
     $out .= <<EOH;
 <div class="pkg">
   <input name="$field_id" id="$field_id" class="hidden" type="hidden" value="$value" />
   <button type="submit"
-          onclick="return openDialog(this.form, 'ca_config_entry', 'blog_id=$blog_id&edit_field=$field_id&status=2')">Choose Entry</button>
+          onclick="return openDialog(this.form, 'ca_config_entry', 'blog_id=$blog_id&edit_field=$field_id&status=2&class=$obj_class')">Choose $label</button>
   <div id="${field_id}_preview" class="preview">
-    $entry_name
+    $obj_name
   </div>
 </div>
 EOH
@@ -644,27 +743,153 @@ sub type_blogs {
     return $out;
 }
 
+sub in_array {
+    my ($arr,$search_for) = @_;
+    foreach my $value (@$arr) {
+        return 1 if $value eq $search_for;
+    }
+    return 0;
+}
+
+
 sub type_checkbox {
     my $app = shift;
     my ( $ctx, $field_id, $field, $value ) = @_;
     my $out;
+    if ($field->{values}) {
+        my $delimiter = $field->{delimiter} || ',';
+        my @values = split( $delimiter, $field->{values} );
+        $out .= "      <ul>\n";
+        foreach (@values) {
+            my $checked = 0;
+            if (ref($value) eq 'ARRAY') {
+                $checked = in_array($value,$_);
+            } else {
+                $checked = $value eq $_;
+            }
+            $out .=
+                "        <li><input type=\"checkbox\" name=\"$field_id\" value=\"$_\""
+                . ( $checked ? " checked=\"checked\"" : "" )
+                . " class=\"rb\" /> "
+                . $_
+                . "</li>\n";
+        }
+        $out .= "      </ul>\n";
+    } else {
     $out .= "      <input type=\"checkbox\" name=\"$field_id\" value=\"1\" "
       . ( $value ? "checked " : "" ) . "/>\n";
+    }
     return $out;
 }
+
+sub type_category {
+    my $app = shift;
+    my ( $ctx, $field_id, $field, $value ) = @_;
+    $value = defined($value) ? $value: 0;
+    my $out;
+    my $obj_class = $ctx->stash('object_class') || 'category';
+    my @cats = MT->model($obj_class)->load({ blog_id => $app->blog->id },
+                                           { sort => 'label' });
+    $out .= "      <select name=\"$field_id\">\n";
+    $out .=
+        "        <option value=\"0\" "
+      . ( 0 == $value ? " selected" : "" )
+      . ">None Selected</option>\n";
+    foreach (@cats) {
+        $out .=
+            "        <option value=\""
+          . $_->id . "\" "
+          . ( $value == $_->id ? " selected" : "" ) . ">"
+          . $_->label
+          . "</option>\n";
+    }
+    $out .= "      </select>\n";
+    return $out;
+}
+
+sub type_folder {
+    my $app = shift;
+    my ( $ctx, $field_id, $field, $value ) = @_;
+    $ctx->stash('object_class','folder');
+    return type_category($app,@_);
+}
+
 
 sub _hdlr_field_value {
     my $plugin = shift;
     my ( $ctx, $args ) = @_;
-    my $plugin_ns = $ctx->stash('plugin_ns');
-    my $scope     = $ctx->stash('scope') || 'blog';
     my $field     = $ctx->stash('field')
       or return _no_field($ctx);
+    my $value = _get_field_value( $ctx );
+    return $args->{default}
+      if ( $args->{default} && ( !$value || $value eq '' ) );
+    return $value;
+}
 
-    #    MT->log("Fetching value for $field in $scope for $plugin_ns");
+sub _hdlr_field_asset {
+    my $plugin = shift;
+    my ( $ctx, $args, $cond ) = @_;
+    my $field     = $ctx->stash('field')
+      or return _no_field($ctx);
+    my $value = _get_field_value( $ctx );
+    my $asset = MT->model('asset')->load( $value );
+    my $out;
+    if ($asset) {
+        local $ctx->{'__stash'}->{'asset'} = $asset;
+        defined( $out = $ctx->slurp( $args, $cond ) ) or return;
+        return $out;
+    } else {
+        require MT::Template::ContextHandlers;
+        return MT::Template::Context::_hdlr_pass_tokens_else(@_);
+    }
+}
 
-    $plugin = MT->component($plugin_ns);    # is this necessary?
+sub _hdlr_field_array_loop {
+    my $plugin = shift;
+    my ( $ctx, $args, $cond ) = @_;
+    my $field     = $ctx->stash('field')
+      or return _no_field($ctx);
+    my $values = _get_field_value( $ctx );
+    my $out = '';
+    my $count = 0;
+    if (@$values > 0) {
+        my $vars = $ctx->{__stash}{vars};
+        foreach (@$values) {
+            local $vars->{'value'} = $_;
+            local $vars->{'__first__'} = ($count++ == 0);
+            local $vars->{'__last__'} = ($count == @$values);
+            defined( $out .= $ctx->slurp( $args, $cond ) ) or return;
+        }
+        return $out;
+    } else {
+        require MT::Template::ContextHandlers;
+        return MT::Template::Context::_hdlr_pass_tokens_else(@_);
+    }
+}
 
+sub _hdlr_field_array_contains {
+    my $plugin = shift;
+    my ( $ctx, $args, $cond ) = @_;
+    my $field     = $ctx->stash('field')
+      or return _no_field($ctx);
+    my $value = $args->{'value'};
+    my $array = _get_field_value( $ctx );
+    foreach (@$array) {
+        #MT->log("Does array contain $value? (currently checking $_)");
+        if ($_ eq $value) {
+            return $ctx->slurp( $args, $cond );
+        }
+    }
+    require MT::Template::ContextHandlers;
+    return MT::Template::Context::_hdlr_pass_tokens_else(@_);
+}
+
+sub _get_field_value {
+    my ($ctx) = @_;
+    my $plugin_ns = $ctx->stash('plugin_ns');
+    my $scope     = $ctx->stash('scope') || 'blog';
+    my $field     = $ctx->stash('field');
+    my $plugin = MT->component($plugin_ns);    # is this necessary?
     my $value;
     my $blog = $ctx->stash('blog');
     if ( !$blog ) {
@@ -677,9 +902,35 @@ sub _hdlr_field_value {
     else {
         $value = $plugin->get_config_value($field);
     }
-    return $args->{default}
-      if ( $args->{default} && ( !$value || $value eq '' ) );
     return $value;
+}
+
+sub _hdlr_field_link_group {
+    my $plugin = shift;
+    my ( $ctx, $args, $cond ) = @_;
+    my $field     = $ctx->stash('field')
+      or return _no_field($ctx);
+    my $value = _get_field_value( $ctx );
+    $value = '"[]"' if (!$value || $value eq '');
+    eval "\$value = $value";
+    if ($@) { $value = '[]'; }
+    my $list = JSON::from_json($value);
+    if (@$list > 0) {
+        my $out = '';
+        my $vars = $ctx->{__stash}{vars};
+        my $count = 0;
+        foreach (@$list) {
+            local $vars->{'link_label'} = $_->{'label'};
+            local $vars->{'link_url'} = $_->{'url'};
+            local $vars->{'__first__'} = ($count++ == 0);
+            local $vars->{'__last__'} = ($count == @$list);
+            defined( $out .= $ctx->slurp( $args, $cond ) ) or return;
+        }
+        return $out;
+    } else {
+        require MT::Template::ContextHandlers;
+        return MT::Template::Context::_hdlr_pass_tokens_else(@_);
+    }
 }
 
 sub _hdlr_field_cond {
@@ -771,7 +1022,33 @@ sub plugin_options {
         }
 
         my $field_id = $optname;
-        if ( $types->{ $field->{'type'} } ) {
+
+        if ( $field->{'type'} eq 'separator' ) {
+            # The separator "type" is handled specially here because it's not
+            # really a "config type"-- it isn't editable and no data is saved
+            # or retrieved. It just displays a separator and some info.
+            my $out;
+            my $show_label =
+              defined $field->{show_label} ? $field->{show_label} : 1;
+            my $label = $field->{label} ne '' ? &{$field->{label}} : '';
+            $out .=
+                '  <div id="field-'
+              . $field_id
+              . '" class="field field-top-label pkg field-type-'
+              . $field->{type} . '">' . "\n";
+            $out .= "   <div class=\"field-header\">\n";
+            $out .= "       <h3>$label</h3>\n" if $show_label;
+            $out .= "   </div>\n";
+            $out .= "   <div class=\"field-content\">\n";
+            if ( $field->{hint} ) {
+                $out .= "       <div>" . $field->{hint} . "</div>\n";
+            }
+            $out .= "  </div>\n";
+            $field->{fieldset} = '__global' unless defined $field->{fieldset};
+            my $fs = $field->{fieldset};
+            push @{ $fields->{$fs} }, $out;
+        }
+        elsif ( $types->{ $field->{'type'} } ) {
             my $value = delete $cfg_obj->{$field_id};
             my $out;
             $field->{fieldset} = '__global' unless defined $field->{fieldset};
@@ -823,6 +1100,7 @@ sub plugin_options {
     {
         next unless $fields->{$set} || $fieldsets->{$set}->{template};
         my $label     = &{ $fieldsets->{$set}->{label} };
+        my $hint      = $fieldsets->{$set}->{hint};
         my $innerhtml = '';
         if ( my $tmpl = $fieldsets->{$set}->{template} ) {
             my $txt = $plugin->load_tmpl($tmpl);
@@ -848,6 +1126,7 @@ sub plugin_options {
             '__first__' => ( $count++ == 0 ),
             id          => dirify($label),
             label       => $label,
+            hint        => $hint,
             content     => $innerhtml,
           };
     }
@@ -894,9 +1173,8 @@ sub list_entry_mini {
     my $app = shift;
 
     my $blog_id = $app->param('blog_id') || 0;
-
-    my $type = 'entry';
-    my $pkg = $app->model($type) or return "Invalid request.";
+    my $obj_type = $app->param('class') || 'entry';
+    my $pkg      = $app->model($obj_type) or return "Invalid request: unknown class $obj_type";
 
     my $terms;
     $terms->{blog_id} = $blog_id if $blog_id;
@@ -909,9 +1187,10 @@ sub list_entry_mini {
 
     my $plugin = MT->component('ConfigAssistant') or die "OMG NO COMPONENT!?!";
     my $tmpl = $plugin->load_tmpl('entry_list.mtml');
+    $tmpl->param('obj_type',$obj_type);
     return $app->listing(
         {
-            type     => 'entry',
+            type     => $obj_type,
             template => $tmpl,
             params   => {
                 panel_searchable => 1,
@@ -951,10 +1230,11 @@ sub list_entry_mini {
 sub select_entry {
     my $app = shift;
 
-    my $entry_id = $app->param('id')
+    my $class = $app->param('class') || 'entry';
+    my $obj_id = $app->param('id')
       or return $app->errtrans('No id');
-    my $entry = MT->model('entry')->load($entry_id)
-      or return $app->errtrans( 'No entry #[_1]', $entry_id );
+    my $obj = MT->model($class)->load($obj_id)
+      or return $app->errtrans( 'No entry #[_1]', $obj_id );
     my $edit_field = $app->param('edit_field')
       or return $app->errtrans('No edit_field');
 
@@ -962,8 +1242,10 @@ sub select_entry {
     my $tmpl = $plugin->load_tmpl(
         'select_entry.mtml',
         {
-            entry_id    => $entry->id,
-            entry_title => $entry->title,
+            class_type  => $class,
+            class_label => $obj->class_label,
+            entry_id    => $obj->id,
+            entry_title => $obj->title,
             edit_field  => $edit_field,
         }
     );
@@ -1006,12 +1288,11 @@ sub xfrm_cfg_plugin {
       <button
         mt:mode="save_plugin_config"
         type="submit"
-        class="save action primary-button"><__trans phrase="Save Changes"></button>
+        class="primary-button"><__trans phrase="Save Changes"></button>
 <mt:if name="plugin_settings_id">
       <button
         onclick="resetPlugin(getByID('plugin-<mt:var name="plugin_id">-form')); return false"
-        type="submit"
-        class="reset action"><__trans phrase="Reset to Defaults"></button>
+        type="submit"><__trans phrase="Reset to Defaults"></button>
 </mt:if>
     </div>
   </div>
@@ -1022,9 +1303,9 @@ END_TMPL
 
     my $slug2 = <<END_TMPL;
 <mt:setvarblock name="html_head" append="1">
-  <link rel="stylesheet" href="<mt:ConfigAssistantStaticWebPath>css/app.css" type="text/css" />
-  <mt:ignore><script src="<mt:StaticWebPath>jquery/jquery.js" type="text/javascript"></script></mt:ignore>
-  <script src="<mt:ConfigAssistantStaticWebPath>js/app.js" type="text/javascript"></script>
+  <link rel="stylesheet" href="<mt:PluginStaticWebPath component="configassistant">css/app.css" type="text/css" />
+  <script src="<mt:StaticWebPath>jquery/jquery.js" type="text/javascript"></script>
+  <script src="<mt:PluginStaticWebPath component="configassistant">js/app.js" type="text/javascript"></script>
 </mt:setvarblock>
 END_TMPL
 

@@ -41,6 +41,7 @@ sub init_app {
         into => 'MT::Component',
         as   => 'needs_upgrade'
     });
+    return 1;
 }
 
 sub init_options {
@@ -53,7 +54,6 @@ sub init_options {
     
     # For the static_version check, to determine if an upgrade is needed.
     my @plugins;
-
     for my $sig ( keys %MT::Plugins ) {
         my $plugin = $MT::Plugins{$sig};
         my $obj    = $MT::Plugins{$sig}{object};
@@ -105,6 +105,7 @@ sub init_options {
                 }
             }
         }    # end foreach (@sets)
+
          # Now register settings for each plugin option, and register a plugin_config_form
         my @options = keys %{ $r->{'options'} };
         foreach my $opt (@options) {
@@ -227,6 +228,52 @@ sub load_tags {
                             runner( '_hdlr_field_value',
                                 'ConfigAssistant::Plugin', @_ );
                         };
+                        if ($option->{'type'} eq 'checkbox') {
+                            $tags->{block}->{$tag . 'Loop'} = sub {
+                                my $blog = $_[0]->stash('blog');
+                                my $bset = $blog->template_set;
+                                $_[0]->stash( 'field', $bset . '_' . $opt );
+                                $_[0]->stash( 'plugin_ns',
+                                              find_theme_plugin($bset)->id );
+                                $_[0]->stash( 'scope', 'blog' );
+                                runner( '_hdlr_field_array_loop',
+                                        'ConfigAssistant::Plugin', @_ );
+                            };
+                            $tags->{block}->{$tag . 'Contains'} = sub {
+                                my $blog = $_[0]->stash('blog');
+                                my $bset = $blog->template_set;
+                                $_[0]->stash( 'field', $bset . '_' . $opt );
+                                $_[0]->stash( 'plugin_ns',
+                                              find_theme_plugin($bset)->id );
+                                $_[0]->stash( 'scope', 'blog' );
+                                runner( '_hdlr_field_array_contains',
+                                        'ConfigAssistant::Plugin', @_ );
+                            };
+
+
+                        } elsif ($option->{'type'} eq 'file') {
+                            $tags->{block}->{$tag . 'Asset'} = sub {
+                                my $blog = $_[0]->stash('blog');
+                                my $bset = $blog->template_set;
+                                $_[0]->stash( 'field', $bset . '_' . $opt );
+                                $_[0]->stash( 'plugin_ns',
+                                              find_theme_plugin($bset)->id );
+                                $_[0]->stash( 'scope', 'blog' );
+                                runner( '_hdlr_field_asset',
+                                        'ConfigAssistant::Plugin', @_ );
+                            };
+                        } elsif ($option->{'type'} eq 'link-group') {
+                            $tags->{block}->{$tag . 'Links'} = sub {
+                                my $blog = $_[0]->stash('blog');
+                                my $bset = $blog->template_set;
+                                $_[0]->stash( 'field', $bset . '_' . $opt );
+                                $_[0]->stash( 'plugin_ns',
+                                              find_theme_plugin($bset)->id );
+                                $_[0]->stash( 'scope', 'blog' );
+                                runner( '_hdlr_field_link_group',
+                                        'ConfigAssistant::Plugin', @_ );
+                            };
+                        }
                     }
                 }
             }
@@ -262,6 +309,52 @@ sub load_tags {
                     runner( '_hdlr_field_value', 'ConfigAssistant::Plugin',
                         @_ );
                 };
+                if ($option->{'type'} eq 'checkbox') {
+                    $tags->{block}->{$tag . 'Loop'} = sub {
+                        my $blog = $_[0]->stash('blog');
+                        my $bset = $blog->template_set;
+                        $_[0]->stash( 'field', $bset . '_' . $opt );
+                        $_[0]->stash( 'plugin_ns',
+                                      find_theme_plugin($bset)->id );
+                        $_[0]->stash( 'scope', 'blog' );
+                        runner( '_hdlr_field_array_loop',
+                                'ConfigAssistant::Plugin', @_ );
+                    };
+                    $tags->{block}->{$tag . 'Contains'} = sub {
+                        my $blog = $_[0]->stash('blog');
+                        my $bset = $blog->template_set;
+                        $_[0]->stash( 'field', $bset . '_' . $opt );
+                        $_[0]->stash( 'plugin_ns',
+                                      find_theme_plugin($bset)->id );
+                        $_[0]->stash( 'scope', 'blog' );
+                        runner( '_hdlr_field_array_contains',
+                                'ConfigAssistant::Plugin', @_ );
+                    };
+                    
+                    
+                } elsif ($option->{'type'} eq 'file') {
+                    $tags->{block}->{$tag . 'Asset'} = sub {
+                        my $blog = $_[0]->stash('blog');
+                        my $bset = $blog->template_set;
+                        $_[0]->stash( 'field', $bset . '_' . $opt );
+                        $_[0]->stash( 'plugin_ns',
+                                      find_theme_plugin($bset)->id );
+                        $_[0]->stash( 'scope', 'blog' );
+                        runner( '_hdlr_field_asset',
+                                'ConfigAssistant::Plugin', @_ );
+                    };
+                } elsif ($option->{'type'} eq 'link-group') {
+                    $tags->{block}->{$tag . 'Links'} = sub {
+                        my $blog = $_[0]->stash('blog');
+                        my $bset = $blog->template_set;
+                        $_[0]->stash( 'field', $bset . '_' . $opt );
+                        $_[0]->stash( 'plugin_ns',
+                                      find_theme_plugin($bset)->id );
+                        $_[0]->stash( 'scope', 'blog' );
+                        runner( '_hdlr_field_link_group',
+                                'ConfigAssistant::Plugin', @_ );
+                    };
+                }
             }
         }
         
@@ -280,7 +373,9 @@ sub load_tags {
             };
             # Create the plugin-specific static web path tag, such as "ConfigAssistantStaticWebPath."
             $tag = $obj->id . 'StaticWebPath';
-            my $url = $app->config('StaticWebPath').'support/plugins/'.$obj->id.'/';
+            my $url = $app->config('StaticWebPath');
+            $url   .= '/' unless $url =~ m!/$!;
+            $url   .= 'support/plugins/'.$obj->id.'/';
             $tags->{function}->{$tag} = sub {
                 MT->log("The usage of the tag '$tag' has been deprecated. Please use mt:PluginStaticWebPath instead");
                 $_[0]->stash( 'field',     $tag     );
