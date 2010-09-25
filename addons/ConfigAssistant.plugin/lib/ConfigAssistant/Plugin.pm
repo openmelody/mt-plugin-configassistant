@@ -531,6 +531,18 @@ EOH
         $ctx->var( 'entry_chooser_js', 1 );
     }
     my $label = MT->model($obj_class)->class_label;
+    my $mtversion  = substr(MT->version_number, 0, 3);
+    if ($mtversion >= 5) {
+        $out .= <<EOH;
+<div class="pkg">
+  <input name="$field_id" id="$field_id" class="hidden" type="hidden" value="$value" />
+  <a href="?__mode=ca_config_entry&blog_id=$blog_id&edit_field=$field_id&status=2&class=$obj_class" class="button mt-open-dialog">Choose $label</a>
+  <div id="${field_id}_preview" class="preview">
+    $obj_name
+  </div>
+</div>
+EOH
+    } else {
     $out .= <<EOH;
 <div class="pkg">
   <input name="$field_id" id="$field_id" class="hidden" type="hidden" value="$value" />
@@ -541,6 +553,7 @@ EOH
   </div>
 </div>
 EOH
+    }
     return $out;
 }
 
@@ -1239,6 +1252,7 @@ sub select_entry {
       or return $app->errtrans('No edit_field');
 
     my $plugin = MT->component('ConfigAssistant') or die "OMG NO COMPONENT!?!";
+    my $mtversion  = substr(MT->version_number, 0, 3);
     my $tmpl = $plugin->load_tmpl(
         'select_entry.mtml',
         {
@@ -1247,6 +1261,7 @@ sub select_entry {
             entry_id    => $obj->id,
             entry_title => $obj->title,
             edit_field  => $edit_field,
+            mtversion   => $mtversion,
         }
     );
     return $tmpl;

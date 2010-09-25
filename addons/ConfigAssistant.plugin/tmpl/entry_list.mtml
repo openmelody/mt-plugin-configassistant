@@ -152,7 +152,9 @@
                 disabled="true"
                 ><__trans phrase="Select"></button>
             <button
+<mt:if name="mtversion" lt="5">
                 onclick="closeDialog(); return false"
+</mt:if>
                 type="submit"
                 accesskey="x"
                 class="cancel action mt-close-dialog"
@@ -174,7 +176,9 @@
         <div class="actions-bar-inner pkg actions">
             <form action="" method="get" onsubmit="return false">
                 <button
+<mt:if name="mtversion" lt="5">
                     onclick="closeDialog(); return false"
+</mt:if>
                     type="submit"
                     accesskey="x"
                     class="cancel action mt-close-dialog"

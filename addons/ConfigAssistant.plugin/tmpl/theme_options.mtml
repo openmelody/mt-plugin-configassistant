@@ -1,4 +1,4 @@
-<mt:setvarblock name="page_title"><__trans phrase="Theme Options"> &gt; <span></span></mt:setvarblock>
+<mt:setvarblock name="page_title"><__trans phrase="Theme Options"></mt:setvarblock>
 <mt:setvarblock name="html_title"><__trans phrase="Edit Theme Options"></mt:setvarblock>
 <mt:var name="position_actions_bottom" value="1">
 <mt:setvarblock name="system_msg">
@@ -40,7 +40,7 @@
 </mt:setvarblock>
 
 <mt:setvarblock name="html_head" append="1">
-<mt:if name="mtversion" gt="5.0">
+<mt:if name="mtversion" ge="5.0">
   <link rel="stylesheet" href="<$mt:PluginStaticWebPath component="configassistant"$>css/app5.css" type="text/css" />
 <mt:else>
   <link rel="stylesheet" href="<$mt:PluginStaticWebPath component="configassistant"$>css/app.css" type="text/css" />
@@ -50,12 +50,14 @@
   <script src="<$mt:PluginStaticWebPath component="configassistant"$>js/app.js" type="text/javascript"></script>
   <script src="<$mt:PluginStaticWebPath component="configassistant"$>colorpicker/js/colorpicker.js" type="text/javascript"></script>
   <script src="<$mt:PluginStaticWebPath component="configassistant"$>js/jquery.json-2.2.min.js" type="text/javascript"></script>
+<mt:if name="mtversion" ge="5.0">
   <script src="<$mt:StaticWebPath$>jqueryui/ui.datepicker.js" type="text/javascript"></script>
   <script src="<$mt:StaticWebPath$>jquery/jquery.mt.js" type="text/javascript"></script>
-  <script type="text/javascript">
-  </script>
+</mt:if>
 </mt:setvarblock>
-
+<mt:if name="mtversion" lt="5.0">
+<mt:setvar name="page_title" value=" &gt; <span></span>" append="1">
+</mt:if>
 <mt:var name="screen_id" value="theme_options">
 <mt:include name="include/header.tmpl">
 
