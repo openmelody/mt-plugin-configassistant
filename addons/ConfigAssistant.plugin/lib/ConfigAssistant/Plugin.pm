@@ -1157,6 +1157,7 @@ sub plugin_options {
     $param->{blog_id}     = $blog->id if $blog;
     $param->{magic_token} = $app->current_magic;
     $param->{plugin_sig}  = $plugin->{plugin_sig};
+    $param->{mtversion}   = substr(MT->version_number, 0, 3);
 
     return MT->component('ConfigAssistant')
       ->load_tmpl( 'plugin_options.mtml', $param );
@@ -1282,6 +1283,7 @@ sub xfrm_cfg_plugin_param {
 
 sub xfrm_cfg_plugin {
     my ( $cb, $app, $tmpl ) = @_;
+    my $mtversion  = substr(MT->version_number, 0, 3);
     my $slug1 = <<END_TMPL;
 
 <form enctype="multipart/form-data" method="post" action="<mt:var name="script_url">" id="plugin-<mt:var name="plugin_id">-form">
@@ -1315,15 +1317,21 @@ sub xfrm_cfg_plugin {
 </form>
 
 END_TMPL
-
-    my $slug2 = <<END_TMPL;
+        my $slug2 = <<END_TMPL;
 <mt:setvarblock name="html_head" append="1">
   <link rel="stylesheet" href="<mt:PluginStaticWebPath component="configassistant">css/app.css" type="text/css" />
   <script src="<mt:StaticWebPath>jquery/jquery.js" type="text/javascript"></script>
   <script src="<mt:PluginStaticWebPath component="configassistant">js/app.js" type="text/javascript"></script>
 </mt:setvarblock>
 END_TMPL
-
+    if ($mtversion >= 5.0) {
+        $slug2 = <<END_TMPL;
+<mt:setvarblock name="html_head" append="1">
+  <link rel="stylesheet" href="<mt:PluginStaticWebPath component="configassistant">css/app.css" type="text/css" />
+  <script src="<mt:PluginStaticWebPath component="configassistant">js/app.js" type="text/javascript"></script>
+</mt:setvarblock>
+END_TMPL
+    }
     $$tmpl =~
 s{(<form method="post" action="<mt:var name="script_url">" id="plugin-<mt:var name="plugin_id">-form">.*</form>)}{$slug1}msg;
     $$tmpl =~ s{^}{$slug2};
