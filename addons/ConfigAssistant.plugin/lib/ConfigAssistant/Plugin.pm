@@ -1305,11 +1305,12 @@ sub xfrm_cfg_plugin {
       <button
         mt:mode="save_plugin_config"
         type="submit"
-        class="primary-button"><__trans phrase="Save Changes"></button>
+        class="action primary-button"><__trans phrase="Save Changes"></button>
 <mt:if name="plugin_settings_id">
       <button
         onclick="resetPlugin(getByID('plugin-<mt:var name="plugin_id">-form')); return false"
-        type="submit"><__trans phrase="Reset to Defaults"></button>
+        type="submit"
+        class="action"><__trans phrase="Reset to Defaults"></button>
 </mt:if>
     </div>
   </div>
