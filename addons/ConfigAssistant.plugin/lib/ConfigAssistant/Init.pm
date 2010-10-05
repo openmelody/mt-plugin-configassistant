@@ -13,6 +13,15 @@ sub init_app {
     my $plugin = shift;
     my ($app) = @_;
     return if $app->id eq 'wizard';
+    
+    # Disable the AutoPrefs plugin if it's installed. (AutoPrefs has been
+    # merged with Config Assistant, so is not needed anymore.)
+    my $switch = MT->config('PluginSwitch') || {};
+    unless ( $switch->{'AutoPrefs'} eq '0' ) {
+        $switch->{'AutoPrefs'} = 0;
+        MT->config('PluginSwitch', $switch, 1);
+        MT->config->save_config();
+    }
 
     init_options($app);
     my $r = $plugin->registry;
@@ -414,6 +423,13 @@ sub update_menus {
                 return 1 if $app->registry('template_sets')->{$ts}->{options};
                 return 0;
             },
+        },
+        'prefs:ca_prefs' => {
+            label      => 'Chooser',
+            order      => 1,
+            mode       => 'ca_prefs_chooser',
+            view       => 'blog',
+            permission => 'administer',
         }
     };
 }

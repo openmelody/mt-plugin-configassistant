@@ -1,0 +1,75 @@
+<mt:setvar name="page_title" value="<__trans phrase="Preferences Chooser">">
+<$mt:setvar name="position_actions_bottom" value="1"$>
+
+<mt:setvarblock name="related_content">
+    <mtapp:PageActions />
+</mt:setvarblock>
+
+<mt:setvarblock name="html_head" append="1">
+    <script type="text/javascript">
+    <!--
+    //-->
+    </script>
+    <style type="text/css">
+    #pref_chooser-field li {
+        margin-bottom: 8px;
+    }
+
+    #pref_chooser-field li span.hint {
+        display: block;
+        margin-left: 17px;
+    }
+    </style>
+</mt:setvarblock>
+
+<mt:setvarblock name="content_header">
+    <div id="msg-container">
+    <mt:if name="prefs_applied">
+        <mtapp:statusmsg
+            id="message"
+            class="success">
+            <__trans phrase="Preferences successfully applied.">
+        </mtapp:statusmsg>
+    </mt:if>
+    </div>
+</mt:setvarblock>
+
+<mt:setvarblock name="content_nav">
+    <mt:include name="include/cfg_content_nav.tmpl">
+</mt:setvarblock>
+
+<$mt:include name="include/header.tmpl"$>
+
+<form name="ca_prefs_chooser_form" id="ca_prefs_chooser_form" method="post" action="<mt:var name="script_url">">
+    <input type="hidden" name="__mode" value="ca_prefs_apply" />
+    <input type="hidden" name="blog_id" value="<mt:var name="blog_id">" />
+    <input type="hidden" name="return_args" value="<mt:var name="return_args" escape="html">" />
+    <input type="hidden" name="magic_token" value="<mt:var name="magic_token">" />
+
+      <p>Choose the configuration that is best for your blog.</p>
+        <mtapp:setting
+            id="pref_chooser"
+            label="Preferences Chooser"
+            show_label="0"
+            label_class="top-label">
+            <ul>
+<mt:loop name="prefs">
+                <li>
+                    <input type="radio" id="prefs-<$mt:var name="id"$>" name="pref_id" value="<$mt:var name="id"$>" <mt:if name="selected">checked="checked"</mt:if> />
+                    <label for="prefs-<$mt:var name="id"$>"><$mt:var name="name"$> <span class="hint"><$mt:var name="description"$></span></label>
+                </li>
+</mt:loop>
+            </ul>
+        </mtapp:setting>
+        <div class="actions-bar">
+            <div class="actions-bar-inner pkg actions">
+                <button
+                    type="submit"
+                    accesskey="s"
+                    class="primary-button next"
+                    ><__trans phrase="Apply"></button>
+            </div>
+        </div>
+</form>
+
+<$mt:include name="include/footer.tmpl"$>

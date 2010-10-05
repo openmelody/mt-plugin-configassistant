@@ -4,9 +4,9 @@ key: ConfigAssistant
 author_link: http://www.majordojo.com/
 author_name: Byrne Reese
 description: This plugin provides a simple YAML based framework for creating plugin and theme configuration options.
-version: 1.10.10
+version: 2.0
 static_version: 3
-schema_version: 1
+schema_version: 2
 
 applications:
   cms:
@@ -17,13 +17,16 @@ applications:
       ca_select_entry:  $ConfigAssistant::ConfigAssistant::Plugin::select_entry
       ca_save_config:   $ConfigAssistant::ConfigAssistant::Plugin::save_config
       run_static_copy:  $ConfigAssistant::ConfigAssistant::Static::manual_run
+      ca_prefs_apply:   $ConfigAssistant::ConfigAssistant::Prefs::apply
+      ca_prefs_chooser: $ConfigAssistant::ConfigAssistant::Prefs::chooser
     search_apis:
       entry:
         setup_terms_args: $ConfigAssistant::ConfigAssistant::Plugin::entry_search_api_prep
 
 callbacks:
-  MT::App::CMS::template_param.cfg_plugin: $ConfigAssistant::ConfigAssistant::Plugin::xfrm_cfg_plugin_param
+  MT::App::CMS::template_param.cfg_plugin:  $ConfigAssistant::ConfigAssistant::Plugin::xfrm_cfg_plugin_param
   MT::App::CMS::template_source.cfg_plugin: $ConfigAssistant::ConfigAssistant::Plugin::xfrm_cfg_plugin
+  blog_template_set_change:                 $ConfigAssistant::ConfigAssistant::Prefs::on_template_set_change
 
 init_app: $ConfigAssistant::ConfigAssistant::Init::init_app
 
@@ -69,3 +72,14 @@ upgrade_functions:
     # use a way big one, just so I don't have to remember to update it.
     version_limit: 999
     handler: $ConfigAssistant::ConfigAssistant::Static::upgrade
+
+object_types:
+  blog:
+    selected_config: string meta
+
+blog_preferences:
+  __default__:
+    label: 'Movable Type Factory Default'
+    description: 'This is the default factory settings for Movable Type.'
+    order: 1
+    preferences: default_prefs.yaml

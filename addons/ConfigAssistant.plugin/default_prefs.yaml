@@ -1,0 +1,66 @@
+# Blog preferences can be set from MT::Blog::set_defaults, however this
+# doesn't set all values. This is important if a user wants to reset
+# preferences back to the MT default: we need to be sure all preferences
+# get updated. So, just set all preferences here.
+allow_anon_comments: 0
+allow_comment_html: 1
+allow_commenter_regist: 1
+allow_comments_default: 1
+allow_pings: 1
+allow_pings_default: 1
+allow_reg_comments: 1
+allow_unreg_comments: 1
+archive_type: ''
+archive_type_preferred: ''
+autodiscover_links: 0
+autolink_urls: 1
+basename_limit: 100
+captcha_provider: ''
+cc_license: ''
+commenter_authenticators: 'MovableType,LiveJournal'
+convert_paras: '0'
+convert_paras_comments: 1
+custom_dynamic_templates: 'none'
+days_on_index: 0
+email_new_comments: 1
+email_new_pings: 1
+entries_on_index: 10
+file_extension: 'html'
+follow_auth_links: 1
+image_default_align: ''
+image_default_constrain: ''
+image_default_thumb: ''
+image_default_width: ''
+image_default_popup: ''
+image_default_wrap_text: ''
+image_default_wunits: ''
+include_cache: 0
+include_system: 0
+internal_autodiscovery: 0
+is_dynamic: 0
+junk_folder_expiry: 14
+junk_score_threshold: 0
+#language` (default: *derived from config file, or from server*) - 
+manual_approve_commenters: 0
+moderate_pings: 1
+moderate_unreg_comments: 2
+nofollow_urls: 1
+nwc_smart_replace: ''
+nwc_replace_field: ''
+ping_blogs: 0
+ping_google: 0
+ping_others: 0
+ping_technorati: 0
+ping_weblogs: 0
+remote_auth_token: ''
+require_comment_emails: 0
+require_typekey_emails: 0
+sanitize_spec: 0
+#server_offset` (default: *determined from config file or server*) - 
+sort_order_comments: 'ascend'
+sort_order_posts: 'descend'
+status_default: 2
+update_pings: ''
+use_comment_confirmation: 1
+welcome_msg: 0
+words_in_excerpt: 40
