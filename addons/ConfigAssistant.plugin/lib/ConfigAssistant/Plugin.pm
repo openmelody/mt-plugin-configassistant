@@ -149,7 +149,7 @@ sub theme_options {
             my $out;
             $field->{fieldset} = '__global' unless defined $field->{fieldset};
             my $show_label =
-              defined $field->{show_label} ? $field->{show_label} : 1;
+              defined $field->{show_label} ? &{$field->{show_label}} : 1;
             my $label = $field->{label} ne '' ? &{$field->{label}} : '';
             my $required = $field->{required} ? 'required' : '';
             if ($required) {
@@ -161,21 +161,18 @@ sub theme_options {
                 # Append the required flag.
                 $label .= ' <span class="required-flag">*</span>';
             }
-            $out .=
-                '  <div id="field-'
-              . $field_id
-              . '" class="field field-left-label pkg field-type-'
-              . $field->{type} . ' ' . $required . '">' . "\n";
+
+            $out .= "  <div id=\"field-$field_id\" class=\"field"
+                . ( $show_label == 1 ? " field-left-label" : "" )
+                . ' pkg field-type-'
+                . $field->{type} . ' ' . $required . '">' . "\n";
             $out .= "    <div class=\"field-header\">\n";
-            $out .=
-                "      <label for=\"$field_id\">"
-              . $label
-              . "</label>\n"
-              if $show_label;
+            $out .= "      <label for=\"$field_id\">$label</label>\n"
+                if $show_label;
             $out .= "    </div>\n";
             $out .= "    <div class=\"field-content\">\n";
             my $hdlr =
-              MT->handler_to_coderef( $types->{ $field->{'type'} }->{handler} );
+                MT->handler_to_coderef( $types->{ $field->{'type'} }->{handler} );
             $out .= $hdlr->( $app, $ctx, $field_id, $field, $value );
 
             if ( $field->{hint} ) {
@@ -655,12 +652,18 @@ sub type_radio {
     my @values = split( ",", $field->{values} );
     $out .= "      <ul>\n";
     foreach (@values) {
+        # $el_id ("element ID") is used as a unique identifier so that the
+        # label can be clickable to select the radio button.
+        my $el_id = $field_id . '_' . $_;
         $out .=
-            "        <li><input type=\"radio\" name=\"$field_id\" value=\"$_\""
-          . ( $value eq $_ ? " checked=\"checked\"" : "" )
-          . " class=\"rb\" />"
-          . $_
-          . "</li>\n";
+            "        <li><input type=\"radio\" name=\"$field_id\""
+            . " id=\"$el_id\" value=\"$_\""
+            . ( $value eq $_ ? " checked=\"checked\"" : "" )
+            . " class=\"rb\" />"
+            # Add a space between the input field and the label so that the
+            # label text isn't bumped up right next to the radio button.
+            . " <label for=\"$el_id\">$_</label>"
+            . "</li>\n";
     }
     $out .= "      </ul>\n";
     return $out;
@@ -763,11 +766,17 @@ sub type_checkbox {
             } else {
                 $checked = $value eq $_;
             }
+            # $el_id ("element ID") is used as a unique identifier so that the
+            # label can be clickable to select the radio button.
+            my $el_id = $field_id . '_' . $_;
             $out .=
-                "        <li><input type=\"checkbox\" name=\"$field_id\" value=\"$_\""
+                "        <li><input type=\"checkbox\" name=\"$field_id\" "
+                . "id=\"$el_id\" value=\"$_\""
                 . ( $checked ? " checked=\"checked\"" : "" )
-                . " class=\"rb\" /> "
-                . $_
+                . " class=\"rb\" />"
+                # Add a space between the input field and the label so that the
+                # label text isn't bumped up right next to the radio button.
+                . " <label for=\"$el_id\">$_</label>"
                 . "</li>\n";
         }
         $out .= "      </ul>\n";
@@ -1025,8 +1034,9 @@ sub plugin_options {
             # or retrieved. It just displays a separator and some info.
             my $out;
             my $show_label =
-              defined $field->{show_label} ? $field->{show_label} : 1;
+                defined $field->{show_label} ? %{$field->{show_label}} : 1;
             my $label = $field->{label} ne '' ? &{$field->{label}} : '';
+
             $out .=
                 '  <div id="field-'
               . $field_id
@@ -1049,18 +1059,16 @@ sub plugin_options {
             my $out;
             $field->{fieldset} = '__global' unless defined $field->{fieldset};
             my $show_label =
-              defined $field->{show_label} ? $field->{show_label} : 1;
-            $out .=
-                '  <div id="field-'
-              . $field_id
-              . '" class="field field-left-label pkg field-type-'
-              . $field->{type} . '">' . "\n";
+                defined $field->{show_label} ? %{$field->{show_label}} : 1;
+            my $label = $field->{label} ne '' ? &{$field->{label}} : '';
+
+            $out .= "  <div id=\"field-$field_id\" class=\"field"
+                . ( $show_label == 1 ? " field-left-label" : "" )
+                . ' pkg field-type-'
+                . $field->{type} . '">' . "\n";
             $out .= "    <div class=\"field-header\">\n";
-            $out .=
-                "      <label for=\"$field_id\">"
-              . &{ $field->{label} }
-              . "</label>\n"
-              if $show_label;
+            $out .= "      <label for=\"$field_id\">$label</label>\n"
+                if $show_label;
             $out .= "    </div>\n";
             $out .= "    <div class=\"field-content\">\n";
             my $hdlr =
