@@ -38,15 +38,22 @@ can begin using this plugin today.
 This plugin is installed [just like any other Movable Type Plugin](http://www.majordojo.com/2008/12/the-ultimate-guide-to-installing-movable-type-plugins.php).
 
 One important note is that this plugin should be installed into Movable Type's 
-`addons` directory. Installing this plugin into any other directory will 
-potentially cripple your installation. So please be careful. 
+`addons` directory. If you install this plugin into your `plugins` folder as
+is common with other plugins, Movable Type may produce inexplicable errors.
+So please be careful and note where you are installing this plugin. If you 
+follow the instructions above however, then you should have no problem 
+whatsoever.
 
-Also be aware that if you are upgrading from a previous version, you should 
+# Upgrading
+
+If you are upgrading from a previous version of Config Assistant, you should 
 remove any copy of Config Assistant from your plugins directory if one is 
 installed there.
 
-The AutoPrefs plugin has been merged into Config Assistant. If you already 
-have the AutoPrefs plugin installed, it will be disabled by Config 
+    prompt> rm -rf $MT_HOME/plugins/ConfigAssistant
+
+Starting with version 2.0, the AutoPrefs plugin has been merged into Config Assistant. 
+If you already have the AutoPrefs plugin installed, it will be disabled by Config 
 Assistant. You can keep or remove the AutoPrefs plugin--it won't interact 
 with Config Assistant.
 
