@@ -1310,12 +1310,16 @@ END_TMPL
 <mt:setvarblock name="html_head" append="1">
   <link rel="stylesheet" href="<mt:PluginStaticWebPath component="configassistant">css/app.css" type="text/css" />
   <script src="<mt:StaticWebPath>jquery/jquery.js" type="text/javascript"></script>
-  <script src="<mt:PluginStaticWebPath component="configassistant">js/app.js" type="text/javascript"></script>
+  <script src="<mt:PluginStaticWebPath component="configassistant">js/options.js" type="text/javascript"></script>
 </mt:setvarblock>
 END_TMPL
 
+# MT 4.34
+#  <form method="post" action="<mt:var name="script_url">" id="plugin-<mt:var name="plugin_id">-form">
+# Melody
+#  <form method="post" action="<$mt:var name="script_url"$>" id="plugin-<$mt:var name="plugin_id" dirify="1"$>-form">
     $$tmpl =~
-s{(<form method="post" action="<mt:var name="script_url">" id="plugin-<mt:var name="plugin_id">-form">.*</form>)}{$slug1}msg;
+s{(<form method="post" action="<\$?mt:var name="script_url"\$?>" id="plugin-<\$?mt:var name="plugin_id"( dirify="1"\$?)?>-form">.*</form>)}{$slug1}msg;
     $$tmpl =~ s{^}{$slug2};
 }
 
