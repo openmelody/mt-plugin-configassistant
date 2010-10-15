@@ -44,6 +44,12 @@ So please be careful and note where you are installing this plugin. If you
 follow the instructions above however, then you should have no problem 
 whatsoever.
 
+Another note is that both StaticFilePath and StaticWebPath configuration
+directives should be used. The plugin wont install without StaticFilePath, 
+which is used in copying of static files to the support folder. StaticWebPath
+is used to properly include some static content within the Movable Type App.
+
+
 # Upgrading
 
 If you are upgrading from a previous version of Config Assistant, you should 
