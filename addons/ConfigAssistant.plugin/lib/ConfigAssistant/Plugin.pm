@@ -1380,7 +1380,7 @@ END_TMPL
     my $slug2 = <<END_TMPL;
 <mt:setvarblock name="html_head" append="1">
   <link rel="stylesheet" href="<mt:PluginStaticWebPath component="configassistant">css/app.css" type="text/css" />
-  <script src="<mt:StaticWebPath>jquery/jquery.js" type="text/javascript"></script>
+  <mt:ignore><script src="<mt:StaticWebPath>jquery/jquery.js" type="text/javascript"></script></mt:ignore>
   <script src="<mt:PluginStaticWebPath component="configassistant">js/options.js" type="text/javascript"></script>
 </mt:setvarblock>
 END_TMPL
