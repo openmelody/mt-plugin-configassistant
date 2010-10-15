@@ -812,6 +812,46 @@ sub type_category {
     return $out;
 }
 
+sub type_folder_list {
+    my $app = shift;
+    my ( $ctx, $field_id, $field, $value ) = @_;
+    $ctx->stash('object_class', 'folder');
+    return type_category_list($app, @_);
+}
+
+sub type_category_list {
+    my $app = shift;
+    my ( $ctx, $field_id, $field, $value ) = @_;
+    $value = defined($value) ? $value: 0;
+    my @values = ref $value eq 'ARRAY' ? @$value : (0);
+    my $out;
+    my $obj_class = $ctx->stash('object_class') || 'category';
+
+    my $params = { };
+    $params->{blog_id} = $app->blog->id;
+    $params->{parent} = 0 unless $ctx->stash('show_children');
+
+    my @cats = MT->model($obj_class)->load( $params,
+                                            { sort => 'label' });
+    $out .= "      <select style=\"width: 300px;height:100px\" name=\"$field_id\" multiple=\"true\">\n";
+    foreach my $cat (@cats) {
+        my $found = 0;
+        foreach (@values) {
+            if ($cat->id == $_) {
+                $found = 1;
+            }
+        }
+        $out .=
+            "        <option value=\""
+          . $cat->id . "\" "
+          . ( $found ? " selected" : "" ) . ">"
+          . $cat->label
+          . "</option>\n";
+    }
+    $out .= "      </select>\n";
+    return $out;
+}
+
 sub type_folder {
     my $app = shift;
     my ( $ctx, $field_id, $field, $value ) = @_;
@@ -889,6 +929,34 @@ sub _hdlr_field_array_contains {
     return MT::Template::Context::_hdlr_pass_tokens_else(@_);
 }
 
+sub _hdlr_field_category_list {
+    my $plugin = shift;
+    my ( $ctx, $args, $cond ) = @_;
+    my $field     = $ctx->stash('field')
+      or return _no_field($ctx);
+    my $value = _get_field_value($ctx);
+    my @ids = split(/,/, $value);
+    my $class = $ctx->stash('obj_class');
+
+    my @categories = MT->model( $class )->load({ id => \@ids });
+    my $out = '';
+    my $vars = $ctx->{__stash}{vars};
+    my $glue = $args->{glue};
+    for (my $index = 0; $index <= $#categories; $index++) {
+        
+        local $vars->{__first__} = $index == 0;
+        local $vars->{__last__}  = $index == $#categories;
+        local $vars->{__odd__}   = $index % 2 == 1;
+        local $vars->{__even__}  = $index % 2 == 0;
+        local $vars->{__index__} = $index;
+        local $vars->{__size__}  = scalar(@categories);
+
+        $ctx->stash('category', $categories[$index]);
+        $out .= $ctx->slurp( $args, $cond ) . ($glue && $index< $#categories ? $glue : ''  );
+    }
+    return $out;
+}
+
 sub _get_field_value {
     my ($ctx) = @_;
     my $plugin_ns = $ctx->stash('plugin_ns');
@@ -906,6 +974,9 @@ sub _get_field_value {
     }
     else {
         $value = $plugin->get_config_value($field);
+    }
+    if (ref $value eq 'ARRAY') {
+        $value = join (',', @$value);
     }
     return $value;
 }

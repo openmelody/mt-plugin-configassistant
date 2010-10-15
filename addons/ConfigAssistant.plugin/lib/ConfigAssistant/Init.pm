@@ -197,33 +197,32 @@ sub load_tags {
         # First initialize all the tags associated with themes
         my @sets = keys %{ $r->{'template_sets'} };
         foreach my $set (@sets) {
-            if ( $r->{'template_sets'}->{$set}->{'options'} ) {
+            if ( $obj->registry('template_sets', $set, 'options') ) {
                 foreach my $opt (
-                    keys %{ $r->{'template_sets'}->{$set}->{'options'} } )
+                    keys %{ $obj->registry('template_sets', $set, 'options') } )
                 {
-                    my $option =
-                      $r->{'template_sets'}->{$set}->{'options'}->{$opt};
+                    my $option = $obj->registry('template_sets', $set, 'options', $opt);
 
                     # If the option does not define a tag name,
                     # then there is no need to register one
                     next if ( !defined( $option->{tag} ) );
                     my $tag = $option->{tag};
 
-               # TODO - there is the remote possibility that a template set
-               # will attempt to register a duplicate tag. This case needs to be
-               # handled properly. Or does it?
-               # Note: the tag handler takes into consideration the blog_id, the
-               # template set id and the option/setting name.
+                    # TODO - there is the remote possibility that a template set
+                    # will attempt to register a duplicate tag. This case needs to be
+                    # handled properly. Or does it?
+                    # Note: the tag handler takes into consideration the blog_id, the
+                    # template set id and the option/setting name.
                     if ( $tag =~ s/\?$// ) {
                         $tags->{block}->{$tag} = sub {
                             my $blog = $_[0]->stash('blog');
                             my $bset = $blog->template_set;
                             $_[0]->stash( 'field', $bset . '_' . $opt );
                             $_[0]->stash( 'plugin_ns',
-                                find_theme_plugin($bset)->id );
+                                          find_theme_plugin($bset)->id );
                             $_[0]->stash( 'scope', 'blog' );
                             runner( '_hdlr_field_cond',
-                                'ConfigAssistant::Plugin', @_ );
+                                    'ConfigAssistant::Plugin', @_ );
                         };
                     }
                     elsif ( $tag ne '' ) {
@@ -279,8 +278,24 @@ sub load_tags {
                                 $_[0]->stash( 'plugin_ns',
                                               find_theme_plugin($bset)->id );
                                 $_[0]->stash( 'scope', 'blog' );
+                                $_[0]->stash( 'show_children', (defined $option->{show_children} ? $option->{show_children} : 1 ) );
                                 runner( '_hdlr_field_link_group',
                                         'ConfigAssistant::Plugin', @_ );
+                            };
+                        } elsif ($option->{'type'} eq 'category_list' or $option->{'type'} eq 'folder_list') {
+                            my $t = $option->{'type'};
+                            my $tag_type = $t eq 'category_list' ? 'Categories' : 'Folders';
+                            my $obj_class = substr($t, 0, index($t, '_list'));
+                            $tags->{block}->{$tag . $tag_type} = sub {
+                                $_[0]->stash('obj_class', $obj_class);
+                                my $blog = $_[0]->stash('blog');
+                                my $bset = $blog->template_set;
+                                $_[0]->stash( 'field', $bset . '_' . $opt );
+                                $_[0]->stash( 'plugin_ns',
+                                              find_theme_plugin($bset)->id );
+                                $_[0]->stash( 'scope', 'blog' );
+                                runner( '_hdlr_field_category_list',
+                                    'ConfigAssistant::Plugin', @_ );
                             };
                         }
                     }
@@ -340,7 +355,6 @@ sub load_tags {
                                 'ConfigAssistant::Plugin', @_ );
                     };
                     
-                    
                 } elsif ($option->{'type'} eq 'file') {
                     $tags->{block}->{$tag . 'Asset'} = sub {
                         my $blog = $_[0]->stash('blog');
@@ -352,6 +366,7 @@ sub load_tags {
                         runner( '_hdlr_field_asset',
                                 'ConfigAssistant::Plugin', @_ );
                     };
+
                 } elsif ($option->{'type'} eq 'link-group') {
                     $tags->{block}->{$tag . 'Links'} = sub {
                         my $blog = $_[0]->stash('blog');
@@ -363,12 +378,28 @@ sub load_tags {
                         runner( '_hdlr_field_link_group',
                                 'ConfigAssistant::Plugin', @_ );
                     };
+
+                } elsif ($option->{'type'} eq 'category_list' or $option->{'type'} eq 'folder_list') {
+                    my $t = $option->{'type'};
+                    my $tag_type = $t eq 'category_list' ? 'Categories' : 'Folders';
+                    my $obj_class = substr($t, 0, index($t, '_list'));
+                    $tags->{block}->{$tag . $tag_type} = sub {
+                        $_[0]->stash('obj_class', $obj_class);
+                        my $blog = $_[0]->stash('blog');
+                        my $bset = $blog->template_set;
+                        $_[0]->stash( 'field', $bset . '_' . $opt );
+                        $_[0]->stash( 'plugin_ns',
+                                      find_theme_plugin($bset)->id );
+                        $_[0]->stash( 'scope', 'blog' );
+                        runner( '_hdlr_field_category_list',
+                                'ConfigAssistant::Plugin', @_ );
+                    };
                 }
             }
         }
         
         # Create plugin-specific tags to the static content
-        if ( $r->{'static_version'} ) {
+        if ( $r && $r->{'static_version'} ) {
             # Create the plugin-specific static file path tag, such as "ConfigAssistantStaticFilePath."
             my $tag;
             $tag = $obj->id . 'StaticFilePath';

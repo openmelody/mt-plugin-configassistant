@@ -266,8 +266,16 @@ field:
 * `category` - Produces the ability to select a single category via a drop-down 
   listing.
 
+* `category_list` - Produces the ability to select multiple categories via a multi-select 
+  listing. This form of config option accepts the "show_children" option which will toggle
+  the displaying of child categories on and off.
+
 * `folder` - Produces the ability to select a single folder via a drop-down 
   listing.
+
+* `folder_list` - Produces the ability to select a single category via a drop-down 
+  listing. This form of config option accepts the "show_children" option which will toggle
+  the displaying of child folders on and off.
 
 * `colorpicker` - Produces a color wheel pop-up for selecting a color or hex value.
 
@@ -290,6 +298,44 @@ field:
   field because there is no editable form to interact with and is
   informational only. Only the `label`, `hint`, `order`, and `fieldset` keys 
   are valid with this field type.
+
+**Category and Folder Tags**
+
+Assuming this option:
+    header_categories:
+        label: HeaderCategories
+        type: category_list
+        show_children: 0
+        tag: HeaderCategories
+
+There are two ways this can be accessed. The raw string (comma-separated) of category
+IDs can be returned with a function tag (<$mt:HeaderCategories$>). Appending Categories
+or Folders to the end of the tag name turns it into a block tag that supports all of
+the Category (or Folder) tags. For example:
+
+    <mt:HeaderCategoriesCategories>
+        <mt:If name="__first__">
+            <ul>
+        </mt:If>
+                <li><a href="<$mt:CategoryArchiveLink$>"><$mt:ArchiveLabel$></a></li>
+        <mt:If name="__last__">
+            </ul>
+        </mt:If>
+    </mt:HeaderCategories>
+
+That will generate an unordered listed of categories suitable for a top-level navigation menu.
+
+The following template variables are set:
+* `__first__` True only if the current category is the first.
+* `__last__`  True only if the current category is the last.
+* `__odd__`   True only if the current iteration of the category loop is odd.
+* `__even__`  True only if the current iteration of the category loop is even.
+* `__index__` Returns the current index of the category loop.
+* `__size__`  Returns the number of categories.
+
+This loop also supports the "glue" attribute. The value of this attribute, if set, will be
+put at the end of every iteration of the loop until the very last iteration. It functions
+identically to the "glue" attribute provided by core template tags.
 
 **Link Group Tags**
 
