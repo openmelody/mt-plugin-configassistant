@@ -823,7 +823,7 @@ sub type_category_list {
     my $app = shift;
     my ( $ctx, $field_id, $field, $value ) = @_;
     $value = defined($value) ? $value: 0;
-    my @values = ref $value eq 'ARRAY' ? @$value : (0);
+    my @values = ref $value eq 'ARRAY' ? @$value : ($value);
     my $out;
     my $obj_class = $ctx->stash('object_class') || 'category';
 
@@ -935,7 +935,7 @@ sub _hdlr_field_category_list {
     my $field     = $ctx->stash('field')
       or return _no_field($ctx);
     my $value = _get_field_value($ctx);
-    my @ids = split(/,/, $value);
+    my @ids = ref($value) eq 'ARRAY' ? @$value : ($value);
     my $class = $ctx->stash('obj_class');
 
     my @categories = MT->model( $class )->load({ id => \@ids });
@@ -975,9 +975,7 @@ sub _get_field_value {
     else {
         $value = $plugin->get_config_value($field);
     }
-    if (ref $value eq 'ARRAY') {
-        $value = join (',', @$value);
-    }
+
     return $value;
 }
 
