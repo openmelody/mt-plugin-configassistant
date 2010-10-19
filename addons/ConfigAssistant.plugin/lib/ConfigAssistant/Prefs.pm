@@ -4,11 +4,11 @@ use strict;
 
 sub apply {
     my $app = shift;
+    my $q = $app->can('query') ? $app->query : $app->param;
     my ($param) = @_;
 
     $app->validate_magic or return;
 
-    my $q    = $app->{query};
     my $blog = MT->model('blog')->load( $q->param('blog_id') );
     my $pid  = $q->param('pref_id');
 
@@ -19,9 +19,9 @@ sub apply {
             'mode' => 'ca_prefs_chooser',
             'args' => {
                 'prefs_applied' => 1,
-                'blog_id'       => $app->param('blog_id'),
+                'blog_id'       => $q->param('blog_id'),
                 'return_args'   => $app->return_args,
-                'magic_token'   => $app->param('magic_token')
+                'magic_token'   => $q->param('magic_token')
             }
         )
     );
@@ -29,8 +29,8 @@ sub apply {
 
 sub chooser {
     my $app     = shift;
+    my $q       = $app->can('query') ? $app->query : $app->param;
     my ($param) = @_;
-    my $q       = $app->{query};
     my $blog    = MT->model('blog')->load( $q->param('blog_id') );
 
     $param ||= {};
@@ -50,10 +50,10 @@ sub chooser {
     }
     @data = sort { $a->{order} <=> $b->{order} } @data;
     $param->{prefs}         = \@data;
-    $param->{blog_id}       = $app->param('blog_id');
+    $param->{blog_id}       = $q->param('blog_id');
     $param->{return_args}   = $app->return_args;
-    $param->{magic_token}   = $app->param('magic_token');
-    $param->{prefs_applied} = $app->param('prefs_applied') ? 1 : 0;
+    $param->{magic_token}   = $q->param('magic_token');
+    $param->{prefs_applied} = $q->param('prefs_applied') ? 1 : 0;
 
     return $app->load_tmpl( 'prefs_chooser.mtml', $param )
 }

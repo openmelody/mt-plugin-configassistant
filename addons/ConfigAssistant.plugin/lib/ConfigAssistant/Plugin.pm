@@ -258,7 +258,7 @@ sub theme_options {
 # Code for this method taken from MT::CMS::Plugin
 sub save_config {
     my $app = shift;
-    my $q          = $app->param;
+    my $q          = $app->can('query') ? $app->query : $app->param;
     my $plugin_sig = $q->param('plugin_sig');
     my $profile    = $MT::Plugins{$plugin_sig};
     my $blog_id    = $q->param('blog_id');
@@ -1227,10 +1227,11 @@ sub plugin_options {
 
 sub entry_search_api_prep {
     my $app = MT->instance;
+    my $q = $app->can('query') ? $app->query : $app->param;
     my ($terms, $args, $blog_id) = @_;
 
     $terms->{blog_id} = $blog_id if $blog_id;
-    $terms->{status} = $app->param('status') if ($app->param('status'));
+    $terms->{status} = $q->param('status') if ($q->param('status'));
 
     my $search_api = $app->registry("search_apis");
     my $api = $search_api->{entry};
@@ -1247,9 +1248,10 @@ sub entry_search_api_prep {
 
 sub list_entry_mini {
     my $app = shift;
+    my $q = $app->can('query') ? $app->query : $app->param;
 
-    my $blog_id  = $app->param('blog_id') || 0;
-    my $obj_type = $app->param('class') || 'entry';
+    my $blog_id  = $q->param('blog_id') || 0;
+    my $obj_type = $q->param('class') || 'entry';
     my $pkg      = $app->model($obj_type) or return "Invalid request: unknown class $obj_type";
 
     my $terms;
@@ -1271,8 +1273,8 @@ sub list_entry_mini {
             params   => {
                 panel_searchable => 1,
                 edit_blog_id     => $blog_id,
-                edit_field       => $app->param('edit_field'),
-                search           => $app->param('search'),
+                edit_field       => $q->param('edit_field'),
+                search           => $q->param('search'),
                 blog_id          => $blog_id,
             },
             code => sub {
@@ -1305,13 +1307,14 @@ sub list_entry_mini {
 
 sub select_entry {
     my $app = shift;
+    my $q = $app->can('query') ? $app->query : $app->param;
 
-    my $class = $app->param('class') || 'entry';
-    my $obj_id = $app->param('id')
+    my $class = $q->param('class') || 'entry';
+    my $obj_id = $q->param('id')
       or return $app->errtrans('No id');
     my $obj = MT->model($class)->load($obj_id)
       or return $app->errtrans( 'No entry #[_1]', $obj_id );
-    my $edit_field = $app->param('edit_field')
+    my $edit_field = $q->param('edit_field')
       or return $app->errtrans('No edit_field');
 
     my $plugin = MT->component('ConfigAssistant') or die "OMG NO COMPONENT!?!";

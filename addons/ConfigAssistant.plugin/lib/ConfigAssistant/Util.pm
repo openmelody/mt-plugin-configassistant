@@ -27,7 +27,7 @@ sub process_file_upload {
                     message => $app->translate("Failed to validate magic.")
                 };
 
-    my $q = $app->param;
+    my $q = $app->can('query') ? $app->query : $app->param;
     my ($fh, $info) = $app->upload_info( $param_name );
 
     return { status => NO_UPLOAD() } unless $fh;
