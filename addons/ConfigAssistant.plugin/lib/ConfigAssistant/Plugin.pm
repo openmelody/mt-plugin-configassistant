@@ -22,7 +22,7 @@ sub tag_plugin_static_web_path {
                           $ctx->stash('tag'), $sig)
         );
     } elsif ( $obj->registry('static_version') ) {
-        my $url = MT->config('StaticWebPath');
+        my $url = MT->instance->static_path;
         $url   .= '/' unless $url =~ m!/$!;
         $url   .= 'support/plugins/'.$obj->id.'/';
         return $url;
@@ -45,8 +45,8 @@ sub tag_plugin_static_file_path {
                           $ctx->stash('tag'), $sig)
         );
     } elsif ( $obj->registry('static_version') ) {
-        my $url = File::Spec->catdir( MT->config('StaticFilePath'), 'support', 'plugins', $obj->id );
-        return $url;
+        return File::Spec->catdir( 
+            MT->instance->static_file_path, 'support', 'plugins', $obj->id );
     } else {
         return $ctx->error(
             MT->translate(
@@ -443,7 +443,7 @@ sub type_colorpicker {
 sub type_link_group {
     my $app = shift;
     my ( $ctx, $field_id, $field, $value ) = @_;
-    my $static = $app->config->StaticWebPath;
+    my $static = $app->static_path;
     $value = '"[]"' if (!$value || $value eq '');
     eval "\$value = $value";
     if ($@) { $value = '"[]"'; }
@@ -673,7 +673,7 @@ sub type_radio_image {
     my $app = shift;
     my ( $ctx, $field_id, $field, $value ) = @_;
     my $out;
-    my $static = $app->config->StaticWebPath;
+    my $static = $app->static_path;
     $out .= "      <ul class=\"pkg\">\n";
     while ( $field->{values} =~ /\"([^\"]*)\":\"([^\"]*)\",?/g ) {
         my ($url,$label) = ($1,$2);

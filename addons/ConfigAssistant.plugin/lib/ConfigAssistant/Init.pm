@@ -36,7 +36,8 @@ sub init_app {
         # runs it sees it and will run the upgrade_function.
         # If this isn't the upgrade screen, just quit.
         my $cfg = MT->config('PluginSchemaVersion');
-        if ( $cfg->{$plugin->id} eq '' ) {
+        # $cfg->{$plugin->id} = '0.1';  ### UNCOMMENT TO TEST UPGRADE ###
+        if ( ($cfg->{$plugin->id}||'') eq '' ) {
             # There is no schema version set. Set one!
             $cfg->{$plugin->id} = '0.1';
         }
@@ -413,7 +414,7 @@ sub load_tags {
             };
             # Create the plugin-specific static web path tag, such as "ConfigAssistantStaticWebPath."
             $tag = $obj->id . 'StaticWebPath';
-            my $url = $app->config('StaticWebPath');
+            my $url = $app->static_path;
             $url   .= '/' unless $url =~ m!/$!;
             $url   .= 'support/plugins/'.$obj->id.'/';
             $tags->{function}->{$tag} = sub {
