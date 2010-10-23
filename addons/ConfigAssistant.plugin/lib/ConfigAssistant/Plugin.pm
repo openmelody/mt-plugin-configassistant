@@ -60,7 +60,7 @@ sub tag_plugin_static_file_path {
 sub theme_options {
     my $app     = shift;
     my ($param) = @_;
-    my $q       = $app->{query};
+    my $q       = $app->can('query') ? $app->query : $app->param;
     my $blog    = $app->blog;
 
     $param ||= {};
@@ -115,6 +115,15 @@ sub theme_options {
             }
             next unless $cond->();
         }
+        if (!$field->{'type'}) {
+            MT->log(
+                {
+                    message => "Option '$optname' in template set '$ts' did not declare a type. Skipping"
+                }
+            );
+            next;
+        }
+
 
         my $field_id = $ts . '_' . $optname;
 
@@ -1227,7 +1236,6 @@ sub plugin_options {
 
 sub entry_search_api_prep {
     my $app = MT->instance;
-    my $q = $app->can('query') ? $app->query : $app->param;
     my ($terms, $args, $blog_id) = @_;
     my $q = $app->can('query') ? $app->query : $app->param;
 
