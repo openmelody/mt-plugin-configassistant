@@ -22,7 +22,7 @@ sub tag_plugin_static_web_path {
                           $ctx->stash('tag'), $sig)
         );
     } elsif ( $obj->registry('static_version') ) {
-        my $url = MT->config('StaticWebPath');
+        my $url = MT->instance->static_path;
         $url   .= '/' unless $url =~ m!/$!;
         $url   .= 'support/plugins/'.$obj->id.'/';
         return $url;
@@ -45,8 +45,8 @@ sub tag_plugin_static_file_path {
                           $ctx->stash('tag'), $sig)
         );
     } elsif ( $obj->registry('static_version') ) {
-        my $url = File::Spec->catdir( MT->config('StaticFilePath'), 'support', 'plugins', $obj->id );
-        return $url;
+        return File::Spec->catdir( 
+            MT->instance->static_file_path, 'support', 'plugins', $obj->id );
     } else {
         return $ctx->error(
             MT->translate(
@@ -443,7 +443,7 @@ sub type_colorpicker {
 sub type_link_group {
     my $app = shift;
     my ( $ctx, $field_id, $field, $value ) = @_;
-    my $static = $app->config->StaticWebPath;
+    my $static = $app->static_path;
     $value = '"[]"' if (!$value || $value eq '');
     eval "\$value = $value";
     if ($@) { $value = '"[]"'; }
@@ -673,7 +673,7 @@ sub type_radio_image {
     my $app = shift;
     my ( $ctx, $field_id, $field, $value ) = @_;
     my $out;
-    my $static = $app->config->StaticWebPath;
+    my $static = $app->static_path;
     $out .= "      <ul class=\"pkg\">\n";
     while ( $field->{values} =~ /\"([^\"]*)\":\"([^\"]*)\",?/g ) {
         my ($url,$label) = ($1,$2);
@@ -1227,6 +1227,7 @@ sub plugin_options {
 
 sub entry_search_api_prep {
     my $app = MT->instance;
+    my $q = $app->can('query') ? $app->query : $app->param;
     my ($terms, $args, $blog_id) = @_;
     my $q = $app->can('query') ? $app->query : $app->param;
 
@@ -1252,7 +1253,7 @@ sub list_entry_mini {
 
     my $blog_id  = $q->param('blog_id') || 0;
     my $obj_type = $q->param('class') || 'entry';
-    my $pkg      = $q->model($obj_type) or return "Invalid request: unknown class $obj_type";
+    my $pkg      = $app->model($obj_type) or return "Invalid request: unknown class $obj_type";
 
     my $terms;
     $terms->{blog_id} = $blog_id if $blog_id;

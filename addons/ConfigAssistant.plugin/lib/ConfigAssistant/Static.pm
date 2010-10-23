@@ -11,7 +11,7 @@ sub upgrade {
     my $app  = MT->instance;
     
     # Static File Path must be set in order to copy files.
-    if ( $app->config('StaticFilePath') ) {
+    if ( $app->static_file_path ) {
         use MT::ConfigMgr;
         my $cfg = MT::ConfigMgr->instance;
 
@@ -27,6 +27,8 @@ sub upgrade {
             my $static_version = $registry->{'static_version'} || '0';
             # The saved version
             my $ver = MT->config('PluginStaticVersion');
+            # $ver = undef;  ### UNCOMMENT TO TEST STATIC UPGRADE ###
+
             # Check to see if $plugin->id is valid. If it's not, we need to undef 
             # $ver so that we don't try to grab the static_version variable.
             # $plugin->id seems to throw an error for some Six Apart-originated
@@ -54,8 +56,7 @@ sub upgrade {
 
                 # Process all of the files found in the static folder.
                 my @messages = _traverse_hash($dir_hash, $plugin, '', $self, @$skip);
-                my $message = join('<br />', @messages);
-                $self->progress($message);
+                $self->progress($_) foreach @messages;
 
                 # Update mt_config with the new static_version.
                 my $plugin_id = $plugin->id;
@@ -119,9 +120,11 @@ sub _traverse_hash {
                 }
             }
             if ($process_file) {
-                my $src = File::Spec->catfile($plugin->path, 'static', $dir, $cur_item);
-                my $dest = File::Spec->catfile($app->config('StaticFilePath'), 
-                            'support', 'plugins', $plugin->id, $dir, $cur_item);
+                my $src = File::Spec->catfile(
+                    $plugin->path, 'static', $dir, $cur_item );
+                my $dest = File::Spec->catfile(
+                    $app->static_file_path, 'support', 'plugins', 
+                    $plugin->id,             $dir,      $cur_item   );
                 $message = _write_file($src, $dest, $self);
                 push @messages, $message;
             }
@@ -139,13 +142,13 @@ sub _make_dir {
         or return MT::FileMgr->errstr;
 
     my $app = MT->instance;
-    my $dir = File::Spec->catfile($app->config('StaticFilePath'), 'support', 'plugins', $dir);
+    my $dir = File::Spec->catfile($app->static_file_path, 'support', 'plugins', $dir);
     if ( $fmgr->mkpath($dir) ) {
         # Success!
         my $app = MT->instance;
-        my $static_file_path = $app->config('StaticFilePath');
+        my $static_file_path = $app->static_file_path;
         $dir =~ s!$static_file_path/support/plugins/(.*)!$1!;
-        return "Created folder $dir.";
+        return "<nobr>Created folder: $dir</nobr>";
     }
     else {
         $self->error($fmgr->errstr);
@@ -169,9 +172,9 @@ sub _write_file {
         # Only provide a "copied" message if the file was successfully written.
         if ($bytes) {
             my $app = MT->instance;
-            my $static_file_path = $app->config('StaticFilePath');
+            my $static_file_path = $app->static_file_path;
             $dest =~ s!$static_file_path/support/plugins/(.*)!$1!;
-            return "Copied $dest.";
+            return "<nobr>Copied $dest</nobr>";
         }
     }
     return;

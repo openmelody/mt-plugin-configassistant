@@ -82,7 +82,7 @@ sub _traverse_hash {
             }
             if ($process_file) {
                 my $src = File::Spec->catfile($plugin->path, 'static', $dir, $cur_item);
-                my $dest = File::Spec->catfile($app->config('StaticFilePath'), 
+                my $dest = File::Spec->catfile($app->static_file_path, 
                             'support', 'plugins', $plugin->id, $dir, $cur_item);
                 _write_file($src, $dest);
             }
@@ -97,13 +97,13 @@ sub _make_dir {
         or return MT::FileMgr->errstr;
 
     my $app = MT->instance;
-    $dir = File::Spec->catfile($app->config('StaticFilePath'), 'support', 'plugins', $dir);
+    $dir = File::Spec->catfile($app->static_file_path, 'support', 'plugins', $dir);
     if ( $fmgr->mkpath($dir) ) {
         # Success!
         my $app = MT->instance;
-        my $static_file_path = $app->config('StaticFilePath');
+        my $static_file_path = $app->static_file_path;
         $dir =~ s!$static_file_path/support/plugins/(.*)!$1!;
-        print "Created folder $dir/.\n";
+        print "Created folder $dir/\n";
     }
     else {
         die $fmgr->errstr."\n";
@@ -127,9 +127,9 @@ sub _write_file {
         # Only provide a "copied" message if the file was successfully written.
         if ($bytes) {
             my $app = MT->instance;
-            my $static_file_path = $app->config('StaticFilePath');
+            my $static_file_path = $app->static_file_path;
             $dest =~ s!$static_file_path/support/plugins/(.*)!$1!;
-            print "Copied $dest.\n";
+            print "Copied $dest\n";
         }
     }
     return;
