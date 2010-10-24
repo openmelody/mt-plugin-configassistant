@@ -102,7 +102,7 @@ sub _traverse_hash {
             # Create the specified directory
             my $dir = File::Spec->catfile($dir, $cur_item);
             my $dir_w_plugin = File::Spec->catfile($plugin->id, $dir);
-            $message = _make_dir($dir_w_plugin);
+            $message = _make_dir($dir_w_plugin, $self);
             push @messages, $message;
             # Now investigate the next level of the registry, to see if 
             # another directory is needed, or if there are files to copy.
@@ -151,9 +151,8 @@ sub _make_dir {
         return "<nobr>Created folder: $dir</nobr>";
     }
     else {
-        $self->error($fmgr->errstr);
+        return $self ? $self->error($fmgr->errstr) : $fmgr->errstr;
     }
-    return;
 }
 
 sub _write_file {
