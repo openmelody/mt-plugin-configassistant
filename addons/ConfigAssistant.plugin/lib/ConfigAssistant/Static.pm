@@ -136,8 +136,7 @@ sub _traverse_hash {
 sub _make_dir {
     # Create the required directory.
     my $dir = shift;
-    my $self = @_;
-#    my ($dir, $self) = @_;
+    my ($self) = @_;
     my $fmgr = MT::FileMgr->new('Local')
         or return MT::FileMgr->errstr;
 
