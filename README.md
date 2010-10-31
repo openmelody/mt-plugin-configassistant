@@ -1,5 +1,7 @@
 # Config Assistant plugin for Melody and Movable Type 4.x #
 
+**If you are upgrading from a version prior to 2.1.6, please read the upgrade instructions below.**
+
 The Config Assistant plugin does many things:
 
 * It allows theme and plugin developers to easily surface a form within
@@ -59,6 +61,11 @@ remove any copy of Config Assistant from your plugins directory if one is
 installed there.
 
     prompt> rm -rf $MT_HOME/plugins/ConfigAssistant
+
+If you are upgrading from a version prior to 2.1.6, then you will also need
+to remove the following directory:
+
+    prompt> rm -rf $MT_HOME/addons/ConfigAssistant.plugin
 
 Starting with version 2.0, the AutoPrefs plugin has been merged into Config
 Assistant. If you already have the AutoPrefs plugin installed, it will be
