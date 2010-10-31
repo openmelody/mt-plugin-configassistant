@@ -1,10 +1,10 @@
 name: Configuration Assistant
 id: ConfigAssistant
 key: ConfigAssistant
-author_link: http://www.majordojo.com/
-author_name: Byrne Reese
+author_link: http://openmelody.org/
+author_name: Byrne Reese, Open Melody Software Group
 description: This plugin provides a simple YAML based framework for creating plugin and theme configuration options.
-version: 2.1.5
+version: 2.1.6
 static_version: 4
 schema_version: 2
 

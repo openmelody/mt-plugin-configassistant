@@ -17,7 +17,7 @@ sub init_app {
     # Disable the AutoPrefs plugin if it's installed. (AutoPrefs has been
     # merged with Config Assistant, so is not needed anymore.)
     my $switch = MT->config('PluginSwitch') || {};
-    unless ( $switch->{'AutoPrefs'} eq '0' ) {
+    unless ( $switch->{'AutoPrefs'} && $switch->{'AutoPrefs'} eq '0' ) {
         $switch->{'AutoPrefs'} = 0;
         MT->config('PluginSwitch', $switch, 1);
         MT->config->save_config();

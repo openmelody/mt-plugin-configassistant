@@ -4,9 +4,7 @@ use strict;
 
 sub apply {
     my $app = shift;
-    my $q = $app->can('query') ? $app->query : $app->param;
     my ($param) = @_;
-
     $app->validate_magic or return;
 
     my $q = $app->can('query') ? $app->query : $app->param;
@@ -30,7 +28,6 @@ sub apply {
 
 sub chooser {
     my $app     = shift;
-    my $q       = $app->can('query') ? $app->query : $app->param;
     my ($param) = @_;
     my $q = $app->can('query') ? $app->query : $app->param;
     my $blog    = MT->model('blog')->load( $q->param('blog_id') );
@@ -39,6 +36,7 @@ sub chooser {
 
     my $prefs = MT->registry('blog_preferences');
     my @data;
+    my $selected = $blog->selected_config ? $blog->selected_config : '';
     foreach my $pid ( keys %$prefs ) {
         my $pref = $prefs->{$pid};
         push @data,
@@ -47,7 +45,7 @@ sub chooser {
             name        => &{ $pref->{'label'} },
             description => $pref->{'description'},
             order       => $pref->{'order'} || 10,
-            selected    => $blog->selected_config eq $pid
+            selected    => $selected eq $pid
           };
     }
     @data = sort { $a->{order} <=> $b->{order} } @data;
