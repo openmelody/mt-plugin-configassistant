@@ -606,6 +606,7 @@ EOH
   </div>
 </div>
 EOH
+    $ctx->stash('object_class','');
     return $out;
 } ## end sub type_entry
 
