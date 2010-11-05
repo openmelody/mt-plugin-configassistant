@@ -543,6 +543,7 @@ EOH
   </div>
 </div>
 EOH
+    $ctx->stash('object_class','');
     return $out;
 }
 
