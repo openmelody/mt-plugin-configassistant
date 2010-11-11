@@ -34,6 +34,11 @@ sub main {
             foreach my $item (@$skip) {
                 push @skip_files, $item;
             }
+
+            # Create mt-static/support/plugins/[plugin_id].
+            _make_dir( File::Spec->catfile($plugin->id) );
+
+            # Copy static content.
             _traverse_hash($dir_hash, $plugin, '', @skip_files);
         }
     }
