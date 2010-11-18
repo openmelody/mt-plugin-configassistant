@@ -1,19 +1,24 @@
 #!/usr/bin/perl -w
 
 package MT::Tool::StaticCopy;
-
 use strict;
 use warnings;
-
 use lib qw( lib extlib );
+use File::Basename qw( basename dirname );
 use base qw( MT::Tool );
 use MT;
 
+# use Data::Dumper;
+# use MT::Log::Log4perl qw( l4mtdump );
+# use Log::Log4perl qw( :resurrect );
+# our $logger;
+
 sub main {
+    ###l4p $logger ||= MT::Log::Log4perl->new(); $logger->trace();
     # The manual run is something that the admin may need to use if they
     # haven't correctly set permissions on the support folder.
     my $app = MT->instance;
-    
+
     # We need to look at all plugins and decide if they have registry
     # entries, and therefore static entries.
     for my $sig ( keys %MT::Plugins ) {
@@ -22,12 +27,14 @@ sub main {
 
         # Do *not* check static versions, because we want the static copy
         # to run for all plugins.
-        if ($registry->{'static_version'}) {
-            print "\nCopying static files for ".$plugin->name."...\n";
+        if ( $registry->{'static_version'} ) {
+            print "\nCopying static files for " . $plugin->name . "...\n";
+
             # Build a hash of the directory structure within the static folder.
             my $static_dir = {};
-            $static_dir->{'static'} = File::Spec->catfile($plugin->path, 'static');
-            my $dir_hash = _build_file_hash($static_dir->{'static'});
+            $static_dir->{'static'}
+              = File::Spec->catfile( $plugin->path, 'static' );
+            my $dir_hash = _build_file_hash( $static_dir->{'static'} );
 
             my $skip = $registry->{'skip_static'};
             my @skip_files;
@@ -41,19 +48,23 @@ sub main {
             # Copy static content.
             _traverse_hash($dir_hash, $plugin, '', @skip_files);
         }
-    }
-}
+    } ## end for my $sig ( keys %MT::Plugins)
+} ## end sub main
 
 sub _build_file_hash {
-    my $dir  = shift;
-    return unless (defined $dir && -d $dir);
+    my $dir = shift;
+    ###l4p $logger ||= MT::Log::Log4perl->new(); $logger->trace();
+    return unless ( defined $dir && -d $dir );
     $dir =~ s#\\#/#g;    # Win32 :-(
     my $dirth = {};
 
-    opendir(DIR, $dir) || die "Unable to opendir $dir\n";
-    my @files = grep {!/^\.\.?$/} readdir(DIR);
+    opendir( DIR, $dir ) || die "Unable to opendir $dir\n";
+    my @files = grep { !/^\.\.?$/ } readdir(DIR);
     closedir(DIR);
-    map {$dirth->{$_} = (-d "$dir/$_" ? &_build_file_hash("$dir/$_") : '')} @files;
+    map {
+        $dirth->{$_}
+          = ( -d "$dir/$_" ? &_build_file_hash("$dir/$_") : '' )
+    } @files;
 
     return $dirth;
 }
@@ -63,21 +74,26 @@ sub _traverse_hash {
     my $plugin   = shift;
     my $dir      = shift;
     my @skip     = @_;
-    my $app = MT->instance;
+    my $app      = MT->instance;
+    ###l4p $logger ||= MT::Log::Log4perl->new(); $logger->trace();
 
-    while ( my ($cur_item, $subfolders) = each (%$dir_hash) ) {
-        if ($subfolders ne '') {
+    while ( my ( $cur_item, $subfolders ) = each(%$dir_hash) ) {
+        if ( $subfolders ne '' ) {
+
             # Create the specified directory
-            my $dir = File::Spec->catfile($dir, $cur_item);
-            my $dir_w_plugin = File::Spec->catfile($plugin->id, $dir);
+            my $dir          = File::Spec->catfile( $dir,        $cur_item );
+            my $dir_w_plugin = File::Spec->catfile( $plugin->id, $dir );
+
             _make_dir($dir_w_plugin);
-            # Now investigate the next level of the registry, to see if 
+
+            # Now investigate the next level of the registry, to see if
             # another directory is needed, or if there are files to copy.
-            _traverse_hash($dir_hash->{$cur_item}, $plugin, $dir, @skip);
+            _traverse_hash( $dir_hash->{$cur_item}, $plugin, $dir, @skip );
         }
         else {
+
             # These are files. If it's *not* supposed to be skipped, copy it.
-            # Assume that we *do* want to copy each file, 
+            # Assume that we *do* want to copy each file,
             my $process_file = 1;
             foreach my $to_skip (@skip) {
                 if ( $cur_item =~ m/$to_skip/i ) {
@@ -86,58 +102,71 @@ sub _traverse_hash {
                 }
             }
             if ($process_file) {
-                my $src = File::Spec->catfile($plugin->path, 'static', $dir, $cur_item);
-                my $dest = File::Spec->catfile($app->static_file_path, 
-                            'support', 'plugins', $plugin->id, $dir, $cur_item);
-                _write_file($src, $dest);
+                my $src = File::Spec->catfile( $plugin->path, 'static', $dir,
+                                               $cur_item );
+                my $dest =
+                  File::Spec->catfile(
+                                       $app->static_file_path, 'support',
+                                       'plugins',              $plugin->id,
+                                       $dir,                   $cur_item
+                  );
+
+                _write_file( $src, $dest );
             }
-        }
-    }
-}
+        } ## end else [ if ( $subfolders ne '')]
+    } ## end while ( my ( $cur_item, $subfolders...))
+} ## end sub _traverse_hash
 
 sub _make_dir {
-    # Create the required directory.
-    my $dir = shift;
-    my $fmgr = MT::FileMgr->new('Local')
-        or return MT::FileMgr->errstr;
 
-    my $app = MT->instance;
-    $dir = File::Spec->catfile($app->static_file_path, 'support', 'plugins', $dir);
+    # Create the required directory.
+    my $dir  = shift;
+    my $fmgr = MT::FileMgr->new('Local') or return MT::FileMgr->errstr;
+    my $app  = MT->instance;
+    ###l4p $logger ||= MT::Log::Log4perl->new(); $logger->trace();
+
+    $dir = File::Spec->catfile( $app->static_file_path, 'support', 'plugins',
+                                $dir );
     if ( $fmgr->mkpath($dir) ) {
+
         # Success!
-        my $app = MT->instance;
         my $static_file_path = $app->static_file_path;
         $dir =~ s!$static_file_path/support/plugins/(.*)!$1!;
         print "Created folder $dir/\n";
     }
     else {
-        die $fmgr->errstr."\n";
+        die $fmgr->errstr . "\n";
     }
     return;
-}
+} ## end sub _make_dir
 
 sub _write_file {
+
     # Actually copy the file from plugins/static/ to the mt-static/support/plugins/ area.
-    my ($src, $dest) = @_;
-    my $fmgr = MT::FileMgr->new('Local')
-        or return MT::FileMgr->errstr;
+    my ( $src, $dest ) = @_;
+    my $fmgr = MT::FileMgr->new('Local') or return MT::FileMgr->errstr;
+    ###l4p $logger ||= MT::Log::Log4perl->new(); $logger->trace();
 
     # Grab the file specified.
     my $src_data = $fmgr->get_data($src)
-        or die $fmgr->errstr."\n";
+      or die "Could not read file $src: "
+      . ( $fmgr->errstr || 'Unknown error' ) . "\n";
+
     # Write the file to its new home, but only if some data was read.
     if ($src_data) {
-        my $bytes = $fmgr->put_data($src_data, $dest)
-            or die $fmgr->errstr."\n";
+        $fmgr->mkpath( dirname($dest) );
+        my $bytes = $fmgr->put_data( $src_data, $dest )
+          or die $fmgr->errstr . "\n";
+
         # Only provide a "copied" message if the file was successfully written.
         if ($bytes) {
-            my $app = MT->instance;
+            my $app              = MT->instance;
             my $static_file_path = $app->static_file_path;
             $dest =~ s!$static_file_path/support/plugins/(.*)!$1!;
             print "Copied $dest\n";
         }
     }
     return;
-}
+} ## end sub _write_file
 
 __PACKAGE__->main;
