@@ -1,0 +1,34 @@
+   <input type="hidden" name="__mode" value="ca_save_config" />
+<mt:if name="blog_id">
+   <input type="hidden" name="blog_id" value="<mt:var name="blog_id">" />
+</mt:if>
+   <input type="hidden" name="return_args" value="__mode=cfg_plugins&amp;blog_id=<mt:var name="blog_id">" />
+   <input type="hidden" name="plugin_sig" value="<mt:var name="plugin_sig">" />
+   <input type="hidden" name="magic_token" value="<mt:var name="magic_token">" />
+
+<div id="fieldsets">
+<mt:loop name="fieldsets">
+  <div id="<$mt:var name="id"$>" class="fieldset-options">
+    <h3><$mt:var name="label"$></h3>
+    <$mt:var name="content"$>
+  </div>
+</mt:loop>
+</div>
+
+<mt:loop name="leftovers">
+<input type="hidden" name="<$mt:var name="name"$>" value="<$mt:var name="value" encode_html="1"$>" />
+</mt:loop>
+
+  <div class="actions-bar settings-actions-bar">
+    <div class="actions-bar-inner pkg actions">
+      <button
+        mt:mode="ca_save_config"
+        type="submit"
+        class="primary-button"><__trans phrase="Save Changes"></button>
+<mt:if name="plugin_settings_id">
+      <button
+        onclick="resetPlugin(getByID('plugin-<mt:var name="plugin_id">-form')); return false"
+        type="submit"><__trans phrase="Reset to Defaults"></button>
+</mt:if>
+    </div>
+  </div>

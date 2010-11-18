@@ -7,29 +7,30 @@ sub apply {
     my ($param) = @_;
     $app->validate_magic or return;
 
-    my $q = $app->can('query') ? $app->query : $app->param;
+    my $q    = $app->can('query') ? $app->query : $app->param;
     my $blog = MT->model('blog')->load( $q->param('blog_id') );
     my $pid  = $q->param('pref_id');
 
     _apply_prefs( $blog, $pid );
 
-    return $app->redirect(
-        $app->uri(
-            'mode' => 'ca_prefs_chooser',
-            'args' => {
-                'prefs_applied' => 1,
-                'blog_id'       => $q->param('blog_id'),
-                'return_args'   => $app->return_args,
-                'magic_token'   => $q->param('magic_token')
-            }
-        )
-    );
-}
+    return
+      $app->redirect(
+                      $app->uri(
+                                 'mode' => 'ca_prefs_chooser',
+                                 'args' => {
+                                     'prefs_applied' => 1,
+                                     'blog_id'       => $q->param('blog_id'),
+                                     'return_args'   => $app->return_args,
+                                     'magic_token' => $q->param('magic_token')
+                                 }
+                      )
+      );
+} ## end sub apply
 
 sub chooser {
     my $app     = shift;
     my ($param) = @_;
-    my $q = $app->can('query') ? $app->query : $app->param;
+    my $q       = $app->can('query') ? $app->query : $app->param;
     my $blog    = MT->model('blog')->load( $q->param('blog_id') );
 
     $param ||= {};
@@ -55,8 +56,8 @@ sub chooser {
     $param->{magic_token}   = $q->param('magic_token');
     $param->{prefs_applied} = $q->param('prefs_applied') ? 1 : 0;
 
-    return $app->load_tmpl( 'prefs_chooser.mtml', $param )
-}
+    return $app->load_tmpl( 'prefs_chooser.mtml', $param );
+} ## end sub chooser
 
 sub on_template_set_change {
     my ( $cb, $param ) = @_;
@@ -77,65 +78,64 @@ sub _apply_prefs {
     my $label = &{ MT->registry('blog_preferences')->{$pid}->{label} };
 
     # Set plugin preferences.
-    my $plugins = MT->registry('blog_preferences', $pid, 'plugin_data');
+    my $plugins = MT->registry( 'blog_preferences', $pid, 'plugin_data' );
     foreach my $plugin_id ( keys %$plugins ) {
         my $plugin = MT->component($plugin_id);
         next if !$plugin;
-        MT->log(
-            {
-                blog_id => $blog->id,
-                message => "Config Assistant is configuring "
-                  . $plugin->name . " preferences for "
-                  . $blog->name . ".",
-                level => MT::Log::INFO(),
-            }
+        MT->log( {
+                   blog_id => $blog->id,
+                   message => "Config Assistant is configuring "
+                     . $plugin->name
+                     . " preferences for "
+                     . $blog->name . ".",
+                   level => MT::Log::INFO(),
+                 }
         );
 
         my $scope = "blog:" . $blog->id;
         my $pdata = $plugin->get_config_obj($scope);
         my $data  = $pdata->data() || {};
-        my $datas =
-            MT->registry('blog_preferences', $pid, 'plugin_data', $plugin_id);
+        my $datas = MT->registry( 'blog_preferences', $pid, 'plugin_data',
+                                  $plugin_id );
         foreach my $key ( keys %$datas ) {
             $data->{$key} = $datas->{$key};
         }
         $pdata->data($data);
         MT->request( 'plugin_config.' . $plugin->id, undef );
         $pdata->save() or die $pdata->errstr;
-    }
+    } ## end foreach my $plugin_id ( keys...)
 
     # Set blog preferences
-    my $prefs = MT->registry('blog_preferences', $pid, 'preferences');
+    my $prefs = MT->registry( 'blog_preferences', $pid, 'preferences' );
 
-    MT->log(
-        {
-            blog_id => $blog->id,
-            message => "Config Assistant is configuring "
-              . $blog->name
-              . " with $label preferences.",
-            level => MT::Log::INFO(),
-        }
+    MT->log( {
+               blog_id => $blog->id,
+               message => "Config Assistant is configuring "
+                 . $blog->name
+                 . " with $label preferences.",
+               level => MT::Log::INFO(),
+             }
     );
-    
+
     foreach my $col ( keys %$prefs ) {
         my $value = $prefs->{$col};
         if ( $blog->has_column($col) ) {
+
             # TODO Validate input
             $blog->$col($value);
         }
         else {
-            MT->log(
-                {
-                    blog_id => $blog->id,
-                    message => "Config Assistant tried to set a blog "
-                        . "preference $col that does not exist.",
-                    level => MT::Log::WARNING(),
-                }
+            MT->log( {
+                       blog_id => $blog->id,
+                       message => "Config Assistant tried to set a blog "
+                         . "preference $col that does not exist.",
+                       level => MT::Log::WARNING(),
+                     }
             );
         }
     }
     $blog->meta( 'selected_config', $pid );
     $blog->save;
-}
+} ## end sub _apply_prefs
 
 1;
