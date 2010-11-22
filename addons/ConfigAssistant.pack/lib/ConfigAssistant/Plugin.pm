@@ -358,7 +358,8 @@ sub save_config {
                 }
             }
             if ( $opt->{type} eq 'file' ) {
-                my $result = process_file_upload( $app, $var, 'support',
+                my $scope = $opt->{scope} || 'support';
+                my $result = process_file_upload( $app, $var, $scope,
                                                   $opt->{destination} );
                 if ( $result->{status} == ConfigAssistant::Util::ERROR() ) {
                     return $app->error(
