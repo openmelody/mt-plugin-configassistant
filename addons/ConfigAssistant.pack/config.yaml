@@ -4,7 +4,7 @@ key: ConfigAssistant
 author_link: http://openmelody.org/
 author_name: "Byrne Reese, Open Melody Software Group"
 description: This plugin provides a simple YAML based framework for creating plugin and theme configuration options.
-version: 2.1.9
+version: 2.1.10
 static_version: 4
 schema_version: 2
 

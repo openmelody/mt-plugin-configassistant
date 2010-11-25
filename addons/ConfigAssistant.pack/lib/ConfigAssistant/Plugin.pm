@@ -8,7 +8,7 @@ use MT::Util
       ts2epoch format_ts encode_html    decode_html         dirify );
 use ConfigAssistant::Util
   qw( find_theme_plugin     find_template_def   find_option_def
-      find_option_plugin    process_file_upload );
+      find_option_plugin    process_file_upload plugin_static_web_path );
 use JSON;
 # use MT::Log::Log4perl qw( l4mtdump ); use Log::Log4perl qw( :resurrect );
 our $logger;
@@ -29,10 +29,7 @@ sub tag_plugin_static_web_path {
           );
     }
     elsif ( $obj->registry('static_version') ) {
-        my $url = MT->instance->static_path;
-        $url .= '/' unless $url =~ m!/$!;
-        $url .= 'support/plugins/' . $obj->id . '/';
-        return $url;
+        return plugin_static_web_path($obj);
     }
     else {
 
@@ -66,9 +63,7 @@ sub tag_plugin_static_file_path {
           );
     }
     elsif ( $obj->registry('static_version') ) {
-        return
-          File::Spec->catdir( MT->instance->static_file_path,
-                              'support', 'plugins', $obj->id );
+        return plugin_static_file_path($obj);
     }
     else {
         return

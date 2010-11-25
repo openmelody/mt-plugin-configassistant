@@ -1,7 +1,7 @@
 use ExtUtils::MakeMaker;
 
 use YAML::Any qw(LoadFile);
-my $file = "addons/ConfigAssistant.plugin/config.yaml";
+my $file = "addons/ConfigAssistant.pack/config.yaml";
 my $version = LoadFile($file)->{version} ||
     die "No version found in $file";
 

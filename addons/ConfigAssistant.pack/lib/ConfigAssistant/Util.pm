@@ -6,6 +6,7 @@ use base 'Exporter';
 our @EXPORT_OK
   = qw( find_theme_plugin   find_template_def   find_option_def
         find_option_plugin  process_file_upload 
+        plugin_static_web_path plugin_static_file_path
         ERROR SUCCESS OVERWRITE NO_UPLOAD );
 
 use MT::Util qw( encode_url );
@@ -14,6 +15,21 @@ sub ERROR ()     {0}
 sub SUCCESS ()   {1}
 sub OVERWRITE () {2}
 sub NO_UPLOAD () {3}
+
+sub plugin_static_web_path {
+    my ($plugin) = @_;
+    my $url = MT->instance->static_path;
+    $url .= '/' unless $url =~ m!/$!;
+    $url .= 'support/plugins/' . $plugin->id . '/';
+    return $url;
+}
+
+sub plugin_static_file_path {
+    my ($plugin) = @_;
+    return File::Spec->catdir( MT->instance->static_file_path,
+                               'support', 'plugins', $plugin->id );
+
+}
 
 sub process_file_upload {
     my $app = shift;
