@@ -8,7 +8,8 @@ use MT::Util
       ts2epoch format_ts encode_html    decode_html         dirify );
 use ConfigAssistant::Util
   qw( find_theme_plugin     find_template_def   find_option_def
-      find_option_plugin    process_file_upload plugin_static_web_path );
+      find_option_plugin    process_file_upload 
+      plugin_static_web_path plugin_static_file_path );
 use JSON;
 # use MT::Log::Log4perl qw( l4mtdump ); use Log::Log4perl qw( :resurrect );
 our $logger;
