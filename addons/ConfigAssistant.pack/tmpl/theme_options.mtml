@@ -34,7 +34,7 @@
 <mt:setvarblock name="content_nav">
 <ul>
 <mt:loop name="fieldsets">
-    <li class="<$mt:var name="id"$>-tab<mt:If name="__first__"> active</mt:If>"><a href="#" id="<$mt:var name="id"$>-tab"><b><$mt:var name="label"$> <span class="star">*</span></b></a></li>
+    <li class="<$mt:var name="id"$>-tab<mt:If name="__first__"> active</mt:If>"><a href="javascript:void(0);" id="<$mt:var name="id"$>-tab" title="<__trans phrase="Theme Options"> &gt; <$mt:var name="label" encode_html="1"$>"><b><$mt:var name="label"$> <span class="star">*</span></b></a></li>
 </mt:loop>
 </ul>
 </mt:setvarblock>
@@ -43,6 +43,7 @@
   <link rel="stylesheet" href="<$mt:PluginStaticWebPath component="configassistant"$>css/app.css" type="text/css" />
   <link rel="stylesheet" href="<$mt:PluginStaticWebPath component="configassistant"$>colorpicker/css/colorpicker.css" type="text/css" />
   <script src="<$mt:StaticWebPath$>jquery/jquery.js" type="text/javascript"></script>
+  <script src="<$mt:PluginStaticWebPath component="configassistant"$>js/jquery.history.js" type="text/javascript"></script>
   <script src="<$mt:PluginStaticWebPath component="configassistant"$>js/app.js" type="text/javascript"></script>
   <script src="<$mt:PluginStaticWebPath component="configassistant"$>js/options.js" type="text/javascript"></script>
   <script src="<$mt:PluginStaticWebPath component="configassistant"$>colorpicker/js/colorpicker.js" type="text/javascript"></script>
