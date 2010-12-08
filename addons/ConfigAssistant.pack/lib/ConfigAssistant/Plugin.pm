@@ -430,7 +430,7 @@ sub save_config {
         }
     } ## end if ( $profile && $profile...)
 
-    $app->add_return_arg( saved => 1 );
+    $app->add_return_arg( saved => $profile->{object}->id );
     $app->call_return;
 } ## end sub save_config
 
