@@ -27,6 +27,10 @@ function handle_save_click() {
 function handle_delete_click() {
     $(this).parent().remove(); return false;
 };
+function handle_remove_file() {
+    $(this).parents('.field-content').find('.clear-file').val(1);
+    $(this).parent().remove(); return false;
+};
 function render_link_form(label,url) {
     var dom = '<li class="pkg"><label class="link-text">Label: <input type="text" class="label" value="'+(typeof label != 'undefined' ? label : '')+'" /></label><label class="link-url">URL: <input type="text" class="url" value="'+(typeof url != 'undefined' ? url : '')+'" /></label> <button>Save</button></li>';
     var e = $(dom);

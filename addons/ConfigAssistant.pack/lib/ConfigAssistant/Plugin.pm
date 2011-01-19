@@ -364,9 +364,13 @@ sub save_config {
                     return $app->error(
                               "Error uploading file: " . $result->{message} );
                 }
-                next
-                  if (
-                      $result->{status} == ConfigAssistant::Util::NO_UPLOAD );
+                if ( $result->{status} == ConfigAssistant::Util::NO_UPLOAD ) {
+                    if ($param->{$var.'-clear'} && $data->{$var}) {
+                        my $old = MT->model('asset')->load( $data->{$var} );
+                        $old->remove if $old;
+                    }
+                    next;
+                }
                 if ( $data->{$var} ) {
                     my $old = MT->model('asset')->load( $data->{$var} );
                     $old->remove if $old;
@@ -455,14 +459,19 @@ sub type_file {
               . ( $asset->label ? $asset->label : $asset->file_name )
               . " <a target=\"_new\" href=\""
               . $asset->url
-              . "\">view</a></p>";
+              . "\">view</a> | <a href=\"javascript:void(0)\" class=\"remove\">remove</a></p>";
         }
         else {
             $html .= "<p>File not found.</p>";
         }
     }
-    $html
-      .= "      <input type=\"file\" name=\"$field_id\" class=\"full-width\" />\n";
+    $html .= "      <input type=\"file\" name=\"$field_id\" class=\"full-width\" />\n" .
+        "      <input type=\"hidden\" name=\"$field_id-clear\" value=\"0\" class=\"clear-file\" />\n";
+
+    $html .= "<script type=\"text/javascript\">\n";
+    $html .= "  \$('#field-".$field_id." a.remove').click( handle_remove_file );\n";
+    $html .= "</script>\n";
+
     return $html;
 } ## end sub type_file
 
