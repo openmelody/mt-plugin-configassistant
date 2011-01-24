@@ -15,16 +15,14 @@ sub plugin {
 sub init_app {
     my $plugin = shift;
     my ($app) = @_;
+    my $cfg    = $app->config;
     return if $app->id eq 'wizard';
 
-    # Disable the AutoPrefs plugin if it's installed. (AutoPrefs has been
-    # merged with Config Assistant, so is not needed anymore.)
-    my $switch = MT->config('PluginSwitch') || {};
-    unless ( ( $switch->{'AutoPrefs'} || '' ) eq '0' ) {
-        $switch->{'AutoPrefs'} = 0;
-        MT->config( 'PluginSwitch', $switch, 1 );
-        MT->config->save_config();
-    }
+    # Disable the AutoPrefs plugin if it's still installed. (AutoPrefs has
+    # been merged with Config Assistant, so is not needed anymore.)
+    my $switch = $cfg->PluginSwitch || {};
+    $switch->{'AutoPrefs/config.yaml'} = $switch->{'AutoPrefs'} = 0;
+    $cfg->PluginSwitch( $switch );
 
     init_options($app);
     my $r = $plugin->registry;
