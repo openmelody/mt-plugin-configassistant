@@ -30,21 +30,14 @@ sub init_app {
 
     # Static files only get copied during an upgrade.
     if ( $app->id eq 'upgrade' ) {
-
-        # Because no schema version is set, the upgrade process doesn't run
-        # during the plugin's initial install. But, we need it to so that
-        # static files will get copied. Check if PluginschemaVersion has been
-        # set for Config Assistant. If not, set it. That way, when the upgrade
-        # runs it sees it and will run the upgrade_function.
-        # If this isn't the upgrade screen, just quit.
-        my $cfg = MT->config('PluginSchemaVersion');
-
-        # $cfg->{$plugin->id} = '0.1';  ### UNCOMMENT TO TEST UPGRADE ###
-        if ( ( $cfg->{ $plugin->id } || '' ) eq '' ) {
-
-            # There is no schema version set. Set one!
-            $cfg->{ $plugin->id } = '0.1';
-        }
+        # Because no schema version is set, the upgrade process does nothing
+        # during the plugin's initial install.  So, in order to copy static
+        # files on first run, we set an initial schema version which triggers
+        # the framework.
+        my $schemas                 = $cfg->PluginSchemaVersion || {};
+        $schemas->{ $plugin->id } ||= '0.1';
+        # $schemas->{$plugin->id}   = '0.1';  ## UNCOMMENT TO TEST UPGRADE ##
+        $cfg->PluginSchemaVersion( $schemas );
     }
 
     require Sub::Install;
