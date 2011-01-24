@@ -14,7 +14,7 @@ sub plugin {
 
 sub init_app {
     my $plugin = shift;
-    my ($app) = @_;
+    my ($app)  = @_;
     my $cfg    = $app->config;
     return if $app->id eq 'wizard';
 
@@ -24,9 +24,11 @@ sub init_app {
     $switch->{'AutoPrefs/config.yaml'} = $switch->{'AutoPrefs'} = 0;
     $cfg->PluginSwitch( $switch );
 
+    # FIXME This needs some commentary...
     init_options($app);
-    my $r = $plugin->registry;
-    $r->{tags} = sub { load_tags( $app, $plugin ) };
+
+    # FIXME This looks fishy... Pretty sure we shouldn't be accessing the registry as a hash but instead $plugin->registry('tags', sub { ... })
+    my $r = $plugin->registry->{tags} = sub { load_tags( $app, $plugin ) };
 
     # Static files only get copied during an upgrade.
     if ( $app->id eq 'upgrade' ) {
@@ -40,10 +42,9 @@ sub init_app {
         $cfg->PluginSchemaVersion( $schemas );
     }
 
-    require Sub::Install;
-
     # TODO - This should not have to reinstall a subroutine. It should invoke
     #        a callback.
+    require Sub::Install;
     Sub::Install::reinstall_sub( {
                                    code => \&needs_upgrade,
                                    into => 'MT::Component',
