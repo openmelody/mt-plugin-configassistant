@@ -34,9 +34,13 @@ sub upgrade {
             # undef $ver so that we don't try to grab the static_version
             # variable. $plugin->id seems to throw an error for some Six
             # Apart-originated plugins. I don't know why.
-            my $plugin_id = eval { $plugin->id } ? $plugin->id : undef $ver;
-            my $saved_version;
-            $saved_version = $ver->{$plugin_id} if $ver;
+            my $saved_version = 0.1;  # Default
+            my $plugin_id     = eval { $plugin->id }
+                or undef $ver;
+            if ( $ver && $plugin_id ) {
+                $saved_version = $ver->{$plugin_id}
+                    if defined $ver->{$plugin_id};
+            }
 
             if ( $static_version > $saved_version ) {
                 $self->progress( 'Copying static files for <strong>'
