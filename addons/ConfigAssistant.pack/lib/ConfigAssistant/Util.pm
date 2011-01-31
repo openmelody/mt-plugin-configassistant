@@ -61,9 +61,9 @@ sub process_file_upload {
     my $has_overwrite = $q->param('overwrite_yes')
       || $q->param('overwrite_no');
     my %param = (
-                  middle_path => $q->param('middle_path'),
-                  site_path   => $q->param('site_path'),
-                  extra_path  => $q->param('extra_path'),
+                  middle_path => $q->param('middle_path') || '',
+                  site_path   => $q->param('site_path') || '',
+                  extra_path  => $q->param('extra_path') || '',
                   upload_mode => $app->mode,
     );
     return {
@@ -308,7 +308,15 @@ sub process_file_upload {
         $asset->image_width($w);
         $asset->image_height($h);
     }
-    $asset->save;
+    $asset->save
+        or return {
+            status => ERROR(),
+            message =>
+                $app->translate(
+                    "Error saving asset: [_1]",
+                    $asset->errstr
+                )
+      };
     $app->run_callbacks( 'cms_post_save.asset', $app, $asset, $original );
 
     if ($is_image) {
@@ -366,7 +374,6 @@ sub process_file_upload {
                              blog  => $blog
         );
     }
-
     return {
           status => SUCCESS(),
           asset => { id => $asset->id, url => $asset->url, object => $asset },

@@ -5,7 +5,7 @@ author_link: http://openmelody.org/
 author_name: "Byrne Reese, Open Melody Software Group"
 description: This plugin provides a simple YAML based framework for creating plugin and theme configuration options.
 version: 2.1.16
-static_version: 8
+static_version: 7
 schema_version: 3
 
 applications:
