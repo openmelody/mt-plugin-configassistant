@@ -168,9 +168,7 @@ sub _make_dir {
     my $fmgr   = MT::FileMgr->new('Local') or return MT::FileMgr->errstr;
 
     my $app = MT->instance;
-    my $dir
-      = File::Spec->catfile( $app->static_file_path, 'support', 'plugins',
-                             $dir );
+    $dir = File::Spec->catfile( $app->static_file_path, 'support', 'plugins', $dir );
     if ( $fmgr->mkpath($dir) ) {
 
         # Success!
