@@ -1,60 +1,118 @@
 # Config Assistant plugin for Melody and Movable Type 4.x #
 
-**If you are upgrading from a version prior to 2.1.6, please read the upgrade instructions below.**
+_**Melody users:** This plugin is bundled with Melody so separate installation
+is neither required nor advisable._
 
-The Config Assistant plugin does many things:
+_**Upgrade Note:** If you are upgrading from a version prior to 2.1.6, please
+make sure to read the upgrade instructions below._
 
-* It allows theme and plugin developers to easily surface a form within
-  Movable Type for configuring their theme/plugin.
+## Table of Contents ##
 
-* It allows theme and plugin developers to define template tags by which they
-  can access the values entered in by their users directly within their
-  templates.
+<!-- ****** PLEASE KEEP THIS UPDATED AND FUNCTIONAL!!!!!!!! ***** -->
 
-* It helps users install a theme or plugin by copying static files into the
-  `mt-static` folder, simplifying installation.
+* <a href="#overview">Overview</a>
+    * <a href="#prerequisites">Prerequisites</a>
+    * <a href="#features">Features</a>
+* <a href="#installation">Installation</a>
+    * <a href="#upgrading_config_assistant">Upgrading Config Assistant</a>
+* <a href="#usage">Usage</a>
+    * <a href="#defining_theme_options">Defining Theme Options</a>
+    * <a href="#defining_plugin_configuration_settings">Defining Plugin
+      Configuration Settings</a>
+    * <a href="#fieldsets">Fieldsets</a>
+        * <a href="#fieldset_properties">Fieldset Properties</a>
+    * <a href="#fields">Fields</a>
+        * <a href="#field_properties">Field Properties</a>
+        * <a href="#supported_field_types">Supported Field Types</a>
+        * <a href="#defining_custom_field_types">Defining Custom Field Types</a>
+    * <a href="#defining_template_tags">Defining Template Tags</a>
+    * <a href="#deploying_static_content">Deploying Static Content</a>
+        * <a href="#preparing_the_static_content">Preparing the Static Content</a>
+        * <a href="#config_yaml_keys_static_version_and_skip_static">Config.yaml
+          keys: `static_version` and `skip_static`</a>
+        * <a href="#automated_static_file_deployment">Automated Static File
+          Deployment</a>
+        * <a href="#manual_static_file_deployment">Manual Static File
+          Deployment</a>
+        * <a href="#accessing_static_content">Accessing Static Content</a>
+    * <a
+      href="#automatically_set_blog_preferences_and_plugin_settings">Automatically
+      set Blog Preferences and Plugin Settings</a>
+    * <a href="#administrators">Administrators</a>
+    * <a href="#developers_and_designers">Developers and Designers</a>
+    * <a href="#supported_preferences">Supported Preferences</a>
+* <a href="#callbacks">Callbacks</a>
+    * <a href="#on_single_option_change">On Single Option Change</a>
+    * <a href="#on_plugin_option_change">On Plugin Option Change</a>
+* <a href="#sample_config_yaml">Sample config.yaml</a>
+* <a href="#help_bugs_and_feature_requests">Help, Bugs and Feature Requests</a>
+    * <a href="#support">Support</a>
+    * <a href="#author">Author</a>
 
-* It provides a way to automatically set blog preferences and plugin settings.
-  (Previously handled by the AutoPrefs plugin.)
+## <a id="overview">Overview</a> ##
 
-All this **without having to know perl or how to program at all**!
+The Config Assistant plugin is a powerful platform plugin which significantly
+reduces the work necessary to *create and deploy* Melody/Movable Type plugins
+and themes.
 
-This plugin works by allowing a developer to use their plugin's configuration
-file as a means for defining what the various settings and form elements they
-would like to expose to a user.
+The plugin streamlines the plugin/theme development process by extending the
+grammar of each plugin's YAML-based configuration file (`config.yaml`) to
+allow for new and powerful features which previously required a significant
+amount of Perl and/or template markup code.
 
-Config Assistant will also automatically add a "Theme Options" menu item to
-the user's Design menu so they can easily access the settings you define.
+It also makes plugin and theme deployment as easy as dropping a single folder
+into the addons or plugins directory eliminating the extra steps previously
+foisted upon end users to deploy a plugin/theme's static content.
 
-Config Assistant can also work with "static" content to make deploying your
-plugin or theme easier. (If you've installed many plugins, you know that you
-must often copy content to `[MT Home]/plugins/` and `[MT
-Home]/mt-static/plugins/` -- Config Assistant can help simplify this!) In
-addition to copying static files to their `mt-static` home, plugin-specific
-template tags are created for the plugin's static file path and static web
-path location.
+### <a id="prerequisites">Prerequisites</a> ###
+
+* Any version of Melody or Movable Type 4.1 or higher
+    * This plugin has not yet been tested on MT 5.x
+
+### <a id="features">Features</a> ###
+
+Config Assistant provides a number of new features to developers, designers
+and admins
+
+* It significantly reduces the work involved in creating user-facing config
+  settings forms for themes and plugins and creating template tags to access
+  those values from the templates.
+
+* Reduces the number of steps needed for theme/plugin installation and upgrade
+  by automatically copying static files into the proper place in the
+  `mt-static` folder
+
+* It provides a way for plugin/theme designers to specify desired values for
+  related blog preferences and plugin settings and for users to automatically
+  apply them. (Previously handled by the AutoPrefs plugin.)
+
+* Automatically adds a "Theme Options" menu item to the Design menu so users
+  can easily access theme settings.
+
+All this **without having to know Perl or how to program at all**!
 
 The sample config file below should give you a quick understanding of how you
 can begin using this plugin today.
 
-# Prerequisites
+----
 
-* Movable Type 4.1 or higher (Not yet tested on MT 5.x)
+## <a id="installation">Installation</a> ##
 
-# Installation
+The latest version of the plugin can be downloaded from the its [Github
+repo][] which is now part of the Open Melody user account. [Packaged
+downloads][] are also available if you prefer.
 
-To install this plugin follow the instructions found on [this
-page](http://tinyurl.com/easy-plugin-install) ***EXCEPT*** that the
-`ConfigAssistant.plugin` directory must be installed into the **`addons`**
-directory and **not the `plugins`** directory. If you do not have an addons
-directory, you can simply create one in the root of your MT directory
-(`$MT_HOME/addons`).
+Installation follows the [standard plugin installation][] procedures
+***EXCEPT*** that the `ConfigAssistant.plugin` directory must be installed
+into the **`addons`** directory and **not the `plugins`** directory. If you do
+not have an addons directory, you can simply create one in the root of your MT
+directory (`$MT_HOME/addons`).
 
 If for whatever reason you *do* install this plugin into your `plugins` folder
 as is common with other plugins, Movable Type may produce inexplicable errors.
 So please be careful and mindful to follow the above instructions.
 
-# Upgrading
+### <a id="upgrading_config_assistant">Upgrading Config Assistant</a> ###
 
 If you are upgrading from a previous version of Config Assistant, you should
 remove any copy of Config Assistant from your plugins directory if one is
@@ -72,9 +130,11 @@ Assistant. If you already have the AutoPrefs plugin installed, it will be
 disabled by Config Assistant at which point you can remove AutoPrefs from your
 `plugins` directory.
 
-# Reference and Documentation
+----
 
-## Using Config Assistant for Theme Options
+## <a id="usage">Usage</a> ##
+
+### <a id="defining_theme_options">Defining Theme Options</a> ###
 
 This plugin adds support for a new key in any plugin's `config.yaml` file
 called `options`, which is placed as a descendant to a defined template set.
@@ -83,14 +143,12 @@ When a user of your plugin applies the corresponding template set then a
 They can click that menu item to be taken directly to a page on which they can
 edit all of their theme's settings.
 
-The `static_version` root-level key will trigger Config Assistant to copy
-files to the `mt-static/support/plugins/[plugin key]/` folder, and the
-`skip_static` root-level element will let you specify files _not_ to copy.
+**Example config:**
 
-    id: MyPluginID
     name: My Plugin
-    version: 1.0
-    static_version: 1
+    version: 1.5
+    id: myplugin
+    key: MyPlugin
     template_sets:
         my_awesome_theme:
             base_path: 'templates'
@@ -124,26 +182,19 @@ files to the `mt-static/support/plugins/[plugin key]/` folder, and the
                     condition: > 
                       sub { return 1; }
                     required: 1
-    skip_static:
-        - index.html
-        - readme.txt
-        - .psd
-        - .zip
 
 
 
-## Using Config Assistant for Plugin Settings
+### <a id="defining_plugin_configuration_settings">Defining Plugin Configuration Settings</a> ###
 
-To use Config Assistant as the rendering and enablement platform for plugin
-settings, use the same `options` struct you would for theme options, but use
-it as a root level element. The `static_version` and `skip_static` key is also
-valid here. For example:
+In addition to theme options, you can also define your plugin's configuration
+options using the same `options` struct as before but as a root level element.
+For example:
 
-    id: MyPluginID
     name: My Plugin
     version: 1.0
-    schema_version: 1
-    static_version: 1
+    id: myplugin
+    key: MyPlugin
     options:
       fieldsets:
         homepage:
@@ -156,21 +207,15 @@ valid here. For example:
         hint: "This is the name of your Feedburner feed."
         tag: 'MyPluginFeedburnerID'
         fieldset: feed
-    skip_static:
-        - index.html
-        - readme.txt
-        - .psd
-        - .zip
 
 Using this method for plugin options completely obviates the need for
-developers to specify the following elements in their plugin's config.yaml
-files:
+the following `config.yaml` keys:
 
 * `settings`
 * `blog_config_template`
 * `system_config_template`
 
-## Fieldsets
+### <a id="fieldsets">Fieldsets</a> ###
 
 Fields can be grouped by fieldset, and fieldsets are "tabbed" on the Theme
 Options screen. This provides an easy way to organize all of your fields and
@@ -191,7 +236,7 @@ this will generate two tabs of options on the Theme Options screen. Note that
 the fieldset keys (in this case `homepage` and `feed`) must be unique within
 your theme or plugin.
 
-### Fieldset Properties
+#### <a id="fieldset_properties">Fieldset Properties</a> ####
 
 * `label` - is the description displayed on the tab, and is also displayed at
   the top of the page.
@@ -202,7 +247,7 @@ your theme or plugin.
 * `order` - Use integers to sort the order of your fieldsets on the tabbed
   interface.
 
-## Fields
+### <a id="fields">Fields</a> ###
 
 Fields are easily defined with properties.
 
@@ -223,7 +268,7 @@ In this example two options, or fields, have been defined: `feedburner_id` and
 `use_feedburner`. Note that the option keys (in this case `feedburner_id` and
 `use_feedburner`) must be unique within your theme or plugin.
 
-### Field Properties
+#### <a id="field_properties">Field Properties</a> ####
 
 * `type` - the type of the field. Supported values are: text, textarea,
   select, checkbox, blogs
@@ -259,7 +304,7 @@ In this example two options, or fields, have been defined: `feedburner_id` and
 * `required` - can be set to `1` to indicate a field as required,
   necessitating a value.
 
-### Supported Field Types
+#### <a id="supported_field_types">Supported Field Types</a> ####
 
 Below is a list of acceptable values for the `type` parameter for any defined 
 field:
@@ -345,6 +390,7 @@ field:
 **Category and Folder Tags**
 
 Assuming this option:
+
     header_categories:
         label: HeaderCategories
         type: category_list
@@ -360,7 +406,9 @@ block tag that supports all of the Category (or Folder) tags. For example:
         <mt:If name="__first__">
             <ul>
         </mt:If>
-                <li><a href="<$mt:CategoryArchiveLink$>"><$mt:ArchiveLabel$></a></li>
+                <li>
+                    <a href="<$mt:CategoryArchiveLink$>"><$mt:ArchiveLabel$></a>
+                </li>
         <mt:If name="__last__">
             </ul>
         </mt:If>
@@ -370,6 +418,7 @@ That will generate an unordered listed of categories suitable for a top-level
 navigation menu.
 
 The following template variables are set:
+
 * `__first__` True only if the current category is the first.
 * `__last__`  True only if the current category is the last.
 * `__odd__`   True only if the current iteration of the category loop is odd.
@@ -417,7 +466,11 @@ You can use them like so:
     <p>My favorite links are: 
       <mt:MyFavoritesLinks>
         <mt:if name="__first__"><ul></mt:if>
-        <li><a href="<$mt:var name="link_url"$>"><$mt:var name="link_label"$></a></li>
+        <li>
+            <a href="<$mt:var name="link_url"$>">
+                <$mt:var name="link_label"$>
+            </a>
+        </li>
         <mt:if name="__last__"></ul></mt:if>
       <mt:Else>
         I have no favorite links.
@@ -481,19 +534,30 @@ Example:
 
 **Example Radio Image**
 
-The `radio-image` type supports a special syntax for the `values` attribute.
-The list of radio button is a comma-delimited list of image/value pairs
-(delimited by a colon). Got that? The images you reference are all relative to
-Movable Type's mt-static directory. Confused? I think a sample will make it
-perfectly clear:
+The `radio-image` type supports a special syntax for the `values` attribute
+which allows you to associate an image with each choice:
+
+    values: "IMGRELPATH":"LABEL", "IMGRELPATH2":"LABEL2"
+
+In the above, each `IMGRELPATH` represents the path to an image relative to
+Movable Type's mt-static directory and each `LABEL` is the accompanying label
+for the option. The path and label are separated by a colon and each combined
+value is separated by a comma.
+
+For example, `radio-images` defining a homepage layout for a plugin `Foo`
+might look like this:
 
     homepage_layout:
         type: radio-image
         label: 'Homepage Layout'
         hint: 'The layout for the homepage of your blog.'
         tag: 'HomepageLayout'
-        values: >
-          "plugins/Foo/layout-1.png":"Layout 1","plugins/Foo/layout-2.png":"Layout 2"
+        values: "plugins/Foo/layout-1.png":"Layout 1","plugins/Foo/layout-2.png":"Layout 2"
+
+The above will present the user with two radio buttons labelled Layout 1 and
+Layout 2 accompanied by a representative image demonstrating each option.
+
+_FIXME: Insert screenshot_
 
 **Working with Checkboxes**
 
@@ -509,7 +573,7 @@ site:
     enable_ads:
       type: checkbox
       label: 'Enable Advertising?'
-      hint: 'Check this box if you want advertising to be displayed on your web site'
+      hint: 'Check this box to display advertising on your web site'
       tag: 'IfAdsEnabled?'
 
 Your template tag should then be:
@@ -548,8 +612,7 @@ Or you can loop over all the selected values that have been checked:
     </mt:AdsEnabledLoop>
     </ul>
 
-
-### Defining Custom Field Types
+#### <a id="defining_custom_field_types">Defining Custom Field Types</a> ####
 
 To define your own form field type, you first need to register your type and
 type handler in your plugin's `config.yaml` file, like so:
@@ -558,21 +621,24 @@ type handler in your plugin's `config.yaml` file, like so:
       my_custom_type:
         handler: $MyPlugin::MyPlugin::custom_type_hdlr
 
-Then in `lib/MyPlugin.pm` you would implement your handler. Here is an example
-handler that outputs the HTML for a HTML pulldown or select menu:
+Then in `plugins/MyPlugin/lib/MyPlugin.pm` you would implement your handler.
+Here is an example handler that outputs the HTML for a HTML pulldown or select
+menu:
 
     sub custom_type_hdlr {
       my $app = shift;
       my ($field_id, $field, $value) = @_;
-      my $out;
-      my @values = split(",",$field->{values});
-      $out .= "      <ul>\n";
-      foreach (@values) {
-          $out .= "<li><input type=\"radio\" name=\"$field_id\" value=\"$_\"".
-	     ($value eq $_ ? " checked=\"checked\"" : "") ." class=\"rb\" />".$_."</li>\n";
+      my @values = split( ",", $field->{values} );
+      my $class  = 'class="rb"';
+      my $type   = 'type="radio"';
+      my @options;
+      foreach my $opt (@values) {
+          my $checked = $opt eq $value ? " checked=\"checked\"" : "";
+          push( @options, qq(
+            <input $type name="$field_id" value="$opt" $checked $class /> $opt
+          ));
       }
-      $out .= "      </ul>\n";
-      return $out;
+      return '<ul><li>', join("</li>\n<li>", @options), '</li></ul>';
     }
 
 With these two tasks complete, you can now use your new config type in your
@@ -588,7 +654,7 @@ template set:
             label: 'My Setting'
             default: 'bar'
 
-## Defining Template Tags
+### <a id="defining_template_tags">Defining Template Tags</a> ###
 
 Each plugin configuration field can define a template tag by which a designer
 or developer can access its value. If a tag name terminates in a question mark
@@ -614,86 +680,141 @@ options:
       Feedburner is disabled!
     </mt:IfFeedburner>
 
-## Deploying Static Content
+### <a id="deploying_static_content">Deploying Static Content</a> ###
 
-### Preparing the Static Content
+If you've installed many plugins, you know that you must often move static
+content to a separate folder under `[MT Home]/mt-static/plugins/`. This often
+confuses new users and is an annoyance to experienced users. Hence, we added a
+feature to Config Assistant to eliminate the hassle.
 
-If you've installed many plugins, you know that you must often copy content to
-`[MT Home]/plugins/` and `[MT Home]/mt-static/plugins/`. For new users this
-can be a confusing task, and for experienced users it's one more annoying step
-that has to be done. But no more! Config Assistant can be used to help your
-plugin or theme copy static content to its permanent home in the `mt-static/`
-folder!
+#### <a id="preparing_the_static_content">Preparing the Static Content</a> ####
 
-Within your plugin, use the `static_version` root-level key to cause Config
-Assistant to work with your static content. This key should be an integer, and
-should be incremented when you've changed your static content and want it to
-be re-copied.
+To enable this feature in your plugin, put all of your static content into a
+folder named `static` inside of your plugin envelope. As you can see below,
+you can assemble your static content in whatever folder hierarchy you wish.
+
+    MyPrettyPlugin/
+        config.yaml
+        lib/
+            MyPrettyPlugin/
+                Plugin.pm
+        static/
+            [[static files go here]]
+            css/
+                main.css
+                ie.css
+            js/
+                myplugin.js
+            [...SNIP...]
+
+#### <a id="config_yaml_keys_static_version_and_skip_static">Config.yaml keys: `static_version` and `skip_static`</a> ####
+
+_**NOTE:** We are seriously considering dropping support for this feature. If
+you use `skip_static` and wish for us to continue supporting it, please drop
+us a line_
+
+Then, within your plugin's `config.yaml`, assign an integer to the root-level
+`static_version` key:
+
+    name: My Plugin
+    version: 1.0
+    id: myplugin
+    key: MyPlugin
+    static_version: 1
+    [...SNIP...]
+
+Any time an update includes a change to files or folder underneath the
+`static` directory, you should increment the `static_version` value to trigger
+automated deployment for your users.
 
 If you want to exclude some of your static content from the copy process, you
 can specify this with the `skip_static` root-level key, as in the examples.
 
+    name: My Plugin
+    version: 1.0
+    id: myplugin
+    key: MyPlugin
+    static_version: 1
     skip_static:
         - index.html
         - readme.txt
         - .psd
         - .zip
 
-`skip_static` builds an array of items to be excluded, which is signified with
-a leading dash and space. Files can be a partial match, so specifying an
-extension (such as `.psd`) will cause all files with `.psd` to _not_ be
-copied. `skip_static` is not a required key.
+The specified items are matched against the content in your static directory
+so specifying an extension (such as `.psd`) will cause all files with `.psd`
+to _not_ be copied.
 
-On the filesystem side, you will want to create your folder and file structure
-inside of a `static` folder in your plugin envelope. Any files inside of this
-static folder (except those items matching `skip_static`) will be copied
-during installation.
+#### <a id="automated_static_file_deployment">Automated Static File Deployment</a> ####
 
-### Installing the Static Content
+When a user first installs a plugin or theme using the `static_version` key or
+installs an upgrade with a higher `static_version` value, Config Assistant
+will recognize it and trigger MT/Melody's upgrade process during which it
+deploys the contents of the `static` folder into a folder under
+`mt-static/support`.
 
-When installing your new plugin or theme, the `static_version` will trigger
-Movable Type or Melody to run an upgrade. During the upgrade, Config Assistant
-will copy static content to the `mt-static/support/plugins/` folder, and will
-create a folder for its contents. (For example, after installing Config
-Assistant, its static files can be found in
-`mt-static/support/plugins/configassistant/`.)
+Of course, this relies on proper permissions being set on the
+`mt-static/support/` folder, but both Melody and Movable Type use this folder
+as well and issue warnings if it is not writeable by the webserver. (Note:
+This is the reason Config Assistant switched to using this path instead of the
+more traditional `mt-static/plugins/*`)
 
-Note that the `mt-static/support/` folder must have adequate permissions to be
-writable by the web server; Movable Type and Melody will warn you if it does
-not. Also note that this path is different from where you often install static
-content, in `mt-static/plugins/`.
+#### <a id="manual_static_file_deployment">Manual Static File Deployment</a> ####
 
-Developers may have reason to reinstall the static content; this can be done
-by running `./tools/static-copy`.
+During the course of development or general use, developers and admins may
+force a resynchronization of the static files by running the static copy
+utility, `addons/ConfigAssistant.pack/tools/static-copy`. If you wish, you can
+symlink or even copy it to your `MT_HOME/tools` for easier access.
 
-### Plugin-Specific Static Template Tags
+Future versions of Config Assistant will likely contain enhanced features
+which auto-detect changes to static content making this completely
+unnecessary.
 
-Two template tags are created for your plugin or theme, to help you type less
-and keep code clean: `PluginStaticFilePath` and `PluginStaticWebPath`. Use
-them with the `component` argument and supply your plugin's ID to link to your
-static content. For example, Config Assistant can use
-`<mt:PluginStaticFilePath component="configassistant">` and
-`<mt:ConfigAssistantStaticWebPath component="configassistant">`.
+#### <a id="accessing_static_content">Accessing Static Content</a> ####
 
-These tags will output the file path and the URL to a plugin's static content,
-based on the `StaticFilePath` and `StaticWebPath` configuration directives.
-These tags are really just shortcuts. You could use either of the following to
-publish a link to the image `photo.jpg` in your theme, for example:
+You'll note that in the sections above, we omitted details about the *exact*
+location of the deployed static content but simply said it's somewhere
+underneath `mt-static/support`. This was completely intentional as Config
+Assistant provides you with a better way to access the static content in
+templates and plugin code.
 
-    <mt:StaticWebPath>support/plugins/MyPlugin/images/photo.jpg
-    <mt:PluginStaticWebPath component="MyPlugin">images/photo.jpg
+In templates, you can use either of the two following tags:
 
-both of which would output
+* `mt:PluginStaticWebPath` - Analog to `mt:StaticWebPath`, this generates a
+  URL pointing to the folder containing static content for a plugin specified
+  by the `component` attribute. Example:   
+   
+        <img src="<$mt:PluginStaticWebPath component="myplugin"$>images/photo.jpg">
 
-    http://example.com/mt/mt-static/support/plugins/MyPlugin/images/photo.jpg
+* `mt:PluginStaticFilePath` - Analog to `mt:StaticFilePath`, this generates an
+  absolute file path to the same which is useful for server-side includes or
+  other server-based access. (**IMPORTANT**: For security reasons, it's best
+  not to surface details about a user's filesystem to the site's visitors.
+  Please use this wisely.**). Example:   
+  
+        <?php 
+          include('<$mt:PluginStaticFilePath
+                        component="myplugin"
+                              cat="php/css.php"$>');
+        ?>  
 
-## Automatically set Blog Preferences and Plugin Settings
+From your plugin's Perl code, you can access the above locations using static
+methods in `ConfigAssistant::Util` which expect an MT::Plugin or MT::Component
+object instance as an argument:
+
+    use ConfigAssistant::Util
+        qw( plugin_static_web_path plugin_static_file_path);
+
+    my $static_url  = plugin_static_web_path( $plugin );
+    my $static_path = plugin_static_file_path( $plugin );
+    
+### <a id="automatically_set_blog_preferences_and_plugin_settings">Automatically set Blog Preferences and Plugin Settings</a> ###
 
 If you are familiar with the old AutoPrefs plugin, you know how this feature
 works: AutoPrefs was merged with Config Assistang and provides the same
 features.
 
-### Administrators
+### <a id="administrators">Administrators</a> ###
 
 For the most part, admins never interact with this plugin directly. All an
 admin needs to do is re-apply their theme or reset their templates, and if the
@@ -705,7 +826,7 @@ automagically be setup.
 Alternatively, visit Preferences > Chooser in a blog to assign a set of
 preferences and settings to that blog.
 
-### Developers and Designers
+### <a id="developers_and_designers">Developers and Designers</a> ###
 
 Developers and designers can use this plugin to automatically apply a set of
 blog preferences to a blog when a user resets their blog templates. The format
@@ -723,7 +844,7 @@ to set. For example:
     blog_preferences:
         my_config:
             label: "My Awesome Theme Preferred Config"
-            description: "This is a packaging of my preferred settings for My Awesome Theme."
+            description: "This is a packaging of my preferred theme settings."
             order: 100
             preferences:
                 file_extension: php
@@ -736,7 +857,7 @@ holds all of your preferences:
     blog_preferences:
         my_config:
             label: "My Awesome Theme Preferred Config"
-            description: "This is a packaging of my preferred settings for My Awesome Theme."
+            description: "This is a packaging of my preferred theme settings."
             order: 100
             preferences: my_awesome_theme_prefs.yaml
 
@@ -772,7 +893,7 @@ This allows for themes to auto-configure plugins as well.
 settings for plugins must be configured manually. This seems like a reasonable
 restriction to keep plugins from obliterating configs inadvertently.*
 
-### Supported Preferences
+### <a id="supported_preferences">Supported Preferences</a> ###
 
 Below is a list of all the supported preferences and their default value.
 There is no need to specify a default preference in your `config.yaml` unless
@@ -861,21 +982,25 @@ you intend to override the default.
 * `server_offset` (default: *determined from config file or server*) - 
 * `sort_order_comments` (default: 'ascend') - 
 * `sort_order_posts` (default: 'descend') - 
-* `status_default` (default: 2) - unpublished = 1, published = 2, review = 3,
-  scheduled = 4, junk = 5
+* `status_default` (default: 2)
+    *  1 = unpublished
+    *  2 = published
+    *  3 = review
+    *  4 = scheduled
+    *  5 = junk
 * `update_pings` (default: *null*) - 
 * `use_comment_confirmation` (default: 1) - 
 * `welcome_msg` (default: 0) - 
 * `words_in_excerpt` (default: 40) - 
 
 
-## Callbacks
+## <a id="callbacks">Callbacks</a> ##
 
 Config Assistant supports a number of callbacks to give developers the ability
 to respond to specific change events for options at a theme and plugin level.
 All of these callbacks are in the `options_change` callback family.
 
-### On Single Option Change
+### <a id="on_single_option_change">On Single Option Change</a> ###
 
 Config Assistant defines a callback which can be triggered when a specific
 theme option changes value or when any theme option changes value. To register
@@ -888,12 +1013,14 @@ To register a callback to be triggered when *any* theme option changes, you
 would use this syntax:
 
     callbacks:
-      options_change.option.*: $MyPlugin::MyPlugin::handler
+        options_change.option.*: $MyPlugin::MyPlugin::handler
 
 When the callback is invoked, it will be invoked with the following input
 parameters:
 
-* `$app` - A reference to the MT::App instance currently in-context.
+* `$cb` - The MT::Callback object for the current callback.
+* `$app` - An object instance for the currently running app, most likely, but
+  not necessarily, an MT::App subclass.
 * `$option_hash` - A reference to a hash containing the name/value pairs
   representing this modified theme option in the registry.
 * `$old_value` - The value of the option prior to being modified.
@@ -902,76 +1029,111 @@ parameters:
 **Example**
 
     sub my_handler {
-      my ($app, $option, $old, $new) = @_;
-      MT->log({ 
-          message => "Changing " . $option->label . " from $old to $new." 
-      });
+        my ($cb, $app, $option_hash, $old_value, $new_value) = @_;
+        $app->log({
+            message => "Changing "
+                     . $option_hash->{label}
+                     . " from $old_value to $new_value."
+        });
+        # ...SNIP...
     }
 
-**Note: The callback is invoked after the new value has been inserted into the
-config hash, but prior to the hash being saved. This gives developers the
+_**Note:** The callback is invoked after the new value has been inserted into
+the config hash, but prior to the hash being saved. This gives developers the
 opportunity to change the value of the config value one last time before being
-committed to the database.**
+committed to the database.**_
 
-### On Plugin Option Change
+### <a id="on_plugin_option_change">On Plugin Option Change</a> ###
 
-Config Assistant has the ability to trigger a callback when any option within a
-plugin changes. To register a callback of this nature you would use the
-following syntax:
+Config Assistant has the ability to trigger a callback when any option within
+a plugin changes. To register a callback of this nature you would use the
+following syntax, replacing `<plugin_id>` with your plugin's `id` attribute
+value and `<handler>` with a typical handler reference:
 
     callbacks:
-      options_change.plugin.<plugin_id>: $MyPlugin::MyPlugin::handler
+        options_change.plugin.<plugin_id>: <handler>
+
+For example:
+
+    callbacks:
+        options_change.plugin.MyPlugin: $MyPlugin::MyPlugin::handler
 
 When the callback is invoked, it will be invoked with the following input
 parameters:
 
-* `$app` - A reference to the MT::App instance currently in-context.
+* `$cb` - The MT::Callback object for the current callback.
+* `$app` - An object instance for the currently running app, most likely, but
+  not necessarily, an MT::App subclass.
 * `$plugin` - A reference to the plugin object that was changed
 
-# Sample config.yaml
+_FIXME: Does `$plugin` refer to an `MT::Plugin` or `MT::PluginSettings`
+object? The former is unnecessary as you can get the same thing from
+`$cb->plugin`. It seems like we should be passing the full options hashref as
+well as a "changed values" hashref._
 
-    id: MyPluginID
+----
+
+## <a id="sample_config_yaml">Sample config.yaml</a> ##
+
     name: My Plugin
     version: 1.0
+    id: myplugin
+    key: MyPlugin
     schema_version: 1
     static_version: 1
-    blog_config_template: '<mt:PluginConfigForm id="MyPluginID">'
-    plugin_config:
-        MyPluginID:
-            fieldset_1:
-                label: "This is a label for my fieldset"
-                hint: "This is some text to display below my fieldset label"
-                feedburner_id:
-                    type: text
-                    label: "Feedburner ID"
-                    hint: "This is the name of your Feedburner feed."
-                    tag: 'MyPluginFeedburnerID'
+
     skip_static:
         - index.html
         - readme.txt
         - .psd
         - .zip
 
-# Help, Bugs and Feature Requests #
+    blog_config_template: '<mt:PluginConfigForm id="myplugin">'
+
+    plugin_config:
+        MyPluginID:
+            fieldset_1:
+                label: "This is a label for my fieldset"
+                hint: "This is displayed below the fieldset label"
+                feedburner_id:
+                    type: text
+                    label: "Feedburner ID"
+                    hint: "This is the name of your Feedburner feed."
+                    tag: 'MyPluginFeedburnerID'
+
+----
+
+## <a id="help_bugs_and_feature_requests">Help, Bugs and Feature Requests</a> ##
 
 If you are having problems installing or using the plugin, please check out
-our general knowledge base and help ticket system at
-[help.endevver.com](http://help.endevver.com).
+our general knowledge base and help ticket system at [help.endevver.com][].
+
+### <a id="support">Support</a> ###
 
 If you know that you've encountered a bug in the plugin or you have a request
 for a feature you'd like to see, you can file a ticket in the [Config
-Assistant
-project](https://endevver.lighthouseapp.com/projects/42884-config-assistant/overview)
-in our issue tracking system and we'll get to it as soon as possible.
+Assistant project][Lighthouse] in our issue tracking system and we'll get to
+it as soon as possible.
 
-# Info
+### <a id="author">Author</a> ###
 
-This plugin is not necessary in Melody, as this is core component of that
-platform.
+This plugin was originally created by [Byrne Reese][] of [Endevver, LLC][]. It
+was later gifted to the [Open Melody Software Group][] for bundling with
+Melody and further development by the Melody Community.
 
-Configuration Assistant Plugin for Movable Type and Melody
-Author: Byrne Reese   
+[help.endevver.com]:            http://help.endevver.com
+[Byrne Reese]:                  http://majordojo.com
+[Endevver, LLC]:                http://endevver.com
+[Open Melody Software Group]:   http://openmelody.org
+[Github repo]:
+   http://github.com/openmelody/mt-plugin-configassistant
+[Packaged downloads]:
+   http://github.com/openmelody/mt-plugin-configassistant/downloads
+[Standard plugin installation]:
+   http://tinyurl.com/easy-plugin-install
+[Lighthouse]:
+   http://openmelody.lighthouseapp.com/projects/68651/overview
+
 Copyright 2008 Six Apart, Ltd.   
 Copyright 2009-2010 Byrne Reese   
 License: Artistic, licensed under the same terms as Perl itself   
-
