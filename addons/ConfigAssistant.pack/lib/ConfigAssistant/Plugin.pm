@@ -365,7 +365,6 @@ sub save_config {
                               "Error uploading file: " . $result->{message} );
                 } elsif ( $result->{status} == ConfigAssistant::Util::NO_UPLOAD ) {
                     if ($param->{$var.'-clear'} && $data->{$var}) {
-                        print STDERR "Resetting $var, setting it to undefined.\n";
                         my $old = MT->model('asset')->load( $data->{$var} );
                         $old->remove if $old;
                         $param->{$var} = undef;
