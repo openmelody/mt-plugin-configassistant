@@ -4,7 +4,7 @@ key: ConfigAssistant
 author_link: http://openmelody.org/
 author_name: "Byrne Reese, Open Melody Software Group"
 description: This plugin provides a simple YAML based framework for creating plugin and theme configuration options.
-version: 2.1.18
+version: 2.1.19
 static_version: 8
 schema_version: 3
 
@@ -83,7 +83,7 @@ object_types:
 
 blog_preferences:
   __default__:
-    label: 'Movable Type Factory Default'
-    description: 'This is the default factory settings for Movable Type.'
+    label: 'Factory Default'
+    description: 'These are the default factory settings for Melody.'
     order: 1
     preferences: default_prefs.yaml
