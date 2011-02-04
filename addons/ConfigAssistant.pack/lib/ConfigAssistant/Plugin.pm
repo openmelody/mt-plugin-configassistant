@@ -1463,7 +1463,9 @@ END_TMPL
 <mt:setvarblock name="html_head" append="1">
   <link rel="stylesheet" href="<mt:PluginStaticWebPath component="configassistant">css/app.css" type="text/css" />
   <link rel="stylesheet" href="<mt:PluginStaticWebPath component="configassistant">colorpicker/css/colorpicker.css" type="text/css" />
+<mt:unless tag="ProductName" eq="Melody">
   <script src="<mt:StaticWebPath>jquery/jquery.js" type="text/javascript"></script>
+</mt:unless>
   <script src="<mt:PluginStaticWebPath component="configassistant">js/options.js" type="text/javascript"></script>
   <script src="<mt:PluginStaticWebPath component="configassistant">colorpicker/js/colorpicker.js" type="text/javascript"></script>
   <script src="<mt:PluginStaticWebPath component="configassistant">js/jquery.json-2.2.min.js" type="text/javascript"></script>

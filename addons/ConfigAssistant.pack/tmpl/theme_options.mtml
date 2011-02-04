@@ -42,7 +42,9 @@
 <mt:setvarblock name="html_head" append="1">
   <link rel="stylesheet" href="<$mt:PluginStaticWebPath component="configassistant"$>css/app.css" type="text/css" />
   <link rel="stylesheet" href="<$mt:PluginStaticWebPath component="configassistant"$>colorpicker/css/colorpicker.css" type="text/css" />
-  <script src="<$mt:StaticWebPath$>jquery/jquery.js" type="text/javascript"></script>
+<mt:unless tag="ProductName" eq="Melody">
+  <script src="<mt:StaticWebPath>jquery/jquery.js" type="text/javascript"></script>
+</mt:unless>
   <script src="<$mt:PluginStaticWebPath component="configassistant"$>js/jquery.history.js" type="text/javascript"></script>
   <script src="<$mt:PluginStaticWebPath component="configassistant"$>js/app.js" type="text/javascript"></script>
   <script src="<$mt:PluginStaticWebPath component="configassistant"$>js/options.js" type="text/javascript"></script>
