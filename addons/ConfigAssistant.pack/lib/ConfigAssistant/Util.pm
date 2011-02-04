@@ -123,9 +123,8 @@ sub process_file_upload {
         $root_path = $app->blog->site_path;
         $base_url  = $app->blog->site_url;
         $fmgr      = $app->blog->file_mgr;
-        $blog_id   = $app->blog
-          ->id;    # the resulting asset will be added to this context
-        $format = '%r';
+        $blog_id   = $app->blog->id;    # the resulting asset will be added to this context
+        $format    = '%r';
 
     }
     elsif ( lc($scope) eq 'archive' ) {
@@ -139,8 +138,7 @@ sub process_file_upload {
         $root_path = $app->blog->archive_path;
         $base_url  = $app->blog->archive_url;
         $fmgr      = $app->blog->file_mgr;
-        $blog_id   = $app->blog
-          ->id;    # the resulting asset will be added to this context
+        $blog_id   = $app->blog->id;    # the resulting asset will be added to this context
         $format = '%a';
 
     }
@@ -149,8 +147,8 @@ sub process_file_upload {
         $root_path = File::Spec->catdir( $app->static_file_path, 'support' );
         $base_url  = $app->static_path . '/support';
         $fmgr      = MT::FileMgr->new('Local');
-        $blog_id = 0;    # the resulting asset will be added to this context
-        $format = File::Spec->catfile( '%s', 'support' );
+        $blog_id   = $app->blog ? $app->blog->id : 0;  # the resulting asset will be added to this context
+        $format    = File::Spec->catfile( '%s', 'support' );
 
     }
     else {

@@ -363,19 +363,20 @@ sub save_config {
                 if ( $result->{status} == ConfigAssistant::Util::ERROR() ) {
                     return $app->error(
                               "Error uploading file: " . $result->{message} );
-                }
-                if ( $result->{status} == ConfigAssistant::Util::NO_UPLOAD ) {
+                } elsif ( $result->{status} == ConfigAssistant::Util::NO_UPLOAD ) {
                     if ($param->{$var.'-clear'} && $data->{$var}) {
+                        print STDERR "Resetting $var, setting it to undefined.\n";
+                        my $old = MT->model('asset')->load( $data->{$var} );
+                        $old->remove if $old;
+                        $param->{$var} = undef;
+                    }
+                } else {
+                    if ( $data->{$var} ) {
                         my $old = MT->model('asset')->load( $data->{$var} );
                         $old->remove if $old;
                     }
-                    next;
+                    $param->{$var} = $result->{asset}->{id};
                 }
-                if ( $data->{$var} ) {
-                    my $old = MT->model('asset')->load( $data->{$var} );
-                    $old->remove if $old;
-                }
-                $param->{$var} = $result->{asset}->{id};
             }
             my $old = $data->{$var};
             my $new = $param->{$var};
@@ -462,11 +463,11 @@ sub type_file {
               . "\">view</a> | <a href=\"javascript:void(0)\" class=\"remove\">remove</a></p>";
         }
         else {
-            $html .= "<p>File not found.</p>";
+            $html .= "<p>Selected asset could not be found. <a href=\"javascript:void(0)\" class=\"remove\">reset</a></p>";
         }
     }
     $html .= "      <input type=\"file\" name=\"$field_id\" class=\"full-width\" />\n" .
-        "      <input type=\"hidden\" name=\"$field_id-clear\" value=\"0\" class=\"clear-file\" />\n";
+             "      <input type=\"hidden\" name=\"$field_id-clear\" value=\"0\" class=\"clear-file\" />\n";
 
     $html .= "<script type=\"text/javascript\">\n";
     $html .= "  \$('#field-".$field_id." a.remove').click( handle_remove_file );\n";
