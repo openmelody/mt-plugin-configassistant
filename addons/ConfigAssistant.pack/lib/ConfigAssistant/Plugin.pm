@@ -504,7 +504,7 @@ sub type_link_group {
     my ( $ctx, $field_id, $field, $value ) = @_;
     my $static = $app->static_path;
     $value = '"[]"' if ( !$value || $value eq '' );
-    eval "\$value = $value";
+    eval "\$value = \"$value\"";
     if ($@) { $value = '"[]"'; }
     my $list;
     eval { $list = JSON::from_json($value) };
@@ -542,7 +542,7 @@ sub type_link_group {
       var l = \$(this).html();
       struct.push( { 'url': u, 'label': l } );
     });
-    var json = \$.toJSON(struct);
+    var json = struct.toJSON().escapeJS();
     \$('#'+'$field_id').val( json );
   });
   \$('#'+'$field_id-link-group ul li a.remove').click( handle_delete_click );
@@ -1067,7 +1067,7 @@ sub _hdlr_field_link_group {
     my $field = $ctx->stash('field') or return _no_field($ctx);
     my $value = _get_field_value($ctx);
     $value = '"[]"' if ( !$value || $value eq '' );
-    eval "\$value = $value";
+    eval "\$value = \"$value\"";
     if ($@) { $value = '[]'; }
     my $list = JSON::from_json($value);
 
@@ -1468,7 +1468,6 @@ END_TMPL
 </mt:unless>
   <script src="<mt:PluginStaticWebPath component="configassistant">js/options.js" type="text/javascript"></script>
   <script src="<mt:PluginStaticWebPath component="configassistant">colorpicker/js/colorpicker.js" type="text/javascript"></script>
-  <script src="<mt:PluginStaticWebPath component="configassistant">js/jquery.json-2.2.min.js" type="text/javascript"></script>
 </mt:setvarblock>
 END_TMPL
 

@@ -1,12 +1,14 @@
 // Utility Functions
 function handle_edit_click() {
-    var link = $(this).parent().find('a.link');
+    var p = $(this).parent();
+    var link = p.find('a.link');
     if (link.length > 0) {
-        $(this).parent().replaceWith( render_link_form( link.html(), link.attr('href') ) );
+        p.replaceWith( render_link_form( link.html(), link.attr('href') ) );
     } else {
-        $(this).parent().before( render_link_form( '','' ) );
-        $(this).parent().hide();
+        p.before( render_link_form( '','' ) );
+        p.hide();
     }
+    p.parent().find('input.label').focus();
     return false;
 };
 function render_link(label,url) {
@@ -42,7 +44,7 @@ function render_link_form(label,url) {
                 e.find('button').trigger('click');
                 return false;
             }
-        });
+    });
     }).blur( function() {
         $(this).unbind('keypress');
     });
