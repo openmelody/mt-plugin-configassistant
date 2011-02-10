@@ -40,13 +40,13 @@
 </mt:setvarblock>
 
 <mt:setvarblock name="html_head" append="1">
-  <link rel="stylesheet" href="<$mt:PluginStaticWebPath component="configassistant"$>css/app.css" type="text/css" />
+  <link rel="stylesheet" href="<$mt:PluginStaticWebPath component="configassistant"$>css/app<mt:If name="is_mt5">5</mt:If>.css" type="text/css" />
   <link rel="stylesheet" href="<$mt:PluginStaticWebPath component="configassistant"$>colorpicker/css/colorpicker.css" type="text/css" />
-<mt:unless tag="ProductName" eq="Melody">
-  <script src="<mt:StaticWebPath>jquery/jquery.js" type="text/javascript"></script>
+<mt:unless tag="ProductName" eq="Melody"><mt:Ignore>
+  <script src="<mt:StaticWebPath>jquery/jquery.js" type="text/javascript"></script></mt:Ignore>
 </mt:unless>
   <script src="<$mt:PluginStaticWebPath component="configassistant"$>js/jquery.history.js" type="text/javascript"></script>
-  <script src="<$mt:PluginStaticWebPath component="configassistant"$>js/app.js" type="text/javascript"></script>
+  <script src="<$mt:PluginStaticWebPath component="configassistant"$>js/app<mt:If name="is_mt5">5</mt:If>.js" type="text/javascript"></script>
   <script src="<$mt:PluginStaticWebPath component="configassistant"$>js/options.js" type="text/javascript"></script>
   <script src="<$mt:PluginStaticWebPath component="configassistant"$>js/jquery-ui-timepicker-addon.js" type="text/javascript"></script>
   <script src="<$mt:PluginStaticWebPath component="configassistant"$>colorpicker/js/colorpicker.js" type="text/javascript"></script>
@@ -65,7 +65,7 @@
 
 <div id="fieldsets">
 <mt:loop name="fieldsets">
-  <div id="<$mt:var name="id"$>-tab-content" class="fieldset-options">
+  <div id="<$mt:var name="id"$>-tab-content" class="<mt:Unless tag="ProductName" like="/Movable Type/">fieldset-options</mt:Unless>">
     <h3><$mt:var name="label"$></h3>
   <mt:If name="hint">
     <div class="fieldset-description"><mt:Var name="hint"></div>

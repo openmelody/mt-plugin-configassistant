@@ -15,6 +15,17 @@ sub plugin {
 sub init_app {
     my $plugin = shift;
     my ($app)  = @_;
+
+
+    my $mtversion = substr(MT->version_number, 0, 3);
+    if ($mtversion >= 5) {
+        Sub::Install::reinstall_sub( {
+            code => \&_load_pseudo_theme_from_template_set,
+            into => 'MT::Theme',
+            as   => '_load_pseudo_theme_from_template_set'
+        });
+    }
+
     my $cfg    = $app->config;
     return if $app->id eq 'wizard';
 
@@ -531,33 +542,61 @@ sub load_tags {
 } ## end sub load_tags
 
 sub update_menus {
-
+    my $mtversion = substr(MT->version_number, 0, 3);
     # Now just add the Theme Options menu item to the top of the Design menu.
-    return {
-        'design:theme_options' => {
-            label      => 'Theme Options',
-            order      => '10',
-            mode       => 'theme_options',
-            view       => 'blog',
-            permission => 'edit_templates',
-            condition  => sub {
-                my $blog = MT->instance->blog;
-                return 0 if !$blog;
-                my $ts = MT->instance->blog->template_set;
-                return 0 if !$ts;
-                my $app = MT::App->instance;
-                return 1 if $app->registry('template_sets')->{$ts}->{options};
-                return 0;
+    if ($mtversion >= '5') {
+        return {
+            'design:theme_options' => {
+                label      => 'Theme Options',
+                order      => '500',
+                mode       => 'theme_options',
+                view       => 'blog',
+                permission => 'edit_templates',
+                condition  => sub {
+                    my $blog = MT->instance->blog;
+                    return 0 if !$blog;
+                    my $ts = MT->instance->blog->template_set;
+                    return 0 if !$ts;
+                    my $app = MT::App->instance;
+                    return 1 if $app->registry('template_sets')->{$ts}->{options};
+                    return 0;
+                },
             },
-        },
-        'prefs:ca_prefs' => {
-                              label      => 'Chooser',
-                              order      => 1,
-                              mode       => 'ca_prefs_chooser',
-                              view       => 'blog',
-                              permission => 'administer',
-        }
-    };
+            'prefs:ca_prefs' => {
+                label      => 'Chooser',
+                order      => 1,
+                mode       => 'ca_prefs_chooser',
+                view       => 'blog',
+                permission => 'administer',
+            }
+        };
+    } else {
+         return {
+            'design:theme_options' => {
+                label      => 'Theme Options',
+                order      => '10',
+                mode       => 'theme_options',
+                view       => 'blog',
+                permission => 'edit_templates',
+                condition  => sub {
+                    my $blog = MT->instance->blog;
+                    return 0 if !$blog;
+                    my $ts = MT->instance->blog->template_set;
+                    return 0 if !$ts;
+                    my $app = MT::App->instance;
+                    return 1 if $app->registry('template_sets')->{$ts}->{options};
+                    return 0;
+                },
+            },
+           'prefs:ca_prefs' => {
+                                  label      => 'Chooser',
+                                  order      => 1,
+                                  mode       => 'ca_prefs_chooser',
+                                  view       => 'blog',
+                                  permission => 'administer',
+            }
+        };
+    }
 } ## end sub update_menus
 
 sub runner {
@@ -572,7 +611,6 @@ sub runner {
 }
 
 sub needs_upgrade {
-
     # We need to override MT::Component::needs_upgrade because that only
     # checks for schema_version, because now we also want to check for
     # static_version.
@@ -602,6 +640,64 @@ sub needs_upgrade {
     }
     0;
 } ## end sub needs_upgrade
+
+sub _load_pseudo_theme_from_template_set {
+    my $pkg = shift;
+    my ($id) = @_;
+    $id =~ s/^theme_//;
+    my $sets = MT->registry("template_sets")
+        or return;
+    my $set = $sets->{$id}
+        or return;
+    my $plugin = $set->{plugin} || undef;
+    my $label = $set->{label}
+                   || ( $plugin && $plugin->registry('name') )
+                   || $id;
+    my $props = {
+        id          => "theme_$id",
+        type        => 'template_set',
+        author_name => $plugin ? $plugin->registry('author_name') : '',
+        author_link => $plugin ? $plugin->registry('author_link') : '',
+        version     => $plugin ? $plugin->registry('version') : '',
+        __plugin    => $plugin,
+        class       => 'blog',
+        path        => $plugin ? $plugin->path : '',
+        base_css    => $set->{base_css},
+        elements => {
+            template_set => {
+                component => 'core',
+                importer  => 'template_set',
+                name      => 'template set',
+                data      => $id,
+            },
+        },
+    };
+
+    map { $props->{$_} = $set->{mt5_theme_settings}->{$_} } keys %{$set->{mt5_theme_settings}};
+    if (!$props->{thumbnail_file} && $set->{preview}) {
+        $props->{thumbnail_file} = 'static/' . $set->{preview};
+    }
+    if (!$props->{thumbnail_file_small} && $set->{preview}) {
+        $props->{thumbnail_file_small} = 'static/' . $set->{thumbnail};
+    }
+    $props->{author_name} = $plugin->translate_templatized($props->{author_name}) if $plugin;
+    my $description = $plugin
+                    ? $plugin->translate($set->{description})
+                    : $set->{description};
+    my $reg = {
+        id           => "theme_$id",
+        version      => $plugin ? $plugin->registry('version')     : '',
+        l10n_class   => $plugin ? $plugin->registry('l10n_class') : 'MT::L10N',
+        l10n_lexicon => $plugin ? $plugin->registry('l10n_lexicon') : undef,
+        label        => sub { MT->translate( '[_1]', $label ) },
+        description  => $description,
+        class        => 'blog',
+    };
+    my $class = $pkg->new( $props );
+    $class->registry( $reg );
+    return $class;
+}
+
 
 1;
 

@@ -1,0 +1,231 @@
+#list-plugins .fieldset-options { display: block; }
+#list-plugins #fieldsets h3 { display: block; }
+
+/*.fieldset-options { display: none; }*/
+.fieldset-description { padding-bottom: 15px; }
+
+/*#fieldsets h3 { display: none; }*/
+#fieldsets #about-tab-content h3 { display: block; margin-top: 0; }
+h2#page-title span.star { display: none; }
+#content-nav ul li.changed b { font-style: italic; }
+#content-nav ul li.changed span { display: inline; }
+#content-nav ul li span { display: none; }
+
+#fieldsets .field-type-separator h3 {
+    display: block;
+    padding-top: 8px;
+    padding-bottom: 3px;
+    border-bottom: 1px solid #cddee7;
+}
+
+.field-type-radio-image .field-content .hint {
+  text-align: left;
+}
+.field-type-radio-image .field-content {
+  text-align: center;
+}
+.field-type-radio-image .field-content li.selected {
+  color: white;
+  background-color: #336699;
+  border-radius: 5px;
+  -moz-border-radius: 5px;
+  -webkit-border-radius: 5px;
+}
+.field-type-radio-image .field-content li {
+  float: left;
+  margin-right: 15px;
+  padding: 5px 5px 8px 5px;
+}
+.field-type-radio-image .field-content li input {
+  display: none;
+}
+
+.colorpicker-container {
+  position: relative;
+  width: 36px;
+  height: 36px;
+  background: url(../colorpicker/images/select.png);
+}
+.colorpicker-container div {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 30px;
+  height: 30px;
+  background: url(../colorpicker/images/select.png) center;
+}
+
+#theme-options #container .actions-bar-wrapper {
+  padding: 10px;
+  position: fixed;
+  width: 100%;
+  left: 0;
+  bottom: 0;
+  overflow: hidden;
+}
+#theme-options #container .actions-bar {
+  position: relative;
+  z-index:2;
+}
+#theme-options #container .actions-bar-inner {
+  width: 960px;
+  margin: 0 auto 0 auto;
+}
+#theme-options #container .actions-bar-inner button {  
+  margin-left: 210px;
+}
+#theme-options #container .actions-bar-wrapper .transparency {
+  opacity:0.5;  
+  filter:alpha(opacity=50);  
+  -moz-opacity:0.5;  
+  background-color: #000000;  
+  width: 100%; height:100px;  
+  position:absolute;  
+  top:0px;  
+  left:0px;  
+  z-index:1;  
+}
+
+#configassistant-form .field-content .preview {
+  float: left;
+  margin-right: 1em;
+}
+/*#configassistant-form .field-content button {
+  color: white;
+  float: left;
+  font-size: 10px;
+  background: #999;
+  margin: 0 10px 0 0;
+  padding: 3px;
+  border: 0;
+  border-radius: 5px;
+  -moz-border-radius: 5px;
+  -webkit-border-radius: 5px;
+}*/
+#list-entries-dialog .listing-filter select {
+  margin-left: 180px;
+  font-size: 13px;
+}
+
+.field-header .required-flag { color: #c20000; }
+
+/* Theme Options home tab */
+
+#theme_thumb {
+    float: right;
+    margin: 0 0 10px 20px;
+    border: 2px solid #ddd;
+}
+
+#apply_theme { margin: 20px 0 15px; }
+#apply_theme a { margin-right: 10px; }
+
+#paypal_donate_container {
+    float: right;
+    margin: 0 0 0 20px;
+    width: 74px;
+    height: 25px;
+}
+
+
+
+#message-confirmation { font-weight: bold; }
+
+
+/* Theme Chooser */
+
+#status {
+    display: none;
+    position: absolute;
+    top: 110px;
+    left: 160px;
+}
+
+#status-inner {
+    background: url(../images/status-bg.png);
+    width: 250px;
+    height: 100px;
+    padding: 50px 20px;
+    text-align: center;
+    top: 100px;
+    left: 205px;
+}
+
+#status-inner p { margin-bottom: 15px; }
+
+/* Select a Theme */
+
+.theme-gallery-container {
+    position: relative;
+}
+
+.theme-gallery-container-inner  {
+    height:330px;
+/*    overflow:auto; */
+}
+
+.ts-container {
+    float: left;
+    margin: 0 40px 15px 0;
+}
+
+.ts-container-inner {
+    width: 175px;
+    height: 150px;
+    overflow: hidden;
+    padding: 3px 0px 0px;
+}
+
+.radio-button {
+    float: left;
+    margin: 3px 5px 0 0;
+}
+
+.ts-container.last {
+    margin: 0;
+    clear: right;
+}
+
+.ts-details {
+    display: none;
+    position: absolute;
+    width: 590px;
+    height: 336px;
+    top: 0;
+    left: 0;
+    background: #fff;
+    padding: 10px;
+}
+
+.ts-details img.close {
+    cursor: pointer;
+    float: right;
+    margin: 0;
+}
+
+.ts-details img.preview {
+    float: left;
+    margin: 0 20px 0 0;
+    border: 3px solid #e8eff5;
+}
+
+.ts-details h2 { margin-top: 0; }
+
+.ts-details ul {
+    margin-left : 340px;
+    list-style-type: disc;
+}
+
+
+/* Setup Theme */
+
+.dialog .fieldset-options { display: block; }
+
+#setup-required-fields {
+    height: 318px;
+    overflow: auto;
+}
+
+.dialog .field-left-label {
+    width: 580px;
+}

@@ -13,6 +13,7 @@ use ConfigAssistant::Util
 use JSON;
 # use MT::Log::Log4perl qw( l4mtdump ); use Log::Log4perl qw( :resurrect );
 our $logger;
+our $jq_ident = ( MT->product_name eq 'Movable Type' and MT->product_version > 5 ? 'jQuery' : '$');
 
 sub tag_plugin_static_web_path {
     my ( $ctx, $args, $cond ) = @_;
@@ -173,7 +174,7 @@ sub theme_options {
             $out .= "    <div class=\"field-content\">\n";
 
             if ( $field->{hint} ) {
-                $out .= "       <div>" . $field->{hint} . "</div>\n";
+                $out .= "       <div>" . (ref $field->{hint} eq 'CODE' ? $field->{hint}->() : $field->{hint}) . "</div>\n";
             }
             $out .= "    </div>\n";
             $out .= "  </div>\n";
@@ -219,7 +220,7 @@ sub theme_options {
             if ( $field->{hint} ) {
                 $out
                   .= "      <div class=\"hint\">"
-                  . $field->{hint}
+                  . (ref $field->{hint} eq 'CODE' ? $field->{hint}->() : $field->{hint})
                   . "</div>\n";
             }
             $out .= "    </div>\n";
@@ -291,6 +292,7 @@ sub theme_options {
     $param->{plugin_sig}       = $plugin->{plugin_sig};
     $param->{saved}            = $q->param('saved');
     $param->{missing_required} = \@missing_required;
+    $param->{is_mt5} = (MT->product_name eq 'Movable Type' and MT->product_version > 5 ? 1: 0);
     return $app->load_tmpl( 'theme_options.mtml', $param );
 } ## end sub theme_options
 
@@ -1660,7 +1662,7 @@ sub plugin_options {
             $out .= "   </div>\n";
             $out .= "   <div class=\"field-content\">\n";
             if ( $field->{hint} ) {
-                $out .= "       <div>" . $field->{hint} . "</div>\n";
+                $out .= "       <div>" . (ref $field->{hint} eq 'CODE' ? $field->{hint}->() : $field->{hint}) . "</div>\n";
             }
             $out .= "  </div>\n";
             $field->{fieldset} = '__global' unless defined $field->{fieldset};
@@ -1692,7 +1694,7 @@ sub plugin_options {
             if ( $field->{hint} ) {
                 $out
                   .= "      <div class=\"hint\">"
-                  . $field->{hint}
+                  . (ref $field->{hint} eq 'CODE' ? $field->{hint}->() : $field->{hint})
                   . "</div>\n";
             }
             $out .= "    </div>\n";
