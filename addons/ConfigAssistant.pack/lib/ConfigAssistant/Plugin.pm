@@ -386,6 +386,10 @@ sub save_config {
               || ( defined $new and $old ne $new );
             ###l4p $logger->debug('$has_changed: '.$has_changed);
 
+            # If the field data has changed, and if the field uses the 
+            # "republish" key, we want to republish the specified templates.
+            # Add the specified templates to $repub_queue so that they can
+            # be republished later.
             if ( $has_changed && $opt && $opt->{'republish'} ) {
                 foreach ( split( ',', $opt->{'republish'} ) ) {
                     $repub_queue->{$_} = 1;
@@ -408,19 +412,47 @@ sub save_config {
             $app->run_callbacks( 'options_change.plugin.' . $plugin->id,
                                  $app, $plugin );
         }
+        
+        # Index templates that have been flagged should be republished.
+        use MT::WeblogPublisher;
         foreach ( keys %$repub_queue ) {
             my $tmpl = MT->model('template')
               ->load( { blog_id => $blog_id, identifier => $_, } );
-            next unless $tmpl;
-            MT->log( {
-                   blog_id => $blog_id,
-                   message => "Config Assistant: Republishing " . $tmpl->name
-                 }
-            );
-            $app->rebuild_indexes(
+
+            if (!$tmpl) {
+                MT->log( {
+                       blog_id => $blog_id,
+                       level   => '2', # Warning
+                       message => "Config Assistant could not find a "
+                                  . "template with the identifier " . $_,
+                     }
+                );
+                next;
+            }
+
+            my $result = $app->rebuild_indexes(
                                    Blog     => $app->blog,
                                    Template => $tmpl,
                                    Force    => 1,
+            );
+
+            # Report on the success/failure of the template republishing.
+            my ($message, $level);
+            if ($result) {
+                $message = "Config Assistant: Republishing template " 
+                           . $tmpl->name;
+                $level   = '1'; # Info
+            }
+            else {
+                $message = "Config Assistant could not republish template " 
+                           . $tmpl->name;
+                $level   = '4'; # Error
+            }
+            MT->log( {
+                   blog_id => $blog_id,
+                   level   => $level,
+                   message => $message,
+                 }
             );
         }
         $pdata->data($data);
