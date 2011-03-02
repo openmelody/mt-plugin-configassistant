@@ -549,12 +549,12 @@ sub type_link_group {
 
     foreach (@$list) {
         $html
-          .= '<li class="pkg"><a class="link" href="'
+          .= '<li><a class="link" href="'
           . $_->{'url'} . '">'
           . $_->{'label'}
           . '</a> <a class="remove" href="javascript:void(0);"><img src="'
           . $static
-          . '/images/icon_close.png" /></a> <a class="edit" href="javascript:void(0);">edit</a></li>';
+          . '/images/icon_close.png" alt="remove" title="remove" /></a> <a class="edit" href="javascript:void(0);">edit</a></li>';
     }
     $html
       .= "<li class=\"last\"><button class=\"add-link\">Add Link</button></li>"

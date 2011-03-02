@@ -55,6 +55,10 @@ h2#page-title span.star { display: none; }
   background: url(../colorpicker/images/select.png) center;
 }
 
+.field-type-link-group label.link-text {
+  padding-right: 10px;
+}
+
 #theme-options #container .actions-bar-wrapper {
   padding: 10px;
   position: fixed;
