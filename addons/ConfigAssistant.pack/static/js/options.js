@@ -12,7 +12,7 @@ function handle_edit_click() {
     return false;
 };
 function render_link(label,url) {
-    var dom = '<li class="pkg"><a class="link" href="'+url+'">'+label+'</a> <a class="remove" href="javascript:void(0);"><img src="'+StaticURI+'images/icon_close.png" /></a> <a class="edit" href="javascript:void(0);">edit</a></li>';
+    var dom = '<li class="pkg"><a class="link" href="'+url+'">'+label+'</a> <a class="remove" href="javascript:void(0);"><img src="'+StaticURI+'images/icon_close.png" alt="remove" title="remove" /></a> <a class="edit" href="javascript:void(0);">edit</a></li>';
     var e = $(dom);
     e.find('a.edit').click( handle_edit_click );
     e.find('a.remove').click( handle_delete_click );
@@ -34,7 +34,7 @@ function handle_remove_file() {
     $(this).parent().remove(); return false;
 };
 function render_link_form(label,url) {
-    var dom = '<li class="pkg"><label class="link-text">Label: <input type="text" class="label" value="'+(typeof label != 'undefined' ? label : '')+'" /></label><label class="link-url">URL: <input type="text" class="url" value="'+(typeof url != 'undefined' ? url : '')+'" /></label> <button>Save</button></li>';
+    var dom = '<li><label class="link-text">Label: <input type="text" class="label" value="'+(typeof label != 'undefined' ? label : '')+'" /></label><label class="link-url">URL: <input type="text" class="url" value="'+(typeof url != 'undefined' ? url : '')+'" /></label> <button>Save</button></li>';
     var e = $(dom);
     e.find('button').click( handle_save_click ); 
     e.find('input.url').focus( function() {
