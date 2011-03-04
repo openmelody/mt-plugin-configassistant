@@ -544,30 +544,30 @@ sub type_link_group {
     if ($@) { $list = []; }
     my $html;
     $html
-      = "      <div id=\"$field_id-link-group\" class=\"link-group-container pkg\">"
-      . "<ul>";
+      = "<div id=\"$field_id-link-group\" class=\"link-group-container pkg\">\n"
+      . "    <ul>\n";
 
     foreach (@$list) {
         $html
-          .= '<li><a class="link" href="'
+          .= '        <li><a class="link" href="'
           . $_->{'url'} . '">'
           . $_->{'label'}
           . '</a> <a class="remove" href="javascript:void(0);"><img src="'
           . $static
-          . '/images/icon_close.png" alt="remove" title="remove" /></a> <a class="edit" href="javascript:void(0);">edit</a></li>';
+          . '/images/icon_close.png" alt="remove" title="remove" /></a> '
+          . '<a class="edit" href="javascript:void(0);">edit</a></li>' . "\n";
     }
     $html
-      .= "<li class=\"last\"><button class=\"add-link\">Add Link</button></li>"
-      . "</ul>"
-      . "</div>"
+      .= "          <li class=\"last\">"
+      . "<a href=\"javascript:void(0);\" class=\"add-link\">Add Link</a>"
+      . "</li>\n"
+      . "    </ul>\n"
+      . "</div>\n"
       . "<input type=\"hidden\" id=\"$field_id\" name=\"$field_id\" value=\""
       . encode_html( $value, 1
       )    # The additional "1" will escape HTML entities properly
-      . "\" />\n<script type=\"text/javascript\">\n";
-    $html
-      .= "  \$('#'+'$field_id-link-group button.add-link').click( handle_edit_click );\n";
-    $html
-      .= "  \$('#'+'$field_id-link-group').parents('form').submit( function (){
+      . "\" />\n<script type=\"text/javascript\">
+  \$('#'+'$field_id-link-group').parents('form').submit( function (){
     var struct = Array();
     \$(this).find('#'+'$field_id-link-group ul li button').trigger('click');
     \$(this).find('#'+'$field_id-link-group ul li a.link').each( function(i, e) {
@@ -578,6 +578,7 @@ sub type_link_group {
     var json = struct.toJSON().escapeJS();
     \$('#'+'$field_id').val( json );
   });
+  \$('#'+'$field_id-link-group ul li a.add-link').click( handle_edit_click );
   \$('#'+'$field_id-link-group ul li a.remove').click( handle_delete_click );
   \$('#'+'$field_id-link-group ul li a.edit').click( handle_edit_click );
 </script>\n";
