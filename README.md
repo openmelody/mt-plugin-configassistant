@@ -920,7 +920,7 @@ you intend to override the default.
 * `allow_pings` (default: 1) - Global toggle for TrackBacks.
 * `allow_pings_default` (default: 1) - Turn on TrackBacks by default for new
   entries.
-* `allow_reg_comments` (default: 1) - 
+* `allow_reg_comments` (default: 1) - Global toggle for comments.
 * `allow_unreg_comments` (default: 0) - 
 * `archive_type` (default: '') - 
 * `archive_type_preferred` (default: '') - 
