@@ -63,11 +63,12 @@
     </div>
 
 </mt:unless>
+
 <mt:if name="object_loop">
     <mt:unless name="json">
     <form method="post" action="<mt:var name="script_url">" name="select_entry">
         <input type="hidden" name="__mode" value="ca_select_entry" />
-        <input type="hidden" name="_type" value="entry" />
+        <input type="hidden" name="_type" value="<mt:var name="obj_type">" />
         <input type="hidden" name="magic_token" value="<mt:var name="magic_token">" />
         <input type="hidden" name="edit_field" value="<mt:var name="edit_field">" />
         <input type="hidden" name="dialog_view" value="1" />
@@ -167,7 +168,7 @@
     <mtapp:statusmsg
         id="no-assets"
         class="info">
-        <__trans phrase="No entries could be found.">
+        <__trans phrase="No [_1] could be found." params="<mt:var name="entry_class_labelp" lower_case="1">">
     </mtapp:statusmsg>
     <mt:unless name="json">
     <div class="actions-bar">

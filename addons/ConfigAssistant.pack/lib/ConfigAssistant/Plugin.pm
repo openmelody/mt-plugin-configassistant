@@ -638,7 +638,10 @@ sub type_entry {
 EOH
         $ctx->var( 'entry_chooser_js', 1 );
     }
-    my $label = MT->model($obj_class)->class_label;
+    my $class = MT->model($obj_class);
+    my $label = $class->class_label;
+    $ctx->var( 'entry_class_label', $label );
+    $ctx->var( 'entry_class_labelp', $class->class_label_plural );
     $out .= <<EOH;
 <div class="pkg">
   <input name="$field_id" id="$field_id" class="hidden" type="hidden" value="$value" />
@@ -1351,16 +1354,23 @@ sub plugin_options {
 } ## end sub plugin_options
 
 sub entry_search_api_prep {
+    return _search_api_prep('entry',@_);
+}
+sub page_search_api_prep {
+    return _search_api_prep('page',@_);
+}
+sub _search_api_prep {
+    my ( $type, $terms, $args, $blog_id ) = @_;
     my $app = MT->instance;
-    my ( $terms, $args, $blog_id ) = @_;
     my $q = $app->can('query') ? $app->query : $app->param;
 
-    $terms->{blog_id} = $blog_id            if $blog_id;
-    $terms->{status}  = $q->param('status') if ( $q->param('status') );
+    $terms->{blog_id}  = $blog_id            if $blog_id;
+    $terms->{status}   = $q->param('status') if ( $q->param('status') );
+    $terms->{class}    = $app->param('class');
 
-    my $search_api = $app->registry("search_apis");
-    my $api        = $search_api->{entry};
-    my $date_col   = $api->{date_column} || 'created_on';
+    my $search_api     = $app->registry("search_apis");
+    my $api            = $search_api->{$type};
+    my $date_col       = $api->{date_column} || 'created_on';
     $args->{sort}      = $date_col;
     $args->{direction} = 'descend';
 }
@@ -1381,31 +1391,36 @@ sub list_entry_mini {
       or return "Invalid request: unknown class $obj_type";
 
     my $terms;
+    $terms->{class} = $obj_type;
     $terms->{blog_id} = $blog_id if $blog_id;
-    $terms->{status} = 2;
+    $terms->{status} = 2 if $obj_type eq 'entry' || $obj_type eq 'page';
 
     my %args = ( sort => 'authored_on', direction => 'descend', );
 
     my $plugin = MT->component('ConfigAssistant')
       or die "OMG NO COMPONENT!?!";
+
     my $tmpl = $plugin->load_tmpl('entry_list.mtml');
-    $tmpl->param( 'obj_type', $obj_type );
+    $tmpl->param('entry_class_labelp', $pkg->class_label_plural);
+    $tmpl->param('entry_class_label', $pkg->class_label);
+    $tmpl->param('obj_type', $obj_type);
     return $app->listing( {
            type     => $obj_type,
            template => $tmpl,
            params   => {
-                       panel_searchable => 1,
-                       edit_blog_id     => $blog_id,
-                       edit_field       => $q->param('edit_field'),
-                       search           => $q->param('search'),
-                       blog_id          => $blog_id,
+                       panel_searchable   => 1,
+                       edit_blog_id       => $blog_id,
+                       edit_field         => $q->param('edit_field'),
+                       search             => $q->param('search'),
+                       blog_id            => $blog_id,
+                       class              => $obj_type,
            },
            code => sub {
                my ( $obj, $row ) = @_;
                $row->{ 'status_' . lc MT::Entry::status_text( $obj->status ) }
                  = 1;
                $row->{entry_permalink} = $obj->permalink
-                 if $obj->status == MT::Entry->RELEASE();
+                 if $obj->status == MT->model('entry')->RELEASE();
                if ( my $ts = $obj->authored_on ) {
                    my $date_format = MT::App::CMS->LISTING_DATE_FORMAT();
                    my $datetime_format
