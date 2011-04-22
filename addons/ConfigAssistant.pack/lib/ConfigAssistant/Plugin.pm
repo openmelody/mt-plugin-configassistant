@@ -1362,6 +1362,8 @@ sub page_search_api_prep {
 sub _search_api_prep {
     my ( $type, $terms, $args, $blog_id ) = @_;
     my $app = MT->instance;
+    return unless $app->mode eq 'ca_config_entry';
+
     my $q = $app->can('query') ? $app->query : $app->param;
 
     $terms->{blog_id}  = $blog_id            if $blog_id;
