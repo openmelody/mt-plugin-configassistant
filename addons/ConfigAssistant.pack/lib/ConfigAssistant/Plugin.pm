@@ -370,6 +370,11 @@ sub save_config {
                         $old->remove if $old;
                         $param->{$var} = undef;
                     }
+                    else {
+                        
+                        # The user hasn't changed the file--keep it.
+                        $param->{$var} = $data->{$var};
+                    }
                 } else {
                     if ( $data->{$var} ) {
                         my $old = MT->model('asset')->load( $data->{$var} );
