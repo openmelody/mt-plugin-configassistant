@@ -1,6 +1,6 @@
 // Utility Functions
 function handle_edit_click() {
-    var p = $(this).parent();
+    var p = jQuery(this).parent();
     var link = p.find('a.link');
     if (link.length > 0) {
         p.replaceWith( render_link_form( link.html(), link.attr('href') ) );
@@ -13,32 +13,32 @@ function handle_edit_click() {
 };
 function render_link(label,url) {
     var dom = '<li class="pkg"><a class="link" href="'+url+'">'+label+'</a> <a class="remove" href="javascript:void(0);"><img src="'+StaticURI+'images/icon_close.png" alt="remove" title="remove" /></a> <a class="edit" href="javascript:void(0);">edit</a></li>';
-    var e = $(dom);
+    var e = jQuery(dom);
     e.find('a.edit').click( handle_edit_click );
     e.find('a.remove').click( handle_delete_click );
     return e;
 };
 function handle_save_click() {
-    var label = $(this).parent().find('input[class=label]').val();
-    var url = $(this).parent().find('input[class=url]').val();
+    var label = jQuery(this).parent().find('input[class=label]').val();
+    var url = jQuery(this).parent().find('input[class=url]').val();
     if (!label && !url) { return false; }
-    $(this).parents('ul').find('li.last').show();
-    $(this).parent().replaceWith( render_link(label,url) );
+    jQuery(this).parents('ul').find('li.last').show();
+    jQuery(this).parent().replaceWith( render_link(label,url) );
     return false;
 };
 function handle_delete_click() {
-    $(this).parent().remove(); return false;
+    jQuery(this).parent().remove(); return false;
 };
 function handle_remove_file() {
-    $(this).parents('.field-content').find('.clear-file').val(1);
-    $(this).parent().remove(); return false;
+    jQuery(this).parents('.field-content').find('.clear-file').val(1);
+    jQuery(this).parent().remove(); return false;
 };
 function render_link_form(label,url) {
     var dom = '<li><label class="link-text">Label: <input type="text" class="label" value="'+(typeof label != 'undefined' ? label : '')+'" /></label><label class="link-url">URL: <input type="text" class="url" value="'+(typeof url != 'undefined' ? url : '')+'" /></label> <button>Save</button></li>';
-    var e = $(dom);
+    var e = jQuery(dom);
     e.find('button').click( handle_save_click ); 
     e.find('input.url').focus( function() {
-        $(this).bind('keypress', function(event) {
+        jQuery(this).bind('keypress', function(event) {
             if (event.keyCode == 13) {
                 event.stopPropagation();
                 e.find('button').trigger('click');
@@ -46,7 +46,7 @@ function render_link_form(label,url) {
             }
     });
     }).blur( function() {
-        $(this).unbind('keypress');
+        jQuery(this).unbind('keypress');
     });
     return e;
 };

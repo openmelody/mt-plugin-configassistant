@@ -502,7 +502,7 @@ sub type_file {
              "      <input type=\"hidden\" name=\"$field_id-clear\" value=\"0\" class=\"clear-file\" />\n";
 
     $html .= "<script type=\"text/javascript\">\n";
-    $html .= "  \$('#field-".$field_id." a.remove').click( handle_remove_file );\n";
+    $html .= "  jQuery('#field-".$field_id." a.remove').click( handle_remove_file );\n";
     $html .= "</script>\n";
 
     return $html;
@@ -515,19 +515,19 @@ sub type_colorpicker {
       "      <div id=\"$field_id-colorpicker\" class=\"colorpicker-container\"><div style=\"background-color: $value\"></div></div><input type=\"hidden\" id=\"$field_id\" name=\"$field_id\" value=\""
       . encode_html( $value, 1
       )    # The additional "1" will escape HTML entities properly
-      . "\" />\n<script type=\"text/javascript\">\$('#'+'$field_id-colorpicker').ColorPicker({
+      . "\" />\n<script type=\"text/javascript\">jQuery('#'+'$field_id-colorpicker').ColorPicker({
         color: '$value',
         onShow: function (colpkr) {
-            \$(colpkr).fadeIn(500);
+            jQuery(colpkr).fadeIn(500);
             return false;
         },
         onHide: function (colpkr) {
-            \$(colpkr).fadeOut(500);
+            jQuery(colpkr).fadeOut(500);
             return false;
         },
         onChange: function (hsb, hex, rgb) {
-            \$('#'+'$field_id-colorpicker div').css('backgroundColor', '#' + hex);
-            \$('#'+'$field_id').val('#' + hex).trigger('change');
+            jQuery('#'+'$field_id-colorpicker div').css('backgroundColor', '#' + hex);
+            jQuery('#'+'$field_id').val('#' + hex).trigger('change');
         }
     });</script>\n";
 } ## end sub type_colorpicker
@@ -567,20 +567,20 @@ sub type_link_group {
       . encode_html( $value, 1
       )    # The additional "1" will escape HTML entities properly
       . "\" />\n<script type=\"text/javascript\">
-  \$('#'+'$field_id-link-group').parents('form').submit( function (){
+  jQuery('#'+'$field_id-link-group').parents('form').submit( function (){
     var struct = Array();
-    \$(this).find('#'+'$field_id-link-group ul li button').trigger('click');
-    \$(this).find('#'+'$field_id-link-group ul li a.link').each( function(i, e) {
-      var u = \$(this).attr('href');
-      var l = \$(this).html();
+    jQuery(this).find('#'+'$field_id-link-group ul li button').trigger('click');
+    jQuery(this).find('#'+'$field_id-link-group ul li a.link').each( function(i, e) {
+      var u = jQuery(this).attr('href');
+      var l = jQuery(this).html();
       struct.push( { 'url': u, 'label': l } );
     });
     var json = struct.toJSON().escapeJS();
-    \$('#'+'$field_id').val( json );
+    jQuery('#'+'$field_id').val( json );
   });
-  \$('#'+'$field_id-link-group ul li a.add-link').click( handle_edit_click );
-  \$('#'+'$field_id-link-group ul li a.remove').click( handle_delete_click );
-  \$('#'+'$field_id-link-group ul li a.edit').click( handle_edit_click );
+  jQuery('#'+'$field_id-link-group ul li a.add-link').click( handle_edit_click );
+  jQuery('#'+'$field_id-link-group ul li a.remove').click( handle_delete_click );
+  jQuery('#'+'$field_id-link-group ul li a.edit').click( handle_edit_click );
 </script>\n";
     return $html;
 } ## end sub type_link_group
@@ -627,9 +627,9 @@ sub type_entry {
         $out .= <<EOH;
     <script type="text/javascript">
         function insertCustomFieldEntry(html, val, id) {
-            \$('#'+id).val(val);
+            jQuery('#'+id).val(val);
             try {
-                \$('#'+id+'_preview').html(html);
+                jQuery('#'+id+'_preview').html(html);
             } catch(e) {
                 log.error(e);
             };
