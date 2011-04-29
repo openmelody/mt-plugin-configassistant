@@ -55,6 +55,24 @@ h2#page-title span.star { display: none; }
   background: url(../colorpicker/images/select.png) center;
 }
 
+.field-type-link-group label.link-text {
+  padding-right: 10px;
+}
+
+.field-type-link-group a.add-link {
+    display: block;
+    float: left;
+    color: white;
+    font-size: 11px;
+    background: #999;
+    margin: 0 10px 0 0;
+    padding: 3px 8px;
+    border: 0;
+    border-radius: 5px;
+    -moz-border-radius: 5px;
+    -webkit-border-radius: 5px;
+}
+
 #theme-options #container .actions-bar-wrapper {
   padding: 10px;
   position: fixed;

@@ -532,6 +532,18 @@ Example:
         tag: 'PrivatePayPalKey'
         destination: my_theme/%{10}e
 
+If you specify the `scope` Field Property as in the example below, the file path will be written to the local blog, not the Theme's support directory. This can be helpful to separate files on a blog-by-blog basis.
+
+Example:
+
+    my_keyfile:
+        type: file
+        label: 'My Private Key'
+        hint: 'A private key used for signing PayPal buttons.'
+        tag: 'PrivatePayPalKey'
+        scope: blog
+        destination: my_theme/%{10}e
+
 **Example Radio Image**
 
 The `radio-image` type supports a special syntax for the `values` attribute
@@ -908,7 +920,7 @@ you intend to override the default.
 * `allow_pings` (default: 1) - Global toggle for TrackBacks.
 * `allow_pings_default` (default: 1) - Turn on TrackBacks by default for new
   entries.
-* `allow_reg_comments` (default: 1) - 
+* `allow_reg_comments` (default: 1) - Global toggle for comments.
 * `allow_unreg_comments` (default: 0) - 
 * `archive_type` (default: '') - 
 * `archive_type_preferred` (default: '') - 
