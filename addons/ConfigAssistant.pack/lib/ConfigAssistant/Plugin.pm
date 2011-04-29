@@ -579,6 +579,7 @@ sub type_entry {
     my $obj_class = $ctx->stash('object_class') || 'entry';
     my $obj       = MT->model($obj_class)->load($value);
     my $obj_name  = ( $obj ? $obj->title : '' ) || '';
+    my $obj_id    = ( $obj ? $obj->id : 0 ) || '';
     my $blog_id   = $field->{all_blogs} ? 0 : $app->blog->id;
     unless ( $ctx->var('entry_chooser_js') ) {
         $out .= <<EOH;
@@ -603,6 +604,7 @@ EOH
           onclick="return openDialog(this.form, 'ca_config_entry', 'blog_id=$blog_id&edit_field=$field_id&status=2&class=$obj_class')">Choose $label</button>
   <div id="${field_id}_preview" class="preview">
     $obj_name
+    <a href="?__mode=edit&_type=entry&blog_id=$blog_id&id=$obj_id">edit entry</a>
   </div>
 </div>
 EOH
