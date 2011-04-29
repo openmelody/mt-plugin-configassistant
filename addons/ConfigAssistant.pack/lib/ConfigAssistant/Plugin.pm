@@ -646,6 +646,7 @@ EOH
     }
     my $class = MT->model($obj_class);
     my $label = $class->class_label;
+    my $label_lc = lc($label);
     $ctx->var( 'entry_class_label', $label );
     $ctx->var( 'entry_class_labelp', $class->class_label_plural );
     $out .= <<EOH;
@@ -655,7 +656,7 @@ EOH
           onclick="return openDialog(this.form, 'ca_config_entry', 'blog_id=$blog_id&edit_field=$field_id&status=2&class=$obj_class')">Choose $label</button>
   <div id="${field_id}_preview" class="preview">
     $obj_name
-    <a href="?__mode=edit&_type=entry&blog_id=$blog_id&id=$obj_id">edit entry</a>
+    (<a href="?__mode=edit&_type=entry&blog_id=$blog_id&id=$obj_id">edit $label_lc</a>)
   </div>
 </div>
 EOH
