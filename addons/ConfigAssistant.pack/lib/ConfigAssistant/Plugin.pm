@@ -671,6 +671,7 @@ sub type_entry_or_page {
     if ($value) {
         $obj = MT->model($obj_class)->load($value);
         $obj_name = ( $obj ? $obj->title : '' ) || '';
+        $obj_class = $obj->class;
     }
     my $blog_id = $field->{all_blogs} ? 0 : $app->blog->id;
     unless ( $ctx->var('entry_or_page_chooser_js') ) {
@@ -697,7 +698,7 @@ EOH
       <button type="submit"
               onclick="return openDialog(this.form, 'ca_list_entry_or_page', 'blog_id=$blog_id&edit_field=$field_id')">Choose $label</button>
       <div id="${field_id}_preview" class="preview">
-        $obj_name
+        $obj_name ( $obj_class )
       </div>
     </div>
 EOH
