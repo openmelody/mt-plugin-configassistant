@@ -690,6 +690,7 @@ EOH
         $ctx->var( 'entry_or_page_chooser_js', 1 );
     }
     my $class_label = $obj->class_label;
+    my $preview = $value ? "$obj_name ( $class_label )" : "";
     my $class = MT->model($obj_class);
     my $label = 'Entry or Page';
     $ctx->var( 'entry_class_label', $label );
@@ -699,7 +700,7 @@ EOH
       <button type="submit"
               onclick="return openDialog(this.form, 'ca_list_entry_or_page', 'blog_id=$blog_id&edit_field=$field_id')">Choose $label</button>
       <div id="${field_id}_preview" class="preview">
-        $obj_name ( $class_label )
+        $preview
       </div>
     </div>
 EOH
