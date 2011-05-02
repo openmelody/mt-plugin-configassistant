@@ -4,7 +4,7 @@ key: ConfigAssistant
 author_link: http://openmelody.org/
 author_name: "Byrne Reese, Open Melody Software Group"
 description: This plugin provides a simple YAML based framework for creating plugin and theme configuration options.
-version: 2.1.24
+version: 2.1.25
 static_version: 10
 schema_version: 3
 
@@ -15,6 +15,8 @@ applications:
       theme_options:    $ConfigAssistant::ConfigAssistant::Plugin::theme_options
       ca_config_entry:  $ConfigAssistant::ConfigAssistant::Plugin::list_entry_mini
       ca_select_entry:  $ConfigAssistant::ConfigAssistant::Plugin::select_entry
+      ca_config_entry_or_page:  $ConfigAssistant::ConfigAssistant::Plugin::list_entry_or_page
+      ca_select_entry_or_page:  $ConfigAssistant::ConfigAssistant::Plugin::select_entry_or_page
       ca_save_config:   $ConfigAssistant::ConfigAssistant::Plugin::save_config
       run_static_copy:  $ConfigAssistant::ConfigAssistant::Static::manual_run
       ca_prefs_apply:   $ConfigAssistant::ConfigAssistant::Prefs::apply
@@ -57,6 +59,8 @@ config_types:
     handler: $ConfigAssistant::ConfigAssistant::Plugin::type_entry
   page:
     handler: $ConfigAssistant::ConfigAssistant::Plugin::type_page
+  entry_or_page:
+    handler: $ConfigAssistant::ConfigAssistant::Plugin::type_entry_or_page
   tagged-entry:
     handler: $ConfigAssistant::ConfigAssistant::Plugin::type_tagged_entry
   link-group:
