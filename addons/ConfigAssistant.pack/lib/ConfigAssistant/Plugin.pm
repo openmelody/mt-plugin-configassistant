@@ -1613,6 +1613,7 @@ sub select_entry_or_page {
         'select_entry.mtml',
         {   entry_id    => $entry->id,
             entry_title => $entry->title,
+            entry_class => $entry->class_label,
             edit_field  => $edit_field,
         }
     );
