@@ -674,10 +674,10 @@ sub type_entry_or_page {
         $obj_class = $obj->class;
     }
     my $blog_id = $field->{all_blogs} ? 0 : $app->blog->id;
-    unless ( $ctx->var('entry_or_page_chooser_js') ) {
+    unless ( $ctx->var('entry_chooser_js') ) {
         $out .= <<EOH;
         <script type="text/javascript">
-            function insertCustomFieldEntryOrPage(html, val, id) {
+            function insertCustomFieldEntry(html, val, id) {
                 \$('#'+id).val(val);
                 try {
                     \$('#'+id+'_preview').html(html);
@@ -687,7 +687,7 @@ sub type_entry_or_page {
             }
         </script>
 EOH
-        $ctx->var( 'entry_or_page_chooser_js', 1 );
+        $ctx->var( 'entry_chooser_js', 1 );
     }
     my $class_label = $obj->class_label;
     my $preview = $value ? "$obj_name ( $class_label )" : "";
@@ -1601,6 +1601,7 @@ sub select_entry_or_page {
 
     my $entry_id = $app->param('id')
         or return $app->errtrans('No id');
+    MT->log('boo');
     my $entry = MT->model('entry')->load($entry_id)
         or return $app->errtrans( 'No entry or page #[_1]', $entry_id );
     my $edit_field = $app->param('edit_field')
