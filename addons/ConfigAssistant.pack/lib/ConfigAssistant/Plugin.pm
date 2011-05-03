@@ -698,7 +698,7 @@ EOH
     <div class="pkg">
       <input name="$field_id" id="$field_id" class="hidden" type="hidden" value="$value" />
       <button type="submit"
-              onclick="return openDialog(this.form, 'ca_list_entry_or_page', 'blog_id=$blog_id&edit_field=$field_id')">Choose $label</button>
+              onclick="return openDialog(this.form, 'ca_config_entry_or_page', 'blog_id=$blog_id&edit_field=$field_id')">Choose $label</button>
       <div id="${field_id}_preview" class="preview">
         $preview
       </div>
