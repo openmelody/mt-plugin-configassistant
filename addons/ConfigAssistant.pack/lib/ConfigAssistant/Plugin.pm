@@ -370,6 +370,11 @@ sub save_config {
                         $old->remove if $old;
                         $param->{$var} = undef;
                     }
+                    else {
+                        
+                        # The user hasn't changed the file--keep it.
+                        $param->{$var} = $data->{$var};
+                    }
                 } else {
                     if ( $data->{$var} ) {
                         my $old = MT->model('asset')->load( $data->{$var} );
@@ -502,7 +507,7 @@ sub type_file {
              "      <input type=\"hidden\" name=\"$field_id-clear\" value=\"0\" class=\"clear-file\" />\n";
 
     $html .= "<script type=\"text/javascript\">\n";
-    $html .= "  \$('#field-".$field_id." a.remove').click( handle_remove_file );\n";
+    $html .= "  jQuery('#field-".$field_id." a.remove').click( handle_remove_file );\n";
     $html .= "</script>\n";
 
     return $html;
@@ -515,19 +520,19 @@ sub type_colorpicker {
       "      <div id=\"$field_id-colorpicker\" class=\"colorpicker-container\"><div style=\"background-color: $value\"></div></div><input type=\"hidden\" id=\"$field_id\" name=\"$field_id\" value=\""
       . encode_html( $value, 1
       )    # The additional "1" will escape HTML entities properly
-      . "\" />\n<script type=\"text/javascript\">\$('#'+'$field_id-colorpicker').ColorPicker({
+      . "\" />\n<script type=\"text/javascript\">jQuery('#'+'$field_id-colorpicker').ColorPicker({
         color: '$value',
         onShow: function (colpkr) {
-            \$(colpkr).fadeIn(500);
+            jQuery(colpkr).fadeIn(500);
             return false;
         },
         onHide: function (colpkr) {
-            \$(colpkr).fadeOut(500);
+            jQuery(colpkr).fadeOut(500);
             return false;
         },
         onChange: function (hsb, hex, rgb) {
-            \$('#'+'$field_id-colorpicker div').css('backgroundColor', '#' + hex);
-            \$('#'+'$field_id').val('#' + hex).trigger('change');
+            jQuery('#'+'$field_id-colorpicker div').css('backgroundColor', '#' + hex);
+            jQuery('#'+'$field_id').val('#' + hex).trigger('change');
         }
     });</script>\n";
 } ## end sub type_colorpicker
@@ -567,20 +572,20 @@ sub type_link_group {
       . encode_html( $value, 1
       )    # The additional "1" will escape HTML entities properly
       . "\" />\n<script type=\"text/javascript\">
-  \$('#'+'$field_id-link-group').parents('form').submit( function (){
+  jQuery('#'+'$field_id-link-group').parents('form').submit( function (){
     var struct = Array();
-    \$(this).find('#'+'$field_id-link-group ul li button').trigger('click');
-    \$(this).find('#'+'$field_id-link-group ul li a.link').each( function(i, e) {
-      var u = \$(this).attr('href');
-      var l = \$(this).html();
+    jQuery(this).find('#'+'$field_id-link-group ul li button').trigger('click');
+    jQuery(this).find('#'+'$field_id-link-group ul li a.link').each( function(i, e) {
+      var u = jQuery(this).attr('href');
+      var l = jQuery(this).html();
       struct.push( { 'url': u, 'label': l } );
     });
     var json = struct.toJSON().escapeJS();
-    \$('#'+'$field_id').val( json );
+    jQuery('#'+'$field_id').val( json );
   });
-  \$('#'+'$field_id-link-group ul li a.add-link').click( handle_edit_click );
-  \$('#'+'$field_id-link-group ul li a.remove').click( handle_delete_click );
-  \$('#'+'$field_id-link-group ul li a.edit').click( handle_edit_click );
+  jQuery('#'+'$field_id-link-group ul li a.add-link').click( handle_edit_click );
+  jQuery('#'+'$field_id-link-group ul li a.remove').click( handle_delete_click );
+  jQuery('#'+'$field_id-link-group ul li a.edit').click( handle_edit_click );
 </script>\n";
     return $html;
 } ## end sub type_link_group
@@ -611,7 +616,7 @@ sub type_entry {
     my ( $ctx, $field_id, $field, $value ) = @_;
     my $out;
     my $obj_class = $ctx->stash('object_class') || 'entry';
-    my ($obj, $obj_name);
+    my ($obj, $obj_name, $obj_id);
     
     # The $value is the object ID. Only if $value exists should we try to 
     # load the object. Otherwise, the most recent entry/page is loaded
@@ -621,15 +626,16 @@ sub type_entry {
     if ($value) {
         $obj       = MT->model($obj_class)->load($value);
         $obj_name  = ( $obj ? $obj->title : '' ) || '';
+        $obj_id    = ( $obj ? $obj->id : 0 ) || '';
     }
     my $blog_id   = $field->{all_blogs} ? 0 : $app->blog->id;
     unless ( $ctx->var('entry_chooser_js') ) {
         $out .= <<EOH;
     <script type="text/javascript">
         function insertCustomFieldEntry(html, val, id) {
-            \$('#'+id).val(val);
+            jQuery('#'+id).val(val);
             try {
-                \$('#'+id+'_preview').html(html);
+                jQuery('#'+id+'_preview').html(html);
             } catch(e) {
                 log.error(e);
             };
@@ -640,6 +646,7 @@ EOH
     }
     my $class = MT->model($obj_class);
     my $label = $class->class_label;
+    my $label_lc = lc($label);
     $ctx->var( 'entry_class_label', $label );
     $ctx->var( 'entry_class_labelp', $class->class_label_plural );
     $out .= <<EOH;
@@ -649,6 +656,7 @@ EOH
           onclick="return openDialog(this.form, 'ca_config_entry', 'blog_id=$blog_id&edit_field=$field_id&status=2&class=$obj_class')">Choose $label</button>
   <div id="${field_id}_preview" class="preview">
     $obj_name
+    (<a href="?__mode=edit&_type=entry&blog_id=$blog_id&id=$obj_id">edit $label_lc</a>)
   </div>
 </div>
 EOH
@@ -1417,6 +1425,7 @@ sub page_search_api_prep {
 sub _search_api_prep {
     my ( $type, $terms, $args, $blog_id ) = @_;
     my $app = MT->instance;
+    return unless $app->mode eq 'ca_config_entry';
     my $q = $app->can('query') ? $app->query : $app->param;
 
     $terms->{blog_id}  = $blog_id            if $blog_id;
