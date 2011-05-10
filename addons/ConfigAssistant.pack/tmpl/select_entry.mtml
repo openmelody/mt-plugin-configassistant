@@ -1,6 +1,6 @@
 <mt:include name="dialog/header.tmpl">
 <mt:setvarblock name="insert_script" id="insert_script">
-window.parent.insertCustomFieldEntry( '<mt:var name="entry_title" escape="html" escape="JS">', '<mt:var name="entry_id">', '<mt:var name="edit_field">' );
+window.parent.insertCustomFieldEntry( '<mt:var name="entry_title" escape="html" escape="JS"> ( <mt:var name="entry_class" escape="html" escape="JS"> )', '<mt:var name="entry_id">', '<mt:var name="edit_field">' );
 </mt:setvarblock>
 <script type="text/javascript">
 /* <![CDATA[ */

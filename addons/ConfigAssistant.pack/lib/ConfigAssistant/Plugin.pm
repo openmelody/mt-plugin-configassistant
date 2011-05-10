@@ -664,6 +664,61 @@ EOH
     return $out;
 } ## end sub type_entry
 
+sub type_entry_or_page {
+    my $app = shift;
+    my ( $ctx, $field_id, $field, $value ) = @_;
+    my $out;
+    my ( $obj, $obj_name );
+    my $obj_class = 'entry';
+
+    # The $value is the object ID. Only if $value exists should we try to
+    # load the object. Otherwise, the most recent entry/page is loaded
+    # and the $obj_name is incorrectly populated with the most recent object
+    # title. This way, $obj_name is blank if there is no $value, which is
+    # clearer to the user.
+    if ($value) {
+        $obj = MT->model($obj_class)->load($value);
+        $obj_name = ( $obj ? $obj->title : '' ) || '';
+        $obj_class = $obj->class;
+    }
+    my $blog_id = $field->{all_blogs} ? 0 : $app->blog->id;
+    unless ( $ctx->var('entry_chooser_js') ) {
+        $out .= <<EOH;
+        <script type="text/javascript">
+            function insertCustomFieldEntry(html, val, id) {
+                \$('#'+id).val(val);
+                try {
+                    \$('#'+id+'_preview').html(html);
+                } catch(e) {
+                    log.error(e);
+                };
+            }
+        </script>
+EOH
+        $ctx->var( 'entry_chooser_js', 1 );
+    }
+    my $class_label = $obj->class_label;
+    my $preview = $value ? "$obj_name ( $class_label )" : "";
+    my $class = MT->model($obj_class);
+    my $label = 'Entry or Page';
+    $ctx->var( 'entry_class_label', $label );
+    $out .= <<EOH;
+    <div class="pkg">
+      <input name="$field_id" id="$field_id" class="hidden" type="hidden" value="$value" />
+      <button type="submit"
+              onclick="return openDialog(this.form, 'ca_config_entry_or_page', 'blog_id=$blog_id&edit_field=$field_id')">Choose $label</button>
+      <div id="${field_id}_preview" class="preview">
+        $preview
+      </div>
+    </div>
+EOH
+
+    # $ctx->stash('object_class','');
+    return $out;
+
+}
+
+
 sub type_tagged_entry {
     my $app = shift;
     my ( $ctx, $field_id, $field, $value ) = @_;
@@ -1371,7 +1426,6 @@ sub _search_api_prep {
     my ( $type, $terms, $args, $blog_id ) = @_;
     my $app = MT->instance;
     return unless $app->mode eq 'ca_config_entry';
-
     my $q = $app->can('query') ? $app->query : $app->param;
 
     $terms->{blog_id}  = $blog_id            if $blog_id;
@@ -1478,6 +1532,103 @@ sub select_entry {
     );
     return $tmpl;
 } ## end sub select_entry
+
+sub list_entry_or_page {
+    my $app      = shift;
+    my $blog_ids = $app->param('blog_ids');
+    my $type     = 'entry';
+    my $pkg      = $app->model($type) or return "Invalid request.";
+
+    my %terms = (
+        status => '2',
+        class  => '*',
+    );
+
+    my @blog_ids;
+    if ( $blog_ids == 'all' ) {
+
+        # @blog_ids should stay empty so all blogs are loaded.
+    }
+    else {
+
+        # Turn this into an array so that all specified blogs can be loaded.
+        @blog_ids = split( /,/, $blog_ids );
+        $terms{blog_id} = [@blog_ids];
+    }
+
+    my %args = (
+        sort      => 'authored_on',
+        direction => 'descend',
+    );
+
+    my $plugin = MT->component('ConfigAssistant')
+      or die "OMG NO COMPONENT!?!";
+    my $tmpl   = $plugin->load_tmpl('entry_or_page_list.mtml');
+    $tmpl->param( 'type', $type );
+
+    return $app->listing(
+        {   type     => 'entry',
+            template => $tmpl,
+            params   => {
+                panel_searchable => 1,
+                edit_blog_id     => $blog_ids,
+                edit_field       => $app->param('edit_field'),
+                search           => $app->param('search'),
+                blog_id          => $blog_ids,
+            },
+            code => sub {
+                my ( $obj, $row ) = @_;
+                $row->{ 'status_'
+                        . lc MT::Entry::status_text( $obj->status ) } = 1;
+                $row->{entry_permalink} = $obj->permalink
+                    if $obj->status == MT::Entry->RELEASE();
+                if ( my $ts = $obj->authored_on ) {
+                    my $date_format = MT::App::CMS->LISTING_DATE_FORMAT();
+                    my $datetime_format
+                        = MT::App::CMS->LISTING_DATETIME_FORMAT();
+                    $row->{created_on_formatted}
+                        = format_ts( $date_format, $ts, $obj->blog,
+                        $app->user ? $app->user->preferred_language : undef );
+                    $row->{created_on_time_formatted}
+                        = format_ts( $datetime_format, $ts, $obj->blog,
+                        $app->user ? $app->user->preferred_language : undef );
+                    $row->{created_on_relative}
+                        = relative_date( $ts, time, $obj->blog );
+                    $row->{kind} = ucfirst( $obj->class );
+                }
+                return $row;
+            },
+            terms => \%terms,
+            args  => \%args,
+            limit => 10,
+        }
+    );
+}
+
+sub select_entry_or_page {
+    my $app = shift;
+
+    my $entry_id = $app->param('id')
+        or return $app->errtrans('No id');
+    MT->log('boo');
+    my $entry = MT->model('entry')->load($entry_id)
+        or return $app->errtrans( 'No entry or page #[_1]', $entry_id );
+    my $edit_field = $app->param('edit_field')
+        or return $app->errtrans('No edit_field');
+
+    my $plugin = MT->component('ConfigAssistant')
+        or die "OMG NO COMPONENT!?!";
+    my $tmpl   = $plugin->load_tmpl(
+        'select_entry.mtml',
+        {   entry_id    => $entry->id,
+            entry_title => $entry->title,
+            entry_class => $entry->class_label,
+            edit_field  => $edit_field,
+        }
+    );
+    return $tmpl;
+}
+
 
 sub xfrm_cfg_plugin_param {
     my ( $cb, $app, $param, $tmpl ) = @_;

@@ -347,6 +347,9 @@ field:
   user will be constricted to searching entries in the current blog, or all
   blogs on the system.
 
+* `entry_or_page` - Operates identically to the `entry` type except that it allows
+  the ability to select either an entry or page for the field.
+
 * `page` - Operates identically to the `entry` type except that it pulls up a
   list of pages in the selected blog (as opposed to entries).
 
