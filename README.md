@@ -38,9 +38,10 @@ make sure to read the upgrade instructions below._
     * <a
       href="#automatically_set_blog_preferences_and_plugin_settings">Automatically
       set Blog Preferences and Plugin Settings</a>
-    * <a href="#administrators">Administrators</a>
-    * <a href="#developers_and_designers">Developers and Designers</a>
-    * <a href="#supported_preferences">Supported Preferences</a>
+        * <a href="#administrators">Administrators</a>
+        * <a href="#developers_and_designers">Developers and Designers</a>
+        * <a href="#supported_preferences">Supported Preferences</a>
+* <a href="#plugindata">Accessing Stored Data Programmatically</a>
 * <a href="#callbacks">Callbacks</a>
     * <a href="#on_single_option_change">On Single Option Change</a>
     * <a href="#on_plugin_option_change">On Plugin Option Change</a>
@@ -829,7 +830,7 @@ If you are familiar with the old AutoPrefs plugin, you know how this feature
 works: AutoPrefs was merged with Config Assistang and provides the same
 features.
 
-### <a id="administrators">Administrators</a> ###
+#### <a id="administrators">Administrators</a> ####
 
 For the most part, admins never interact with this plugin directly. All an
 admin needs to do is re-apply their theme or reset their templates, and if the
@@ -841,7 +842,7 @@ automagically be setup.
 Alternatively, visit Preferences > Chooser in a blog to assign a set of
 preferences and settings to that blog.
 
-### <a id="developers_and_designers">Developers and Designers</a> ###
+#### <a id="developers_and_designers">Developers and Designers</a> ####
 
 Developers and designers can use this plugin to automatically apply a set of
 blog preferences to a blog when a user resets their blog templates. The format
@@ -908,7 +909,7 @@ This allows for themes to auto-configure plugins as well.
 settings for plugins must be configured manually. This seems like a reasonable
 restriction to keep plugins from obliterating configs inadvertently.*
 
-### <a id="supported_preferences">Supported Preferences</a> ###
+#### <a id="supported_preferences">Supported Preferences</a> ####
 
 Below is a list of all the supported preferences and their default value.
 There is no need to specify a default preference in your `config.yaml` unless
@@ -1008,6 +1009,36 @@ you intend to override the default.
 * `welcome_msg` (default: 0) - 
 * `words_in_excerpt` (default: 40) - 
 
+## <a id="plugindata">Accessing Stored Data Programmatically</a> ##
+
+Plugin developers may wish to use Config Assistant to make it easy for users to specific config options for their plugin. These options are traditionally set under the Plugin Preferences area of Melody or the Tools > Plugins area in Movable Type. For options defined in this way, developers may then need to access the stored option value using Perl inside of their plugin. Let's look at how to do this using the MT::PluginData class.
+
+First let's look at a config.yaml. It is important to note that one can define an `options` registry key outside the context of a template set. When you do this, you are creating theme agnostic options. The following is an excerpt from the Photo Gallery plugin for Movable Type:
+
+    options:
+      suppress_create_entry:
+        type: 'checkbox'
+        label: 'Suppress Create Entry button and menu items for this blog?'
+        tag: 'IfSuppressCreateEntry?'
+        scope: blog
+        default: 1
+      suppress_manage_assets:
+        type: 'checkbox'
+        label: 'Suppress Manage Assets menu items for this blog?'
+        tag: 'IfSuppressManageAssets?'
+        scope: blog
+        default: 1
+
+Then inside of the plugin's application logic, these values are accessed in this way:
+
+     my $plugin = MT->component("PhotoGallery");
+     my $suppress = $plugin->get_config_value( 'suppress_create_entry',
+              'blog:' . $app->blog->id );
+
+System level (global) options are accessed this way:
+
+     my $plugin = MT->component("PhotoGallery");
+     my $suppress = $plugin->get_config_value( 'suppress_create_entry' );
 
 ## <a id="callbacks">Callbacks</a> ##
 
