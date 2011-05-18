@@ -1425,18 +1425,18 @@ sub page_search_api_prep {
 sub _search_api_prep {
     my ( $type, $terms, $args, $blog_id ) = @_;
     my $app = MT->instance;
-    return unless $app->mode eq 'ca_config_entry';
     my $q = $app->can('query') ? $app->query : $app->param;
-
-    $terms->{blog_id}  = $blog_id            if $blog_id;
+    $terms->{blog_id}  = $blog_id if $blog_id;
+    if ( $type ne 'template' ) {
+        my $search_api     = $app->registry("search_apis");
+        my $api            = $search_api->{$type};
+        my $date_col       = $api->{date_column} || 'created_on';
+        $args->{sort}      = $date_col;
+        $args->{direction} = 'descend';
+    }
+    return unless $app->mode eq 'ca_config_entry';
     $terms->{status}   = $q->param('status') if ( $q->param('status') );
     $terms->{class}    = $app->param('class');
-
-    my $search_api     = $app->registry("search_apis");
-    my $api            = $search_api->{$type};
-    my $date_col       = $api->{date_column} || 'created_on';
-    $args->{sort}      = $date_col;
-    $args->{direction} = 'descend';
 }
 
 #sub entry_search_api_prep {
