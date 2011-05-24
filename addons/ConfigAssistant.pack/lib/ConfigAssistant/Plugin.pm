@@ -311,7 +311,7 @@ sub save_config {
     return $app->errtrans("Permission denied.")
       unless $app->user->can_manage_plugins
           or (     $blog_id
-               and $app->user->permissions($blog_id)->can_administer_blog );
+               and $app->user->permissions($blog_id)->can_edit_templates );
 
     my $param;
     my @params = $q->param;

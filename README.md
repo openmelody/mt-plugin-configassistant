@@ -16,6 +16,7 @@ make sure to read the upgrade instructions below._
 * <a href="#installation">Installation</a>
     * <a href="#upgrading_config_assistant">Upgrading Config Assistant</a>
 * <a href="#usage">Usage</a>
+    * <a href="#permissions">Permissions</a>
     * <a href="#defining_theme_options">Defining Theme Options</a>
     * <a href="#defining_plugin_configuration_settings">Defining Plugin
       Configuration Settings</a>
@@ -134,6 +135,15 @@ disabled by Config Assistant at which point you can remove AutoPrefs from your
 ----
 
 ## <a id="usage">Usage</a> ##
+
+### <a id="permissions">Permissions</a> ###
+
+The ability for a user of Movable Type or Melody to access and modify plugin and
+theme options requires them to posses either:
+
+* System administrator priveleges
+* The System-level "Manage Plugins" permission
+* The "Edit Templates" permission at the blog level
 
 ### <a id="defining_theme_options">Defining Theme Options</a> ###
 
