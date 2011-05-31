@@ -299,6 +299,26 @@ sub load_tags {
                                         'ConfigAssistant::Plugin', @_ );
                             };
                         } ## end elsif ( $option->{'type'}...)
+                        elsif ( $option->{'type'} eq 'text-group' ) {
+                            $tags->{block}->{ $tag . 'Items' } = sub {
+                                my $blog = $_[0]->stash('blog');
+                                my $bset = $blog->template_set;
+                                $_[0]->stash( 'field', $bset . '_' . $opt );
+                                $_[0]->stash( 'plugin_ns',
+                                              find_theme_plugin($bset)->id );
+                                $_[0]->stash( 'scope', 'blog' );
+                                $_[0]->stash(
+                                           'show_children',
+                                           (
+                                             defined $option->{show_children}
+                                             ? $option->{show_children}
+                                             : 1
+                                           )
+                                );
+                                runner( '_hdlr_field_text_group',
+                                        'ConfigAssistant::Plugin', @_ );
+                            };
+                        } ## end elsif ( $option->{'type'}...)
                         elsif (    $option->{'type'} eq 'category_list'
                                 or $option->{'type'} eq 'folder_list' )
                         {
