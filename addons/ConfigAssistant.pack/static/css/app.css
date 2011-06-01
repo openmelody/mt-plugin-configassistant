@@ -55,11 +55,11 @@ h2#page-title span.star { display: none; }
   background: url(../colorpicker/images/select.png) center;
 }
 
-.field-type-link-group label.link-text {
+.field-type-link-group label.link-text, .field-type-text-group label.link-text {
   padding-right: 10px;
 }
 
-.field-type-link-group a.add-link {
+.field-type-link-group a.add-link, .field-type-text-group a.add-item {
     display: block;
     float: left;
     color: white;
