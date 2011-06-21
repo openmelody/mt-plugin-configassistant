@@ -590,6 +590,58 @@ sub type_link_group {
     return $html;
 } ## end sub type_link_group
 
+sub type_text_group {
+    my $app = shift;
+    my ( $ctx, $field_id, $field, $value ) = @_;
+    my $static = $app->static_path;
+    $value = '"[]"' if ( !$value || $value eq '' );
+    eval "\$value = \"$value\"";
+    if ($@) { $value = '"[]"'; }
+    my $list;
+    eval { $list = JSON::from_json($value) };
+    if ($@) { $list = []; }
+    my $html;
+    $html
+      = "<div id=\"$field_id-text-group\" class=\"text-group-container pkg\">\n"
+      . "    <ul>\n";
+
+    foreach (@$list) {
+        $html
+          .= '        <li><span class="text">'
+          . $_->{'label'}
+          . '</span> <a class="remove" href="javascript:void(0);"><img src="'
+          . $static
+          . '/images/icon_close.png" alt="remove" title="remove" /></a> '
+          . '<a class="edit" href="javascript:void(0);">edit</a></li>' . "\n";
+    }
+    $html
+      .= "          <li class=\"last\">"
+      . "<a href=\"javascript:void(0);\" class=\"add-item\">Add Item</a>"
+      . "</li>\n"
+      . "    </ul>\n"
+      . "</div>\n"
+      . "<input type=\"hidden\" id=\"$field_id\" name=\"$field_id\" value=\""
+      . encode_html( $value, 1
+      )    # The additional "1" will escape HTML entities properly
+      . "\" />\n<script type=\"text/javascript\">
+  jQuery('#'+'$field_id-text-group').parents('form').submit( function (){
+    var struct = Array();
+    jQuery(this).find('#'+'$field_id-text-group ul li button').trigger('click');
+    jQuery(this).find('#'+'$field_id-text-group ul li span.text').each( function(i, e) {
+      var l = jQuery(this).html();
+      struct.push( { 'label': l } );
+    });
+    var json = struct.toJSON().escapeJS();
+    jQuery('#'+'$field_id').val( json );
+  });
+  jQuery('#'+'$field_id-text-group ul li a.add-item').click( text_handle_edit_click );
+  jQuery('#'+'$field_id-text-group ul li a.remove').click( text_handle_delete_click );
+  jQuery('#'+'$field_id-text-group ul li a.edit').click( text_handle_edit_click );
+</script>\n";
+    return $html;
+} ## end sub type_text_group
+
+
 sub type_textarea {
     my $app = shift;
     my ( $ctx, $field_id, $field, $value ) = @_;
@@ -1199,6 +1251,34 @@ sub _hdlr_field_link_group {
         return MT::Template::Context::_hdlr_pass_tokens_else(@_);
     }
 } ## end sub _hdlr_field_link_group
+
+sub _hdlr_field_text_group {
+    my $plugin = shift;
+    my ( $ctx, $args, $cond ) = @_;
+    my $field = $ctx->stash('field') or return _no_field($ctx);
+    my $value = _get_field_value($ctx);
+    $value = '"[]"' if ( !$value || $value eq '' );
+    eval "\$value = \"$value\"";
+    if ($@) { $value = '[]'; }
+    my $list = JSON::from_json($value);
+
+    if ( @$list > 0 ) {
+        my $out   = '';
+        my $vars  = $ctx->{__stash}{vars};
+        my $count = 0;
+        foreach (@$list) {
+            local $vars->{'label'} = $_->{'label'};
+            local $vars->{'__first__'}  = ( $count++ == 0 );
+            local $vars->{'__last__'}   = ( $count == @$list );
+            defined( $out .= $ctx->slurp( $args, $cond ) ) or return;
+        }
+        return $out;
+    }
+    else {
+        require MT::Template::ContextHandlers;
+        return MT::Template::Context::_hdlr_pass_tokens_else(@_);
+    }
+} ## end sub _hdlr_field_text_group
 
 sub _hdlr_field_cond {
     my $plugin = shift;

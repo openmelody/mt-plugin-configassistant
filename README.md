@@ -386,6 +386,11 @@ field:
   tag to make it easier to loop over the links entered by the user in your
   templates. See "Link Group Template Tags" below.
 
+* `text-group` - Produces an ordered list of text labels manually entered by the
+  user. Options of this type will have defined for them an additional template
+  tag to make it easier to loop over the text items entered by the user in your
+  templates. See "Text Group Template Tags" below.
+
 * `file` - Allows a user to upload a file, which in turn gets converted into
   an asset. An additional field property is supported for file types:
   `destination` which can be used to customize the path/url of the uploaded
@@ -489,6 +494,49 @@ You can use them like so:
       <mt:Else>
         I have no favorite links.
       </mt:MyFavoritesLinks>
+    </p>
+
+**Text Group Tags**
+
+For each option of type `text-group` that is defined, two template tags are
+defined. The first is the one specified by the user using the `tag` parameter
+associated with the option in the `config.yaml`. This template tag will be
+useless to most users as it will return a JSON encoded data structure
+containing all the links entered by the user.
+
+The second template tag is the useful one. It is called `<TAGNAME>Items`. This
+template tag is a container or block tag that loops over each of the links
+entered by the user. Inside each iteration of the loop the following template
+variables are defined for you:
+
+* `__first__` True only if the current link is the first one in the list.
+* `__last__` - True only if the current link is the last one in the list.
+* `label` - The label associated with the current item.
+
+For example, look at this `config.yaml`:
+
+    my_links:
+        type: text-group
+        label: 'My List'
+        tag: 'MyList'
+
+This will create two template tags:
+
+1. `<$mt:MyList$>`
+2. `<mt:MyListItems></mt:MyListItems>`
+
+You can use them like so:
+
+    <p>My favorite things are: 
+      <mt:MyListItems>
+        <mt:if name="__first__"><ul></mt:if>
+        <li>
+            <$mt:var name="label"$>
+        </li>
+        <mt:if name="__last__"></ul></mt:if>
+      <mt:Else>
+        I have no favorite things.
+      </mt:MyListItems>
     </p>
 
 **Asset Template Tags**
