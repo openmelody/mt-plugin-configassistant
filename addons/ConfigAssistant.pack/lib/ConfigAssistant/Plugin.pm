@@ -402,7 +402,7 @@ sub save_config {
             }
             $data->{$var} = $new ? $new : undef;
             if ($has_changed) {
-
+                $opt->{'basename'} = $var;
                 #MT->log("Triggering: " . 'options_change.option.' . $var );
                 $app->run_callbacks( 'options_change.option.' . $var,
                                      $app, $opt, $old, $new );
