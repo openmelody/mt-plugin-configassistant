@@ -466,7 +466,7 @@ sub find_theme_plugin {
         my $r      = $obj->{registry};
         my @sets   = keys %{ $r->{'template_sets'} };
         foreach (@sets) {
-            return $obj if ( $set eq $_ );
+            return $obj if defined $set and $set eq $_;
         }
     }
     return undef;
