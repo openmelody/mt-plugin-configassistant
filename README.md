@@ -371,6 +371,8 @@ field:
   multi-select listing. This form of config option accepts the "show_children"
   option which will toggle the displaying of child categories on and off.
 
+* `datetime` - Produces a date and time selection dialog for selecting a timestamp.
+
 * `folder` - Produces the ability to select a single folder via a drop-down
   listing.
 
@@ -405,6 +407,7 @@ field:
   field because there is no editable form to interact with and is
   informational only. Only the `label`, `hint`, `order`, and `fieldset` keys
   are valid with this field type.
+
 
 **Category and Folder Tags**
 
@@ -449,6 +452,21 @@ This loop also supports the "glue" attribute. The value of this attribute, if
 set, will be put at the end of every iteration of the loop until the very last
 iteration. It functions identically to the "glue" attribute provided by core
 template tags.
+
+**Date/Time Fields**
+
+Assuming this option:
+
+    event_end_date:
+        label: Event End Date
+        type: datetime
+        tag: MyThemeEndDate
+
+This tag can be accessed like any other Melody date tag:
+
+    <mt:MyThemeEndDate/> <!--July 7, 2011 11:33 PM-->
+
+    <mt:MyThemeEndDate format="%Y-%m-%d@%H:%M:%S %p"/> <!--2011-07-07@23:33:29 PM -->
 
 **Link Group Tags**
 
