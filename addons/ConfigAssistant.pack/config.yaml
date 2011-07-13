@@ -5,7 +5,7 @@ author_link: http://openmelody.org/
 author_name: "Byrne Reese, Open Melody Software Group"
 description: This plugin provides a simple YAML based framework for creating plugin and theme configuration options.
 version: 2.1.34
-static_version: 13
+static_version: 14
 schema_version: 3
 
 applications:
@@ -75,6 +75,8 @@ config_types:
     handler: $ConfigAssistant::ConfigAssistant::Plugin::type_folder
   folder_list:
     handler: $ConfigAssistant::ConfigAssistant::Plugin::type_folder_list
+  datetime:
+    handler: $ConfigAssistant::ConfigAssistant::Plugin::type_datetime
 
 upgrade_functions:
   static_copy:

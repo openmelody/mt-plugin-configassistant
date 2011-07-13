@@ -1093,6 +1093,32 @@ sub type_category_list {
     return $out;
 } ## end sub type_category_list
 
+sub type_datetime {
+    my $app = shift;
+    my ( $ctx, $field_id, $field, $value ) = @_;
+    $value = 0 unless defined $value;
+    my @values = ref $value eq 'ARRAY' ? @$value : ($value);
+    my $out;
+    
+    my $js = <<JS;
+<script type="text/javascript">
+    jQuery(function(\$) {
+        \$('#%s').datetimepicker({
+	    ampm: false,
+            showSecond: true,
+            timeFormat: 'hh:mm:ss'
+        });
+    });
+</script>
+JS
+
+    $out = sprintf('<input type="text" name="%s" id="%s" class="ca-datetime" value="%s"/>',
+                $field_id, $field_id, $value);
+    $out .= sprintf($js, $field_id);
+    
+    return $out;
+} ## end sub type_datetime
+
 sub type_folder {
     my $app = shift;
     my ( $ctx, $field_id, $field, $value ) = @_;
@@ -1200,12 +1226,29 @@ sub _hdlr_field_category_list {
     return $out;
 } ## end sub _hdlr_field_category_list
 
+sub _hdlr_field_datetime {
+    my $plugin = shift;
+    my ($ctx, $args, $cond) = @_;
+    my $field = $ctx->stash('field') or return _no_field($ctx);
+    my $value = _get_field_value($ctx);
+
+    my @pieces = split(/[\s]/, $value);
+    my @date = split('/', $pieces[0]);
+    $pieces[1] =~ s/\://g;
+    $value = sprintf('%s%s%s%s%s%s', $date[2], $date[0], $date[1], $pieces[1]); 
+
+    $args->{ts} = $value;
+    my $processed_value = MT::Template::Context::_hdlr_date($ctx, $args);
+    return $processed_value;
+}
+
 sub _get_field_value {
     my ($ctx) = @_;
     ###l4p $logger ||= MT::Log::Log4perl->new(); $logger->trace();
     my $plugin_ns = $ctx->stash('plugin_ns');
     my $scope     = $ctx->stash('scope') || 'blog';
     my $field     = $ctx->stash('field');
+ 
     my $plugin    = MT->component($plugin_ns);        # is this necessary?
     my $value;
     my $blog = $ctx->stash('blog');
