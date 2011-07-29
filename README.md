@@ -409,6 +409,11 @@ field:
   informational only. Only the `label`, `hint`, `order`, and `fieldset` keys
   are valid with this field type.
 
+* `author` - Select an author from a popup dialog. To appear in the popup, an
+  author must have a Role, associating them with the blog in which this field
+  is used. This field supports a special `roles` key where a comma-separated 
+  list of valid Roles may be supplied to filter the popup dialog contents.
+
 
 **Category and Folder Tags**
 

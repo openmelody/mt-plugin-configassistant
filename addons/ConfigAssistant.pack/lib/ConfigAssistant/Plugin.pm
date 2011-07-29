@@ -1126,6 +1126,152 @@ sub type_folder {
     return type_category( $app, @_ );
 }
 
+# The author config type allows you to select an author from the system.
+sub type_author {
+    my $app = shift;
+    my ( $ctx, $field_id, $field, $value ) = @_;
+    $value ||= ''; # Define $value if no saved/default.
+    my $blog_id = $app->blog->id;
+    
+    # Show the author display name, if a valid author has been saved already.
+    my $author_display_name = '';
+    if ($value) {
+        $author_display_name = MT->model('author')->load($value)
+            ? MT->model('author')->load($value)->nickname
+            : ''; # No author found
+    }
+    
+    # If any roles were defined, supply them so that only valid authors can
+    # be selected from the popup. Check for both keys "roles" and "role"
+    # because it's easy to forget the "s"--I did it several times testing!
+    my $valid_roles = $field->{roles} || $field->{role} || '';
+
+    my $out = <<HTML;
+<script type="text/javascript">
+    // Build the query string for the openDialog popup.
+    var query_string = 'blog_id=$blog_id'
+        + '&idfield=$field_id'
+        + '&namefield=${field_id}_display_name';
+
+    if ( jQuery('#'+'${field_id}_display_name').text() ) {
+        query_string += '&cur_author_display_name' 
+            + jQuery('#'+'${field_id}_display_name').text();
+    }
+
+    var roles = '$valid_roles';
+    if (roles) {
+        query_string += '&roles=' + roles;
+    }
+</script>
+<div class="pkg">
+    <input name="$field_id" id="$field_id" class="hidden" type="hidden" value="$value" />
+    <button 
+        type="submit"
+        onclick="return openDialog(this.form, 'ca_select_author', query_string)">
+        Choose Author
+    </button>
+    <div id="${field_id}_display_name" class="preview">
+        $author_display_name
+    </div>
+</div>
+HTML
+
+    return $out;
+}
+
+# The author config type uses a popup dialog to select an author. This is that
+# popup dialog.
+sub select_author {
+    my $app   = shift;
+    my $q     = $app->query;
+    my $param = {};
+
+    # If an author has already been selected, show their display name. This is
+    # just helpful to see who I picked.
+    my $cur_author = $q->param('cur_author_display_name')
+        ? $app->translate("Current author: ") 
+            . $q->param('cur_author_display_name')
+        : '';
+
+    # Load authors with permission on this blog
+    my $author_roles = $q->param('roles');
+
+    # Create the arguments for the listing screen based on whether roles have
+    # been specified for Ghostwriter to filter on.
+    my $args = {};
+    if ($author_roles) {
+        my @roles = map { $_->id } MT->model('role')->load({ 
+            name => [ split(/\s*,\s*/, $author_roles) ]
+        });
+        return unless @roles;
+
+        require MT::Association;
+        $args = {
+            sort => 'name',
+            join => MT::Association->join_on('author_id', {
+                role_id => \@roles,
+                blog_id => $app->param('blog_id')
+            }),
+        };
+    }
+    else {
+        require MT::Permission;
+        $args = {
+            sort => 'name',
+            join => MT::Permission->join_on('author_id', {
+                blog_id => $app->param('blog_id'),
+                # attempt to filter for postish permissions (excludes
+                # registered users who only have permission to comment
+                # for instance)
+                permissions => { like => '%post%', }
+            })
+        };
+    }
+
+    my $hasher = sub {
+        my ( $obj, $row ) = @_;
+        $row->{label}       = $row->{name};
+        $row->{description} = $row->{nickname};
+    };
+
+    # MT::CMS::User::dialog_select_author mostly does what is needed, so that
+    # served as the starting point. We're supplying an argument list to 
+    # augment it.
+    $app->listing(
+        {
+            type  => 'author',
+            terms => {
+                type   => MT::Author::AUTHOR(),
+                status => MT::Author::ACTIVE(),
+            },
+            args     => $args,
+            code     => $hasher,
+            template => 'select_author.mtml',
+            params   => {
+                dialog_title =>
+                  $app->translate("Select an author"),
+                items_prompt =>
+                  $app->translate("Selected author"),
+                search_prompt => $app->translate(
+                    "Type a username to filter the choices below."),
+                panel_title       => $cur_author,
+                panel_label       => $app->translate("Author Username"),
+                panel_description => $app->translate("Author Display Name"),
+                panel_type        => 'author',
+                panel_multi       => defined $app->param('multi')
+                ? $app->param('multi')
+                : 0,
+                panel_searchable => 1,
+                panel_first      => 1,
+                panel_last       => 1,
+                list_noncron     => 1,
+                idfield          => $app->param('idfield'),
+                namefield        => $app->param('namefield'),
+            },
+        }
+    );
+}
+
 
 sub _hdlr_field_value {
     my $plugin = shift;
