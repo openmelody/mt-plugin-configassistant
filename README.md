@@ -138,8 +138,8 @@ disabled by Config Assistant at which point you can remove AutoPrefs from your
 
 ### <a id="permissions">Permissions</a> ###
 
-The ability for a user of Movable Type or Melody to access and modify plugin and
-theme options requires them to posses either:
+The ability for a user of Movable Type or Melody to access and modify plugin
+and theme options requires them to posses either:
 
 * System administrator priveleges
 * The System-level "Manage Plugins" permission
@@ -358,8 +358,8 @@ field:
   user will be constricted to searching entries in the current blog, or all
   blogs on the system.
 
-* `entry_or_page` - Operates identically to the `entry` type except that it allows
-  the ability to select either an entry or page for the field.
+* `entry_or_page` - Operates identically to the `entry` type except that it
+  allows the ability to select either an entry or page for the field.
 
 * `page` - Operates identically to the `entry` type except that it pulls up a
   list of pages in the selected blog (as opposed to entries).
@@ -371,7 +371,8 @@ field:
   multi-select listing. This form of config option accepts the "show_children"
   option which will toggle the displaying of child categories on and off.
 
-* `datetime` - Produces a date and time selection dialog for selecting a timestamp.
+* `datetime` - Produces a date and time selection dialog for selecting a
+  timestamp.
 
 * `folder` - Produces the ability to select a single folder via a drop-down
   listing.
@@ -388,10 +389,10 @@ field:
   tag to make it easier to loop over the links entered by the user in your
   templates. See "Link Group Template Tags" below.
 
-* `text-group` - Produces an ordered list of text labels manually entered by the
-  user. Options of this type will have defined for them an additional template
-  tag to make it easier to loop over the text items entered by the user in your
-  templates. See "Text Group Template Tags" below.
+* `text-group` - Produces an ordered list of text labels manually entered by
+  the user. Options of this type will have defined for them an additional
+  template tag to make it easier to loop over the text items entered by the
+  user in your templates. See "Text Group Template Tags" below.
 
 * `file` - Allows a user to upload a file, which in turn gets converted into
   an asset. An additional field property is supported for file types:
@@ -612,7 +613,9 @@ Example:
         tag: 'PrivatePayPalKey'
         destination: my_theme/%{10}e
 
-If you specify the `scope` Field Property as in the example below, the file path will be written to the local blog, not the Theme's support directory. This can be helpful to separate files on a blog-by-blog basis.
+If you specify the `scope` Field Property as in the example below, the file
+path will be written to the local blog, not the Theme's support directory.
+This can be helpful to separate files on a blog-by-blog basis.
 
 Example:
 
@@ -1038,7 +1041,8 @@ you intend to override the default.
 * `image_default_popup` (default: *null*) - 
 * `image_default_wrap_text` (default: *null*) - 
 * `image_default_wunits` (default: *null*) - 
-* `include_cache` (default: 0) - Turns on/off template module caching for the blog.
+* `include_cache` (default: 0) - Turns on/off template module caching for the
+  blog.
 * `include_system` (default: 0) - Determines what SSI include system to use.
   Acceptable values are:
   * php
@@ -1087,9 +1091,17 @@ you intend to override the default.
 
 ## <a id="plugindata">Accessing Stored Data Programmatically</a> ##
 
-Plugin developers may wish to use Config Assistant to make it easy for users to specific config options for their plugin. These options are traditionally set under the Plugin Preferences area of Melody or the Tools > Plugins area in Movable Type. For options defined in this way, developers may then need to access the stored option value using Perl inside of their plugin. Let's look at how to do this using the MT::PluginData class.
+Plugin developers may wish to use Config Assistant to make it easy for users
+to specific config options for their plugin. These options are traditionally
+set under the Plugin Preferences area of Melody or the Tools > Plugins area in
+Movable Type. For options defined in this way, developers may then need to
+access the stored option value using Perl inside of their plugin. Let's look
+at how to do this using the MT::PluginData class.
 
-First let's look at a config.yaml. It is important to note that one can define an `options` registry key outside the context of a template set. When you do this, you are creating theme agnostic options. The following is an excerpt from the Photo Gallery plugin for Movable Type:
+First let's look at a config.yaml. It is important to note that one can define
+an `options` registry key outside the context of a template set. When you do
+this, you are creating theme agnostic options. The following is an excerpt
+from the Photo Gallery plugin for Movable Type:
 
     options:
       suppress_create_entry:
@@ -1105,7 +1117,8 @@ First let's look at a config.yaml. It is important to note that one can define a
         scope: blog
         default: 1
 
-Then inside of the plugin's application logic, these values are accessed in this way:
+Then inside of the plugin's application logic, these values are accessed in
+this way:
 
      my $plugin = MT->component("PhotoGallery");
      my $suppress = $plugin->get_config_value( 'suppress_create_entry',
