@@ -37,46 +37,46 @@ config_settings:
     type: 'HASH'
 
 config_types:
-  text: 
-    handler: $ConfigAssistant::ConfigAssistant::Plugin::type_text
-  file: 
-    handler: $ConfigAssistant::ConfigAssistant::Plugin::type_file
-  colorpicker: 
-    handler: $ConfigAssistant::ConfigAssistant::Plugin::type_colorpicker
-  textarea:
-    handler: $ConfigAssistant::ConfigAssistant::Plugin::type_textarea
-  radio: 
-    handler: $ConfigAssistant::ConfigAssistant::Plugin::type_radio
-  select: 
-    handler: $ConfigAssistant::ConfigAssistant::Plugin::type_select
   blogs: 
     handler: $ConfigAssistant::ConfigAssistant::Plugin::type_blogs
-  checkbox: 
-    handler: $ConfigAssistant::ConfigAssistant::Plugin::type_checkbox
-  radio-image:
-    handler: $ConfigAssistant::ConfigAssistant::Plugin::type_radio_image
-  entry:
-    handler: $ConfigAssistant::ConfigAssistant::Plugin::type_entry
-  page:
-    handler: $ConfigAssistant::ConfigAssistant::Plugin::type_page
-  entry_or_page:
-    handler: $ConfigAssistant::ConfigAssistant::Plugin::type_entry_or_page
-  tagged-entry:
-    handler: $ConfigAssistant::ConfigAssistant::Plugin::type_tagged_entry
-  link-group:
-    handler: $ConfigAssistant::ConfigAssistant::Plugin::type_link_group
-  text-group:
-    handler: $ConfigAssistant::ConfigAssistant::Plugin::type_text_group
   category:
     handler: $ConfigAssistant::ConfigAssistant::Plugin::type_category
   category_list:
     handler: $ConfigAssistant::ConfigAssistant::Plugin::type_category_list
+  checkbox: 
+    handler: $ConfigAssistant::ConfigAssistant::Plugin::type_checkbox
+  colorpicker: 
+    handler: $ConfigAssistant::ConfigAssistant::Plugin::type_colorpicker
+  datetime:
+    handler: $ConfigAssistant::ConfigAssistant::Plugin::type_datetime
+  entry:
+    handler: $ConfigAssistant::ConfigAssistant::Plugin::type_entry
+  entry_or_page:
+    handler: $ConfigAssistant::ConfigAssistant::Plugin::type_entry_or_page
+  file: 
+    handler: $ConfigAssistant::ConfigAssistant::Plugin::type_file
   folder:
     handler: $ConfigAssistant::ConfigAssistant::Plugin::type_folder
   folder_list:
     handler: $ConfigAssistant::ConfigAssistant::Plugin::type_folder_list
-  datetime:
-    handler: $ConfigAssistant::ConfigAssistant::Plugin::type_datetime
+  link-group:
+    handler: $ConfigAssistant::ConfigAssistant::Plugin::type_link_group
+  page:
+    handler: $ConfigAssistant::ConfigAssistant::Plugin::type_page
+  radio-image:
+    handler: $ConfigAssistant::ConfigAssistant::Plugin::type_radio_image
+  radio: 
+    handler: $ConfigAssistant::ConfigAssistant::Plugin::type_radio
+  select: 
+    handler: $ConfigAssistant::ConfigAssistant::Plugin::type_select
+  tagged-entry:
+    handler: $ConfigAssistant::ConfigAssistant::Plugin::type_tagged_entry
+  text-group:
+    handler: $ConfigAssistant::ConfigAssistant::Plugin::type_text_group
+  text: 
+    handler: $ConfigAssistant::ConfigAssistant::Plugin::type_text
+  textarea:
+    handler: $ConfigAssistant::ConfigAssistant::Plugin::type_textarea
 
 upgrade_functions:
   static_copy:
