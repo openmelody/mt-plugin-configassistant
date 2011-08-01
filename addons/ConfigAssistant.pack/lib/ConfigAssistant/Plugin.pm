@@ -668,7 +668,9 @@ sub type_entry {
     my ( $ctx, $field_id, $field, $value ) = @_;
     my $out;
     my $obj_class = $ctx->stash('object_class') || 'entry';
-    my ($obj, $obj_name, $obj_id);
+    my $obj;
+    my $obj_name = ''; # A default value to alleviate warnings.
+    my $obj_id   = ''; # Same!
     
     # The $value is the object ID. Only if $value exists should we try to 
     # load the object. Otherwise, the most recent entry/page is loaded
@@ -720,7 +722,8 @@ sub type_entry_or_page {
     my $app = shift;
     my ( $ctx, $field_id, $field, $value ) = @_;
     my $out;
-    my ( $obj, $obj_name );
+    my $obj;
+    my $obj_name  = ''; # A default value to alleviate warnings.
     my $obj_class = 'entry';
 
     # The $value is the object ID. Only if $value exists should we try to
