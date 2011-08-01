@@ -1033,7 +1033,7 @@ sub type_checkbox {
 sub type_category {
     my $app = shift;
     my ( $ctx, $field_id, $field, $value ) = @_;
-    $value = defined($value) ? $value : 0;
+    $value = defined($value) ? $value : '';
     my $out;
     my $obj_class = $ctx->stash('object_class') || 'category';
     my @cats = MT->model($obj_class)
