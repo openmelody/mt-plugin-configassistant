@@ -320,18 +320,21 @@ In this example two options, or fields, have been defined: `feedburner_id` and
 Below is a list of acceptable values for the `type` parameter for any defined 
 field:
 
-* `text` - Produces a simple single line text box.
+* `author` - Select an author from a popup dialog. To appear in the popup, an
+  author must have a Role, associating them with the blog in which this field
+  is used. This field supports a special `roles` key where a comma-separated 
+  list of valid Roles may be supplied to filter the popup dialog contents.
 
-* `textarea` - Produces a multi-line text box. You can specify the `rows`
-  sibling element to control the size/height of the text box.
+* `blogs` - Produces a pull down menu listing every blog in the system.
+  *Warning: this is not advisable for large installations as it can
+  dramatically impact performance (negatively).*
 
-* `select` - Produces a pull-down menu of arbitrary values. Those values are
-  defined by specifying a sibling element called `values` which should contain
-  a comma delimited list of values to present in the pull down menu.
+* `category` - Produces the ability to select a single category via a
+  drop-down listing.
 
-* `radio` - Produces a set of radio buttons of arbitrary values. Those values
-  are defined by specifying a sibling element called `values` which should
-  contain a comma delimited list of values to present as radio buttons.
+* `category_list` - Produces the ability to select multiple categories via a
+  multi-select listing. This form of config option accepts the "show_children"
+  option which will toggle the displaying of child categories on and off.
 
 * `checkbox` - Produces a single checkbox, ideal for boolean values, or a set
   of checkboxes. When using this type to display multiple checkboxes, use the
@@ -339,17 +342,11 @@ field:
   `delimiter` field option to specify how your list of checkbox options are
   separated. See "Working with Checkboxes."
 
-* `blogs` - Produces a pull down menu listing every blog in the system.
-  *Warning: this is not advisable for large installations as it can
-  dramatically impact performance (negatively).*
+* `colorpicker` - Produces a color wheel pop-up for selecting a color or hex
+  value.
 
-* `radio-image` - Produces a javascript enabled list of radio buttons where
-  each "button" is an image. Note that this version of the radio type supports
-  a special syntax for the `values` attribute. See example below.
-
-* `tagged-entries` - Produces a pull down menu of entries tagged a certain
-  way. This type supports the following additional attributes: `lastn` and
-  `tag-filter`.
+* `datetime` - Produces a date and time selection dialog for selecting a
+  timestamp.
 
 * `entry` - Produces the ability to select a single entry via a small pop-up
   dialog. In the dialog, the user will be permitted to search the system via
@@ -361,39 +358,6 @@ field:
 * `entry_or_page` - Operates identically to the `entry` type except that it
   allows the ability to select either an entry or page for the field.
 
-* `page` - Operates identically to the `entry` type except that it pulls up a
-  list of pages in the selected blog (as opposed to entries).
-
-* `category` - Produces the ability to select a single category via a
-  drop-down listing.
-
-* `category_list` - Produces the ability to select multiple categories via a
-  multi-select listing. This form of config option accepts the "show_children"
-  option which will toggle the displaying of child categories on and off.
-
-* `datetime` - Produces a date and time selection dialog for selecting a
-  timestamp.
-
-* `folder` - Produces the ability to select a single folder via a drop-down
-  listing.
-
-* `folder_list` - Produces the ability to select a single category via a
-  drop-down listing. This form of config option accepts the "show_children"
-  option which will toggle the displaying of child folders on and off.
-
-* `colorpicker` - Produces a color wheel pop-up for selecting a color or hex
-  value.
-
-* `link-group` - Produces an ordered list of links manually entered by the
-  user. Options of this type will have defined for them an additional template
-  tag to make it easier to loop over the links entered by the user in your
-  templates. See "Link Group Template Tags" below.
-
-* `text-group` - Produces an ordered list of text labels manually entered by
-  the user. Options of this type will have defined for them an additional
-  template tag to make it easier to loop over the text items entered by the
-  user in your templates. See "Text Group Template Tags" below.
-
 * `file` - Allows a user to upload a file, which in turn gets converted into
   an asset. An additional field property is supported for file types:
   `destination` which can be used to customize the path/url of the uploaded
@@ -403,16 +367,52 @@ field:
   you access to the asset created for you when the file is uploaded. See
   "Asset Template Tags" below.
 
+* `folder` - Produces the ability to select a single folder via a drop-down
+  listing.
+
+* `folder_list` - Produces the ability to select a single category via a
+  drop-down listing. This form of config option accepts the "show_children"
+  option which will toggle the displaying of child folders on and off.
+
+* `link-group` - Produces an ordered list of links manually entered by the
+  user. Options of this type will have defined for them an additional template
+  tag to make it easier to loop over the links entered by the user in your
+  templates. See "Link Group Template Tags" below.
+
+* `page` - Operates identically to the `entry` type except that it pulls up a
+  list of pages in the selected blog (as opposed to entries).
+
+* `radio` - Produces a set of radio buttons of arbitrary values. Those values
+  are defined by specifying a sibling element called `values` which should
+  contain a comma delimited list of values to present as radio buttons.
+
+* `radio-image` - Produces a javascript enabled list of radio buttons where
+  each "button" is an image. Note that this version of the radio type supports
+  a special syntax for the `values` attribute. See example below.
+
+* `select` - Produces a pull-down menu of arbitrary values. Those values are
+  defined by specifying a sibling element called `values` which should contain
+  a comma delimited list of values to present in the pull down menu.
+
 * `separator` - Sometimes you will want to divide your options into smaller
   sections, and the `separator` facilitates that. This is a special type of
   field because there is no editable form to interact with and is
   informational only. Only the `label`, `hint`, `order`, and `fieldset` keys
   are valid with this field type.
 
-* `author` - Select an author from a popup dialog. To appear in the popup, an
-  author must have a Role, associating them with the blog in which this field
-  is used. This field supports a special `roles` key where a comma-separated 
-  list of valid Roles may be supplied to filter the popup dialog contents.
+* `tagged-entries` - Produces a pull down menu of entries tagged a certain
+  way. This type supports the following additional attributes: `lastn` and
+  `tag-filter`.
+
+* `text` - Produces a simple single line text box.
+
+* `textarea` - Produces a multi-line text box. You can specify the `rows`
+  sibling element to control the size/height of the text box.
+
+* `text-group` - Produces an ordered list of text labels manually entered by
+  the user. Options of this type will have defined for them an additional
+  template tag to make it easier to loop over the text items entered by the
+  user in your templates. See "Text Group Template Tags" below.
 
 
 **Category and Folder Tags**
