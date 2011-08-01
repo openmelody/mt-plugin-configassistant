@@ -885,22 +885,22 @@ sub type_radio {
     my $app = shift;
     my ( $ctx, $field_id, $field, $value ) = @_;
     my $out;
-    my @values = split( ",", $field->{values} );
+    my @values = split( /\s*,\s*/, $field->{values} );
     $out .= "      <ul>\n";
-    foreach (@values) {
+    foreach my $option (@values) {
 
         # $el_id ("element ID") is used as a unique identifier so that the
         # label can be clickable to select the radio button.
-        my $el_id = $field_id . '_' . $_;
+        my $el_id = $field_id . '_' . dirify($option);
         $out
           .= "        <li><input type=\"radio\" name=\"$field_id\""
-          . " id=\"$el_id\" value=\"$_\""
-          . ( $value eq $_ ? " checked=\"checked\"" : "" )
+          . " id=\"$el_id\" value=\"$option\""
+          . ( $value eq $option ? " checked=\"checked\"" : "" )
           . " class=\"rb\" />"
 
           # Add a space between the input field and the label so that the
           # label text isn't bumped up right next to the radio button.
-          . " <label for=\"$el_id\">$_</label>" . "</li>\n";
+          . " <label for=\"$el_id\">$option</label>" . "</li>\n";
     }
     $out .= "      </ul>\n";
     return $out;
