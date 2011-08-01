@@ -1041,14 +1041,14 @@ sub type_category {
     $out .= "      <select name=\"$field_id\">\n";
     $out
       .= "        <option value=\"0\" "
-      . ( 0 == $value ? " selected" : "" )
+      . ( $value eq '' ? " selected" : "" )
       . ">None Selected</option>\n";
 
     foreach (@cats) {
         $out
           .= "        <option value=\""
           . $_->id . "\" "
-          . ( $value == $_->id ? " selected" : "" ) . ">"
+          . ( $value eq $_->id ? " selected" : "" ) . ">"
           . $_->label
           . "</option>\n";
     }
