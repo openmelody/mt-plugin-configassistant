@@ -885,7 +885,13 @@ sub type_radio {
     my $app = shift;
     my ( $ctx, $field_id, $field, $value ) = @_;
     my $out;
-    my @values = split( /\s*,\s*/, $field->{values} );
+
+    # Use the delimiter specified for the field, or fall back to the comma.
+    # Split the values with the delimiter, but cut out any white space on 
+    # either side of the value.
+    my $delimiter = $field->{delimiter} || ',';
+    my @values = split( /\s*$delimiter\s*/, $field->{values} );
+
     $out .= "      <ul>\n";
     foreach my $option (@values) {
 

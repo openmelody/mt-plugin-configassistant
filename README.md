@@ -385,6 +385,9 @@ field:
 * `radio` - Produces a set of radio buttons of arbitrary values. Those values
   are defined by specifying a sibling element called `values` which should
   contain a comma delimited list of values to present as radio buttons.
+  Optionally use the `delimiter` key to specify a value separator: `,` (comma)
+  is the default; `;` (semicolon) is a good alternative if the field values
+  contain a comma, for example.
 
 * `radio-image` - Produces a javascript enabled list of radio buttons where
   each "button" is an image. Note that this version of the radio type supports
