@@ -944,9 +944,16 @@ sub type_radio_image {
 sub type_select {
     my $app = shift;
     my ( $ctx, $field_id, $field, $value ) = @_;
-    my $out;
-    my @values = split( ",", $field->{values} );
-    $out .= "      <select name=\"$field_id\">\n";
+    $value ||= '';
+
+    # Use the delimiter specified for the field, or fall back to the comma.
+    # Split the values with the delimiter, but cut out any white space on 
+    # either side of the value.
+    my $delimiter = $field->{delimiter} || ',';
+    my @values = split( /\s*$delimiter\s*/, $field->{values} );
+
+    my $out .= "      <select name=\"$field_id\">\n";
+
     foreach my $label (@values) {
         my $v;
         if ( $label =~ /\"([^\"]+)\":\"([^\"]+)\"/ ) {
@@ -962,6 +969,7 @@ sub type_select {
           . ">$label</option>\n";
     }
     $out .= "      </select>\n";
+
     return $out;
 } ## end sub type_select
 

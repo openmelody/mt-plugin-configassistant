@@ -396,6 +396,9 @@ field:
 * `select` - Produces a pull-down menu of arbitrary values. Those values are
   defined by specifying a sibling element called `values` which should contain
   a comma delimited list of values to present in the pull down menu.
+  Optionally use the `delimiter` key to specify a value separator: `,` (comma)
+  is the default; `;` (semicolon) is a good alternative if the field values
+  contain a comma, for example.
 
 * `separator` - Sometimes you will want to divide your options into smaller
   sections, and the `separator` facilitates that. This is a special type of
