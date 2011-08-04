@@ -682,6 +682,10 @@ sub type_entry {
         $obj_name  = ( $obj ? $obj->title : '' ) || '';
         $obj_id    = ( $obj ? $obj->id : 0 ) || '';
     }
+    else {
+        $value = '';
+    }
+
     my $blog_id   = $field->{all_blogs} ? 0 : $app->blog->id;
     unless ( $ctx->var('entry_chooser_js') ) {
         $out .= <<EOH;
