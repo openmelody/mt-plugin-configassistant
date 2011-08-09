@@ -8,6 +8,28 @@ version: 2.1.36
 static_version: 14
 schema_version: 3
 
+object_types:
+  blog:
+    selected_config: string meta
+
+upgrade_functions:
+  static_copy:
+    # A version_limit is required to trigger the upgrade function. So, just
+    # use a way big one, just so I don't have to remember to update it.
+    version_limit: 999
+    handler: $ConfigAssistant::ConfigAssistant::Static::upgrade
+
+init_app: $ConfigAssistant::ConfigAssistant::Init::init_app
+
+callbacks:
+  MT::App::CMS::template_param.cfg_plugin:  $ConfigAssistant::ConfigAssistant::Plugin::xfrm_cfg_plugin_param
+  MT::App::CMS::template_source.cfg_plugin: $ConfigAssistant::ConfigAssistant::Plugin::xfrm_cfg_plugin
+  blog_template_set_change:                 $ConfigAssistant::ConfigAssistant::Prefs::on_template_set_change
+
+config_settings:
+  PluginStaticVersion:
+    type: 'HASH'
+
 applications:
   cms:
     menus: $ConfigAssistant::ConfigAssistant::Init::update_menus
@@ -25,17 +47,6 @@ applications:
     search_apis:
       entry:
         setup_terms_args: $ConfigAssistant::ConfigAssistant::Plugin::entry_search_api_prep
-
-callbacks:
-  MT::App::CMS::template_param.cfg_plugin:  $ConfigAssistant::ConfigAssistant::Plugin::xfrm_cfg_plugin_param
-  MT::App::CMS::template_source.cfg_plugin: $ConfigAssistant::ConfigAssistant::Plugin::xfrm_cfg_plugin
-  blog_template_set_change:                 $ConfigAssistant::ConfigAssistant::Prefs::on_template_set_change
-
-init_app: $ConfigAssistant::ConfigAssistant::Init::init_app
-
-config_settings:
-  PluginStaticVersion:
-    type: 'HASH'
 
 config_types:
   author:
@@ -80,17 +91,6 @@ config_types:
     handler: $ConfigAssistant::ConfigAssistant::Plugin::type_text
   textarea:
     handler: $ConfigAssistant::ConfigAssistant::Plugin::type_textarea
-
-upgrade_functions:
-  static_copy:
-    # A version_limit is required to trigger the upgrade function. So, just
-    # use a way big one, just so I don't have to remember to update it.
-    version_limit: 999
-    handler: $ConfigAssistant::ConfigAssistant::Static::upgrade
-
-object_types:
-  blog:
-    selected_config: string meta
 
 blog_preferences:
   __default__:
