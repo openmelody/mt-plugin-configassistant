@@ -748,10 +748,21 @@ sub type_entry_or_page {
             }
             function insertCustomFieldEntry(title, class, val, id) {
                 var orig = \$('#'+id).val();
-                var newval = orig ? orig + ',' + val : val;
+                var is_mult = \$('#'+id+'_preview').hasClass('multiple');
+                var newval;
+                if (is_mult) { 
+                    newval = orig ? orig + ',' + val : val;
+                } else {
+                    newval = val;
+                }
                 \$('#'+id).val( newval);
                 try {
-                    \$('#'+id+'_preview').append('<li id="obj-'+val+'" class="obj-type obj-type-'+class+'"><span class="obj-title">'+title+'</span> <a href="javascript:void(0);" onclick="removeCustomFieldEntry('+id+','+val+')">Remove '+class+'</a></li>');
+                    var html = '<li id="obj-'+val+'" class="obj-type obj-type-'+class+'"><span class="obj-title">'+title+'</span> <a href="javascript:void(0);" onclick="removeCustomFieldEntry('+id+','+val+')">Remove '+class+'</a></li>';
+                    if ( is_mult ) {
+                      \$('#'+id+'_preview').append(html);
+                    } else {
+                      \$('#'+id+'_preview').html(html);
+                    }
                 } catch(e) {
                     log.error(e);
                 };
@@ -779,12 +790,14 @@ EOH
     }
     my $label = 'Entry or Page';
     $ctx->var( 'entry_class_label', $label );
+    my $multiple = '';
+    if ($field->{multiple}) { $multiple = 'multiple'; }
     $out .= <<EOH;
     <div class="pkg">
       <input name="$field_id" id="$field_id" class="hidden" type="hidden" value="$value" />
       <button type="submit"
               onclick="return openDialog(this.form, 'ca_config_entry_or_page', 'blog_id=$blog_id&edit_field=$field_id')">Choose $label</button>
-      <ul id="${field_id}_preview" class="preview">
+      <ul id="${field_id}_preview" class="preview $multiple">
         $preview
       </ul>
     </div>
