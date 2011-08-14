@@ -690,10 +690,10 @@ sub type_entry {
     unless ( $ctx->var('entry_chooser_js') ) {
         $out .= <<EOH;
     <script type="text/javascript">
-        function insertCustomFieldEntry(html, val, id) {
+        function insertCustomFieldEntry(title, class, val, id) {
             jQuery('#'+id).val(val);
             try {
-                jQuery('#'+id+'_preview').html(html);
+                jQuery('#'+id+'_preview').html(title + ' (' + class + ')');
             } catch(e) {
                 log.error(e);
             };
@@ -727,27 +727,31 @@ sub type_entry_or_page {
     my ( $ctx, $field_id, $field, $value ) = @_;
     my $out;
     my $obj;
-    my $obj_name  = ''; # A default value to alleviate warnings.
     my $obj_class = 'entry';
-
-    # The $value is the object ID. Only if $value exists should we try to
-    # load the object. Otherwise, the most recent entry/page is loaded
-    # and the $obj_name is incorrectly populated with the most recent object
-    # title. This way, $obj_name is blank if there is no $value, which is
-    # clearer to the user.
-    if ($value) {
-        $obj = MT->model($obj_class)->load($value);
-        $obj_name = ( $obj ? $obj->title : '' ) || '';
-        $obj_class = $obj->class;
-    }
     my $blog_id = $field->{all_blogs} ? 0 : $app->blog->id;
+    my $preview = '';
     unless ( $ctx->var('entry_chooser_js') ) {
         $out .= <<EOH;
         <script type="text/javascript">
-            function insertCustomFieldEntry(html, val, id) {
-                \$('#'+id).val(val);
+            function removeCustomFieldEntry(id, val) {
+                var orig = \$('#'+id).val();
+                var newval = '';
+                var ids = orig.split(',');
+                for (var i = 0; i < ids.length; i++) {
+                    if (ids[i] != val) {
+                        if (newval != '') newval += ',';
+                        newval += ids[i];
+                    }
+                }
+                \$('#'+id).val(newval);
+                \$('#'+id+'_preview #obj-'+val).remove();
+            }
+            function insertCustomFieldEntry(title, class, val, id) {
+                var orig = \$('#'+id).val();
+                var newval = orig ? orig + ',' + val : val;
+                \$('#'+id).val( newval);
                 try {
-                    \$('#'+id+'_preview').html(html);
+                    \$('#'+id+'_preview').append('<li id="obj-'+val+'" class="obj-type obj-type-'+class+'"><span class="obj-title">'+title+'</span> <a href="javascript:void(0);" onclick="removeCustomFieldEntry('+id+','+val+')">Remove '+class+'</a></li>');
                 } catch(e) {
                     log.error(e);
                 };
@@ -756,9 +760,23 @@ sub type_entry_or_page {
 EOH
         $ctx->var( 'entry_chooser_js', 1 );
     }
-    my $class_label = $obj->class_label;
-    my $preview = $value ? "$obj_name ( $class_label )" : "";
-    my $class = MT->model($obj_class);
+
+    # The $value is the object ID. Only if $value exists should we try to
+    # load the object. Otherwise, the most recent entry/page is loaded
+    # and the $obj_name is incorrectly populated with the most recent object
+    # title. This way, $obj_name is blank if there is no $value, which is
+    # clearer to the user.
+    if ($value) {
+        my @ids = split(',',$value);
+        foreach my $id (@ids) {
+            my $obj = MT->model('entry')->load($id);
+            my $obj_name = ( $obj ? $obj->title : '' ) || '';
+            my $class_label = $obj->class_label;
+#            $obj_class = $obj->class;
+            $preview .= '<li id="obj-'.$obj->id.'" class="obj-type obj-type-'.$obj->class.'"><span class="obj-title">'.$obj_name.'</span> <a href="javascript:void(0);" onclick="removeCustomFieldEntry(\''.$field_id.'\','.$obj->id.')">Remove '. $class_label .'</a></li>';
+
+        }
+    }
     my $label = 'Entry or Page';
     $ctx->var( 'entry_class_label', $label );
     $out .= <<EOH;
@@ -766,9 +784,9 @@ EOH
       <input name="$field_id" id="$field_id" class="hidden" type="hidden" value="$value" />
       <button type="submit"
               onclick="return openDialog(this.form, 'ca_config_entry_or_page', 'blog_id=$blog_id&edit_field=$field_id')">Choose $label</button>
-      <div id="${field_id}_preview" class="preview">
+      <ul id="${field_id}_preview" class="preview">
         $preview
-      </div>
+      </ul>
     </div>
 EOH
 
@@ -1322,6 +1340,34 @@ sub _hdlr_field_asset {
     }
 }
 
+sub _hdlr_field_entry_loop {
+    my $plugin = shift;
+    my ( $ctx, $args, $cond ) = @_;
+    my $field  = $ctx->stash('field') or return _no_field($ctx);
+    my $value  = _get_field_value($ctx);
+    my @ids    = split(',',$value);
+    my $out    = '';
+    my $count  = 0;
+    my $lastn  = $args->{'lastn'} || 0;
+    if ( $value > 0 ) {
+        my $vars = $ctx->{__stash}{vars};
+        foreach my $id (@ids) {
+            $count++;
+            my $entry = MT->model('entry')->load($id);
+            local $ctx->{'__stash'}->{'entry'} = $entry;
+            local $vars->{'__first__'} = ( $count == 1 );
+            local $vars->{'__last__'}  = ( $lastn == $count || $count == $#ids );
+            defined( $out .= $ctx->slurp( $args, $cond ) ) or return;
+            last if ($lastn == $count);
+        }
+        return $out;
+    }
+    else {
+        require MT::Template::ContextHandlers;
+        return MT::Template::Context::_hdlr_pass_tokens_else(@_);
+    }
+} ## end sub _hdlr_field_array_loop
+
 sub _hdlr_field_array_loop {
     my $plugin = shift;
     my ( $ctx, $args, $cond ) = @_;
@@ -1344,6 +1390,7 @@ sub _hdlr_field_array_loop {
         return MT::Template::Context::_hdlr_pass_tokens_else(@_);
     }
 } ## end sub _hdlr_field_array_loop
+
 
 sub _hdlr_field_array_contains {
     my $plugin = shift;

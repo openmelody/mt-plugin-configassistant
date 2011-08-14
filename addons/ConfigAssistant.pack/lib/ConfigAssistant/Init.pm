@@ -240,7 +240,19 @@ sub load_tags {
                             runner( '_hdlr_field_value',
                                     'ConfigAssistant::Plugin', @_ );
                         };
-                        if ( $option->{'type'} eq 'checkbox' ) {
+                        if ( $option->{'type'} eq 'entry_or_page' ) {
+                            $tags->{block}->{ $tag . 'Entries' } = sub {
+                                my $blog = $_[0]->stash('blog');
+                                my $bset = $blog->template_set;
+                                $_[0]->stash( 'field', $bset . '_' . $opt );
+                                $_[0]->stash( 'plugin_ns',
+                                              find_theme_plugin($bset)->id );
+                                $_[0]->stash( 'scope', 'blog' );
+                                runner( '_hdlr_field_entry_loop',
+                                        'ConfigAssistant::Plugin', @_ );
+                            };
+                        } ## end 
+                        elsif ( $option->{'type'} eq 'checkbox' ) {
                             $tags->{block}->{ $tag . 'Loop' } = sub {
                                 my $blog = $_[0]->stash('blog');
                                 my $bset = $blog->template_set;
