@@ -143,8 +143,11 @@ sub theme_options {
         }
         if ( !$field->{'type'} ) {
             MT->log( {
+                   blog_id => $blog->id,
+                   level   => MT::Log::WARNING(),
                    message =>
-                     "Option '$optname' in template set '$ts' did not declare a type. Skipping"
+                     "Skipping option '$optname' in template set '$ts' "
+                     . "because it did not declare a type."
                 }
             );
             next;
