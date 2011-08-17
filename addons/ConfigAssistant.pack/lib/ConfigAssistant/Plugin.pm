@@ -1997,7 +1997,7 @@ sub select_entry_or_page {
 
     my $entry_id = $app->param('id')
         or return $app->errtrans('No id');
-    MT->log('boo');
+
     my $entry = MT->model('entry')->load($entry_id)
         or return $app->errtrans( 'No entry or page #[_1]', $entry_id );
     my $edit_field = $app->param('edit_field')
