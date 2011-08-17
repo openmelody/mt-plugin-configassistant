@@ -779,22 +779,29 @@ sub type_entry_or_page {
                 \$('#'+id).val(newval);
                 \$('#'+id+'_preview #obj-'+val).remove();
             }
-            function insertCustomFieldEntry(title, class, val, id) {
-                var orig = \$('#'+id).val();
-                var is_mult = \$('#'+id+'_preview').hasClass('multiple');
+            function insertCustomFieldEntry(title, obj_class, entry_id, blog_id, el_id) {
+
+                var orig = \$('#'+el_id).val();
+                var is_mult = \$('#'+el_id+'_preview').hasClass('multiple');
                 var newval;
                 if (is_mult) { 
-                    newval = orig ? orig + ',' + val : val;
+                    new_entry_id = orig ? orig + ',' + entry_id : entry_id;
                 } else {
-                    newval = val;
+                    new_entry_id = entry_id;
                 }
-                \$('#'+id).val( newval);
+                \$('#'+el_id).val( new_entry_id );
+
                 try {
-                    var html = '<li id="obj-'+val+'" class="obj-type obj-type-'+class+'"><span class="obj-title">'+title+'</span> <a href="javascript:void(0);" onclick="removeCustomFieldEntry('+id+','+val+')">Remove '+class+'</a></li>';
+                    var html = '<li id="obj-' + entry_id 
+                        + '" class="obj-type obj-type-' + obj_class 
+                        + '"><span class="obj-title">' + title 
+                        + '</span> <a href="javascript:void(0);" onclick="removeCustomFieldEntry(' 
+                        + el_id + ',' + entry_id + ')"><img src="${static_path}images/status_icons/close.gif" width="9" height="9" alt="Remove ' + obj_class + '" title="Remove ' + obj_class + '" /></a></li>';
+
                     if ( is_mult ) {
-                      \$('#'+id+'_preview').append(html);
+                      \$('#'+el_id+'_preview').append(html);
                     } else {
-                      \$('#'+id+'_preview').html(html);
+                      \$('#'+el_id+'_preview').html(html);
                     }
                 } catch(e) {
                     log.error(e);
@@ -816,9 +823,15 @@ EOH
             my $obj = MT->model('entry')->load($id);
             my $obj_name = ( $obj ? $obj->title : '' ) || '';
             my $class_label = $obj->class_label;
-#            $obj_class = $obj->class;
-            $preview .= '<li id="obj-'.$obj->id.'" class="obj-type obj-type-'.$obj->class.'"><span class="obj-title">'.$obj_name.'</span> <a href="javascript:void(0);" onclick="removeCustomFieldEntry(\''.$field_id.'\','.$obj->id.')">Remove '. $class_label .'</a></li>';
 
+            $preview .= '<li id="obj-' . $obj->id 
+                . '" class="obj-type obj-type-' . $obj->class 
+                . '"><span class="obj-title">' . $obj_name 
+                . '</span> <a href="javascript:void(0);" onclick="removeCustomFieldEntry(\'' 
+                . $field_id . '\',' . $obj->id 
+                . ')"><img src="' . $static_path
+                . 'images/status_icons/close.gif" width="9" height="9" alt="Remove ' 
+                . $class_label . '" title="Remove ' . $class_label . '" /></a></li>';
         }
     }
     else {
@@ -2007,10 +2020,11 @@ sub select_entry_or_page {
         or die "OMG NO COMPONENT!?!";
     my $tmpl   = $plugin->load_tmpl(
         'select_entry.mtml',
-        {   entry_id    => $entry->id,
-            entry_title => $entry->title,
-            entry_class => $entry->class_label,
-            edit_field  => $edit_field,
+        {   entry_id      => $entry->id,
+            entry_title   => $entry->title,
+            entry_class   => lc($entry->class_label),
+            entry_blog_id => $entry->blog_id,
+            edit_field    => $edit_field,
         }
     );
     return $tmpl;
