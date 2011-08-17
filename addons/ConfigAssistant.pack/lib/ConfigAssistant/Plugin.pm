@@ -821,6 +821,10 @@ EOH
 
         }
     }
+    else {
+        $value = ''; # To suppress a warning.
+    }
+
     my $label = 'Entry or Page';
     $ctx->var( 'entry_class_label', $label );
     my $multiple = '';
