@@ -420,7 +420,14 @@ sub save_config {
             $app->run_callbacks( 'options_change.plugin.' . $plugin->id,
                                  $app, $plugin );
         }
-        
+
+        # Set the data and save it. This must be done before trying to
+        # republish because the new selections the user made are not available
+        # until the data is saved.
+        $pdata->data($data);
+        MT->request( 'plugin_config.' . $plugin->id, undef );
+        $pdata->save() or die $pdata->errstr;
+
         # Index templates that have been flagged should be republished.
         use MT::WeblogPublisher;
         foreach ( keys %$repub_queue ) {
@@ -463,9 +470,6 @@ sub save_config {
                  }
             );
         }
-        $pdata->data($data);
-        MT->request( 'plugin_config.' . $plugin->id, undef );
-        $pdata->save() or die $pdata->errstr;
 
         # END - contents of MT::Plugin->save_config
 
