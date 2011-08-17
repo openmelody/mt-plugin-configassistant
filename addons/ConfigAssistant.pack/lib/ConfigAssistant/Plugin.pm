@@ -671,6 +671,7 @@ sub type_entry {
     my $obj;
     my $obj_name = ''; # A default value to alleviate warnings.
     my $obj_id   = ''; # Same!
+    my $obj_blog_id = '';
     
     # The $value is the object ID. Only if $value exists should we try to 
     # load the object. Otherwise, the most recent entry/page is loaded
@@ -678,9 +679,10 @@ sub type_entry {
     # title. This way, $obj_name is blank if there is no $value, which is
     # clearer to the user.
     if ($value) {
-        $obj       = MT->model($obj_class)->load($value);
-        $obj_name  = ( $obj ? $obj->title : '' ) || '';
-        $obj_id    = ( $obj ? $obj->id : 0 ) || '';
+        $obj         = MT->model($obj_class)->load($value);
+        $obj_name    = ( $obj ? $obj->title : '' ) || '';
+        $obj_id      = ( $obj ? $obj->id : 0 ) || '';
+        $obj_blog_id = $obj->blog_id;
     }
     else {
         $value = '';
@@ -692,8 +694,15 @@ sub type_entry {
     <script type="text/javascript">
         function insertCustomFieldEntry(title, class, val, id) {
             jQuery('#'+id).val(val);
+        function insertCustomFieldEntry(title, obj_class, entry_id, blog_id, el_id) {
+            jQuery('#'+el_id).val(entry_id);
             try {
-                jQuery('#'+id+'_preview').html(title + ' (' + class + ')');
+                jQuery('#'+el_id+'_preview').html(
+                    title 
+                    + ' (<a href="?__mode=edit&_type=entry' 
+                    + '&blog_id=' + blog_id + '&id=' + entry_id 
+                    + '">edit ' + obj_class + '</a>)'
+                );
             } catch(e) {
                 log.error(e);
             };
@@ -707,6 +716,17 @@ EOH
     my $label_lc = lc($label);
     $ctx->var( 'entry_class_label', $label );
     $ctx->var( 'entry_class_labelp', $class->class_label_plural );
+
+    my $edit_link = $value
+        ? "(<a href=\"?__mode=edit&_type=$label_lc&blog_id=$obj_blog_id"
+            . "&id=$obj_id\">edit $label_lc</a>) "
+            . '<a href="javascript:void(0);" onclick="removeCustomFieldEntry(\'' 
+            . $field_id . '\',' . $obj_id 
+            . ')"><img src="' . $app->static_path
+            . 'images/status_icons/close.gif" width="9" height="9" alt="Remove ' 
+            . $label_lc . '" title="Remove ' . $label_lc . '" /></a>'
+        : '';
+
     $out .= <<EOH;
 <div class="pkg">
   <input name="$field_id" id="$field_id" class="hidden" type="hidden" value="$value" />
@@ -714,7 +734,7 @@ EOH
           onclick="return openDialog(this.form, 'ca_config_entry', 'blog_id=$blog_id&edit_field=$field_id&status=2&class=$obj_class')">Choose $label</button>
   <div id="${field_id}_preview" class="preview">
     $obj_name
-    (<a href="?__mode=edit&_type=entry&blog_id=$blog_id&id=$obj_id">edit $label_lc</a>)
+    $edit_link
   </div>
 </div>
 EOH
@@ -1873,11 +1893,11 @@ sub select_entry {
     my $tmpl = $plugin->load_tmpl(
                                    'select_entry.mtml',
                                    {
-                                      class_type  => $class,
-                                      class_label => $obj->class_label,
-                                      entry_id    => $obj->id,
-                                      entry_title => $obj->title,
-                                      edit_field  => $edit_field,
+                                      entry_class   => $class,
+                                      entry_id      => $obj->id,
+                                      entry_title   => $obj->title,
+                                      entry_blog_id => $obj->blog_id,
+                                      edit_field    => $edit_field,
                                    }
     );
     return $tmpl;
