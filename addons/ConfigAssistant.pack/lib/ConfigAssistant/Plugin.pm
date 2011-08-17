@@ -692,8 +692,19 @@ sub type_entry {
     unless ( $ctx->var('entry_chooser_js') ) {
         $out .= <<EOH;
     <script type="text/javascript">
-        function insertCustomFieldEntry(title, class, val, id) {
-            jQuery('#'+id).val(val);
+        function removeCustomFieldEntry(el_id, val) {
+            var orig = \$('#'+el_id).val();
+            var newval = '';
+            var ids = orig.split(',');
+            for (var i = 0; i < ids.length; i++) {
+                if (ids[i] != val) {
+                    if (newval != '') newval += ',';
+                    newval += ids[i];
+                }
+            }
+            \$('#'+el_id).val(newval);
+            \$('#'+el_id+'_preview').remove();
+        }
         function insertCustomFieldEntry(title, obj_class, entry_id, blog_id, el_id) {
             jQuery('#'+el_id).val(entry_id);
             try {
@@ -750,6 +761,8 @@ sub type_entry_or_page {
     my $obj_class = 'entry';
     my $blog_id = $field->{all_blogs} ? 0 : $app->blog->id;
     my $preview = '';
+    my $static_path = $app->static_path;
+
     unless ( $ctx->var('entry_chooser_js') ) {
         $out .= <<EOH;
         <script type="text/javascript">
