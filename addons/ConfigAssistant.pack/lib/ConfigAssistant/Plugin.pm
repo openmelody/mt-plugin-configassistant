@@ -1419,7 +1419,7 @@ sub _hdlr_field_entry_loop {
     my $out    = '';
     my $count  = 0;
     my $lastn  = $args->{'lastn'} || 0;
-    if ( $value > 0 ) {
+    if ( $value ne '' && $value ne '0' ) {
         my $vars = $ctx->{__stash}{vars};
         foreach my $id (@ids) {
             $count++;
@@ -1474,7 +1474,7 @@ sub _hdlr_field_array_contains {
     foreach (@$array) {
 
         #MT->log("Does array contain $value? (currently checking $_)");
-        if ( $_ eq $value ) {
+        if ( $_ && $_ eq $value ) {
             return $ctx->slurp( $args, $cond );
         }
     }
