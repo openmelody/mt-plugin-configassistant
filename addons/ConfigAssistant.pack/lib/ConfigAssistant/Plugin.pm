@@ -1904,6 +1904,8 @@ sub list_entry_mini {
                         $app->user ? $app->user->preferred_language : undef );
                    $row->{created_on_relative}
                      = relative_date( $ts, time, $obj->blog );
+                   my $author = MT->model('author')->load( $obj->author_id );
+                   $row->{author_name} = $author ? $author->nickname : '';
                }
                return $row;
            },
@@ -2002,6 +2004,8 @@ sub list_entry_or_page {
                     $row->{created_on_relative}
                         = relative_date( $ts, time, $obj->blog );
                     $row->{kind} = ucfirst( $obj->class );
+                    my $author = MT->model('author')->load( $obj->author_id );
+                    $row->{author_name} = $author ? $author->nickname : '';
                 }
                 return $row;
             },
