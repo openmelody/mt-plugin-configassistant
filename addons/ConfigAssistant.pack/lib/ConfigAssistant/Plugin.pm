@@ -1255,10 +1255,17 @@ sub type_author {
     # because it's easy to forget the "s"--I did it several times testing!
     my $valid_roles = $field->{roles} || $field->{role} || '';
 
+    # The all_authors key will be true if all authors should appear in the
+    # pop-up, regardless of blog association.
+    my $all_authors = $field->{all_authors};
+    
+
     my $out = <<HTML;
 <script type="text/javascript">
     // Build the query string for the openDialog popup.
-    var query_string = 'blog_id=$blog_id'
+    var query_string = ''
+        + 'blog_id=$blog_id'
+        + '&all_authors=$all_authors'
         + '&idfield=$field_id'
         + '&namefield=${field_id}_display_name';
 
@@ -1302,12 +1309,13 @@ sub select_author {
             . $q->param('cur_author_display_name')
         : '';
 
+    # Create the arguments for the listing screen based on whether roles have
+    # been specified to filter on.
+    my $args = {};
+    $args->{sort} = 'name';
+
     # Load authors with permission on this blog
     my $author_roles = $q->param('roles');
-
-    # Create the arguments for the listing screen based on whether roles have
-    # been specified for Ghostwriter to filter on.
-    my $args = {};
     if ($author_roles) {
         my @roles = map { $_->id } MT->model('role')->load({ 
             name => [ split(/\s*,\s*/, $author_roles) ]
@@ -1315,26 +1323,32 @@ sub select_author {
         return unless @roles;
 
         require MT::Association;
-        $args = {
-            sort => 'name',
-            join => MT::Association->join_on('author_id', {
+        $args->{join} = MT::Association->join_on(
+            'author_id', 
+            {
                 role_id => \@roles,
-                blog_id => $app->param('blog_id')
-            }),
-        };
+                blog_id => $app->param('all_authors') 
+                    ? {like => '%'} # Grab authors in any blog
+                    : $app->param('blog_id'), 
+            },
+            { unique => 1, }
+        );
     }
+
+    # Roles have not been specified, so just grab any user with adequate
+    # permission to post.
     else {
         require MT::Permission;
-        $args = {
-            sort => 'name',
-            join => MT::Permission->join_on('author_id', {
-                blog_id => $app->param('blog_id'),
-                # attempt to filter for postish permissions (excludes
-                # registered users who only have permission to comment
-                # for instance)
-                permissions => { like => '%post%', }
-            })
-        };
+        $args->{join} = MT::Permission->join_on(
+            'author_id', 
+            {
+                blog_id => $app->param('all_authors') 
+                    ? {like => '%'} # Grab authors in any blog
+                    : $app->param('blog_id'), 
+                permissions => { like => '%post%', } 
+            },
+            { unique => 1, }
+        );
     }
 
     my $hasher = sub {

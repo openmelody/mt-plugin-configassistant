@@ -322,8 +322,13 @@ field:
 
 * `author` - Select an author from a popup dialog. To appear in the popup, an
   author must have a Role, associating them with the blog in which this field
-  is used. This field supports a special `roles` key where a comma-separated 
-  list of valid Roles may be supplied to filter the popup dialog contents.
+  is used. This field supports two additional optional keys:
+  
+  * `roles` - where a comma-separated list of valid Roles may be supplied to
+    filter the popup dialog contents.
+  * `all_authors` - if flagged `1` then all authors in the system with post
+    permissions or a role (as specified in the above `roles` key) can be
+    supplied to filter the popup dialog contents.
 
 * `blogs` - Produces a pull down menu listing every blog in the system.
   *Warning: this is not advisable for large installations as it can
