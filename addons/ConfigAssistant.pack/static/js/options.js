@@ -98,3 +98,12 @@ function render_text_form(label,url) {
     });
     return e;
 };
+
+
+// Author config type
+
+function removeAuthor(field_id) {
+    jQuery('#' + field_id).val('');
+    jQuery('#' + field_id + '_display_name').html('');
+    jQuery('#field-' + field_id + ' a.remove-item-button').hide();
+}

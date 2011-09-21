@@ -126,6 +126,8 @@ h2#page-title span.star { display: none; }
 
 .field-header .required-flag { color: #c20000; }
 
+.field .remove-item-button { margin-left: 5px; }
+
 /* Theme Options home tab */
 
 #theme_thumb {

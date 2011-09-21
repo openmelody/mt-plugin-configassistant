@@ -1241,7 +1241,8 @@ sub type_author {
     my ( $ctx, $field_id, $field, $value ) = @_;
     $value ||= ''; # Define $value if no saved/default.
     my $blog_id = $app->blog->id;
-    
+
+
     # Show the author display name, if a valid author has been saved already.
     my $author_display_name = '';
     if ($value) {
@@ -1249,7 +1250,21 @@ sub type_author {
             ? MT->model('author')->load($value)->nickname
             : ''; # No author found
     }
-    
+
+    # If the author display name was set above, then create a remove button.
+    my $remove_button = '';
+    if ($author_display_name ne '') {
+        $remove_button = '<a href="javascript:void(0);" '
+            . 'onclick="removeAuthor(\'' . $field_id . '\')" '
+            . 'id="' . $field_id . '_remove_button" '
+            . 'class="remove-item-button">'
+            . '    <img src="' . $app->static_path . 'images/status_icons/close.gif" '
+            . '        width="9" height="9" '
+            . '        alt="Remove ' . $author_display_name . '" '
+            . '        title="Remove ' . $author_display_name . '" />'
+            . '</a>';
+    }
+
     # If any roles were defined, supply them so that only valid authors can
     # be selected from the popup. Check for both keys "roles" and "role"
     # because it's easy to forget the "s"--I did it several times testing!
@@ -1289,6 +1304,7 @@ sub type_author {
     <div id="${field_id}_display_name" class="preview">
         $author_display_name
     </div>
+    $remove_button
 </div>
 HTML
 
