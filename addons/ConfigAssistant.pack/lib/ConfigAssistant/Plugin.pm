@@ -568,36 +568,33 @@ sub _hdlr_field_entry_loop {
     my $plugin = shift;
     my ( $ctx, $args, $cond ) = @_;
     my $field = $ctx->stash('field') or return _no_field($ctx);
-    my $value = _get_field_value($ctx);
-
-    if ( $value ne '' && $value ne '0' ) {
-        # The value contains both active and inactive entries. We only want the
-        # active ones, because the inactive ones aren't supposed to get published.
-        # The format is, for example: `active:1,2,5;inactive:3,4,6`
-        my ($active_ids,$inactive_ids) = split(';', $value);
-        $active_ids =~ s/active://; # Strip the leading identifier
-        my @ids = split(',', $active_ids);
-
-        my $out   = '';
-        my $count = 0;
-        my $lastn = $args->{'lastn'} || 0;
-
-        my $vars = $ctx->{__stash}{vars};
-        foreach my $id (@ids) {
-            $count++;
-            my $entry = MT->model('entry')->load($id);
-            local $ctx->{'__stash'}->{'entry'} = $entry;
-            local $vars->{'__first__'} = ( $count == 1 );
-            local $vars->{'__last__'}  = ( $lastn == $count || $count == scalar (@ids) );
-            defined( $out .= $ctx->slurp( $args, $cond ) ) or return;
-            last if ($lastn == $count);
-        }
-        return $out;
-    }
-    else {
+    my $value  = _get_field_value($ctx);
+    unless ( $value ) {
         require MT::Template::ContextHandlers;
         return MT::Template::Context::_hdlr_pass_tokens_else(@_);
     }
+
+    # The value contains both active and inactive entries. We want the
+    # active ones, because the inactive ones aren't supposed to get 
+    # published. The format is, for example: `active:1,2,5;inactive:3,4,6`
+    ( my $active_ids = $value ) =~ s{active:([^;]+).*}{$1};
+    my @ids                     =  split( ',', $active_ids );
+
+    my $out   = '';
+    my $count = 0;
+    my $lastn = $args->{'lastn'} || 0;
+    my $vars  = $ctx->{__stash}{vars};
+    foreach my $id (@ids) {
+        $count++;
+        my $entry = MT->model('entry')->load($id);
+        local $ctx->{'__stash'}->{'entry'} = $entry;
+        local $vars->{'__first__'}         = ( $count == 1 );
+        local $vars->{'__last__'}
+            = ( $lastn == $count || $count == scalar @ids );
+        defined( $out .= $ctx->slurp( $args, $cond ) ) or return;
+        last if ( $lastn == $count );
+    }
+    return $out;
 } ## end sub _hdlr_field_array_loop
 
 # The function tag handler for the Entry or Page field type. This overrides
@@ -651,15 +648,10 @@ sub _hdlr_field_array_contains {
     my $field = $ctx->stash('field') or return _no_field($ctx);
     my $value = $args->{'value'};
     my $array = _get_field_value($ctx);
-    use Carp;
-    ###l4p (ref $array eq 'ARRAY') or $logger->warn('_get_field_value did not return an array reference: '.($array||'')." ".Carp::longmess());
-    foreach (@$array) {
+    ###l4p require Carp; (ref $array eq 'ARRAY') or $logger->warn('_get_field_value did not return an array reference: '.($array||'')." ".Carp::longmess());
+    return $ctx->slurp( $args, $cond )
+        if grep { defined($_) && $_ eq $value } @$array;
 
-        #MT->log("Does array contain $value? (currently checking $_)");
-        if ( $_ && $_ eq $value ) {
-            return $ctx->slurp( $args, $cond );
-        }
-    }
     require MT::Template::ContextHandlers;
     return MT::Template::Context::_hdlr_pass_tokens_else(@_);
 }
