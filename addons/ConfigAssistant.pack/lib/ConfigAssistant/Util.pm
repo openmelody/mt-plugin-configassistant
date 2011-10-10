@@ -151,9 +151,15 @@ sub process_file_upload {
         $format    = File::Spec->catfile( '%s', 'support' );
 
     }
+    
+    # $scope is a different value -- perhaps "system."
     else {
-
-        # This is not supported. Error? Default to something?
+        require MT::FileMgr;
+        $root_path = File::Spec->catdir( $app->static_file_path, 'support', 'system' );
+        $base_url  = $app->static_path . '/support/system';
+        $fmgr      = MT::FileMgr->new('Local');
+        $blog_id   = $app->blog ? $app->blog->id : 0;  # the resulting asset will be added to this context
+        $format    = File::Spec->catfile( '%s', 'support', 'system' );
     }
 
     unless ( $fmgr->exists($root_path) ) {
