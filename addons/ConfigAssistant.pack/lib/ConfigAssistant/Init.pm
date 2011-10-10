@@ -370,6 +370,7 @@ sub load_tags {
             } ## end if ( $obj->registry( 'template_sets'...))
         } ## end foreach my $set (@sets)
 
+        # Create tags for system- and blog-level Plugin Options.
         my @options = keys %{ $r->{'options'} };
         foreach my $opt (@options) {
             my $option = $r->{'options'}->{$opt};
@@ -405,20 +406,20 @@ sub load_tags {
                     $tags->{block}->{ $tag . 'Loop' } = sub {
                         my $blog = $_[0]->stash('blog');
                         my $bset = $blog->template_set;
-                        $_[0]->stash( 'field', $bset . '_' . $opt );
+                        $_[0]->stash( 'field', $opt );
                         $_[0]->stash( 'plugin_ns',
                                       find_theme_plugin($bset)->id );
-                        $_[0]->stash( 'scope', 'blog' );
+                        $_[0]->stash( 'scope', lc( $option->{scope} ) );
                         runner( '_hdlr_field_array_loop',
                                 'ConfigAssistant::Plugin', @_ );
                     };
                     $tags->{block}->{ $tag . 'Contains' } = sub {
                         my $blog = $_[0]->stash('blog');
                         my $bset = $blog->template_set;
-                        $_[0]->stash( 'field', $bset . '_' . $opt );
+                        $_[0]->stash( 'field', $opt );
                         $_[0]->stash( 'plugin_ns',
                                       find_theme_plugin($bset)->id );
-                        $_[0]->stash( 'scope', 'blog' );
+                        $_[0]->stash( 'scope', lc( $option->{scope} ) );
                         runner( '_hdlr_field_array_contains',
                                 'ConfigAssistant::Plugin', @_ );
                     };
@@ -428,10 +429,10 @@ sub load_tags {
                     $tags->{block}->{ $tag . 'Asset' } = sub {
                         my $blog = $_[0]->stash('blog');
                         my $bset = $blog->template_set;
-                        $_[0]->stash( 'field', $bset . '_' . $opt );
+                        $_[0]->stash( 'field', $opt );
                         $_[0]->stash( 'plugin_ns',
                                       find_theme_plugin($bset)->id );
-                        $_[0]->stash( 'scope', 'blog' );
+                        $_[0]->stash( 'scope', lc( $option->{scope} ) );
                         runner( '_hdlr_field_asset',
                                 'ConfigAssistant::Plugin', @_ );
                     };
@@ -441,26 +442,26 @@ sub load_tags {
                     $tags->{block}->{ $tag . 'Links' } = sub {
                         my $blog = $_[0]->stash('blog');
                         my $bset = $blog->template_set;
-                        $_[0]->stash( 'field', $bset . '_' . $opt );
+                        $_[0]->stash( 'field', $opt );
                         $_[0]->stash( 'plugin_ns',
                                       find_theme_plugin($bset)->id );
-                        $_[0]->stash( 'scope', 'blog' );
+                        $_[0]->stash( 'scope', lc( $option->{scope} ) );
                         runner( '_hdlr_field_link_group',
                                 'ConfigAssistant::Plugin', @_ );
                     };
 
                 }
-                        elsif ( $option->{'type'} eq 'datetime' ) {
-                            $tags->{function}->{ $tag } = sub {
-                                my $blog = $_[0]->stash('blog');
-                                my $bset = $blog->template_set;
-                                $_[0]->stash( 'field', $bset . '_' . $opt );
-                                $_[0]->stash( 'plugin_ns',
-                                              find_theme_plugin($bset)->id );
-                                $_[0]->stash( 'scope', 'blog' );
-                                $_[0]->stash( 'format', $option->{format} );
-                                runner( '_hdlr_field_datetime',
-                                        'ConfigAssistant::Plugin', @_ );
+                elsif ( $option->{'type'} eq 'datetime' ) {
+                    $tags->{function}->{ $tag } = sub {
+                        my $blog = $_[0]->stash('blog');
+                        my $bset = $blog->template_set;
+                        $_[0]->stash( 'field', $opt );
+                        $_[0]->stash( 'plugin_ns',
+                                      find_theme_plugin($bset)->id );
+                        $_[0]->stash( 'scope', lc( $option->{scope} ) );
+                        $_[0]->stash( 'format', $option->{format} );
+                        runner( '_hdlr_field_datetime',
+                                'ConfigAssistant::Plugin', @_ );
                     };
                 } ## end elsif ( $option->{'type'}...)
 
@@ -475,10 +476,10 @@ sub load_tags {
                         $_[0]->stash( 'obj_class', $obj_class );
                         my $blog = $_[0]->stash('blog');
                         my $bset = $blog->template_set;
-                        $_[0]->stash( 'field', $bset . '_' . $opt );
+                        $_[0]->stash( 'field', $opt );
                         $_[0]->stash( 'plugin_ns',
                                       find_theme_plugin($bset)->id );
-                        $_[0]->stash( 'scope', 'blog' );
+                        $_[0]->stash( 'scope', lc( $option->{scope} ) );
                         runner( '_hdlr_field_category_list',
                                 'ConfigAssistant::Plugin', @_ );
                     };
