@@ -1427,6 +1427,7 @@ sub _hdlr_field_asset {
     my ( $ctx, $args, $cond ) = @_;
     my $field = $ctx->stash('field') or return _no_field($ctx);
     my $value = _get_field_value($ctx);
+    return if !$value;
     my $asset = MT->model('asset')->load($value);
     my $out;
     if ($asset) {
