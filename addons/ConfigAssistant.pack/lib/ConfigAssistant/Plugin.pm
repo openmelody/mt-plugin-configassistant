@@ -504,10 +504,10 @@ sub type_file {
               . ( $asset->label ? $asset->label : $asset->file_name )
               . " <a target=\"_new\" href=\""
               . $asset->url
-              . "\">view</a> | <a href=\"javascript:void(0)\" class=\"remove\">remove</a></p>";
+              . "\">view</a> | <a href=\"javascript:void(0)\" class=\"remove\">remove</a></p>\n";
         }
         else {
-            $html .= "<p>Selected asset could not be found. <a href=\"javascript:void(0)\" class=\"remove\">reset</a></p>";
+            $html .= "<p>Selected asset could not be found. <a href=\"javascript:void(0)\" class=\"remove\">reset</a></p>\n";
         }
     }
     $html .= "      <input type=\"file\" name=\"$field_id\" class=\"full-width\" />\n" .
