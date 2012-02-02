@@ -71,6 +71,9 @@ foisted upon end users to deploy a plugin/theme's static content.
 * Any version of Melody or Movable Type 4.1 or higher
     * This plugin has not yet been tested on MT 5.x
 
+Movable Type users will also need to install the [Melody Compatibility
+Layer](https://github.com/endevver/mt-plugin-melody-compat).
+
 ### <a id="features">Features</a> ###
 
 Config Assistant provides a number of new features to developers, designers
@@ -298,8 +301,7 @@ In this example two options, or fields, have been defined: `feedburner_id` and
   to the screen or not. The handler should return true to show the option, or
   false to hide it.
 
-* `default` - a static value or a code reference which will determine the
-  proper default value for the option
+* `default` - a static value for the option.
 
 * `fieldset` - specify which fieldset a field belongs to.
 
