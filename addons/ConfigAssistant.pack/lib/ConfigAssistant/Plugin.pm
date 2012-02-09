@@ -1457,7 +1457,7 @@ sub _hdlr_field_entry_loop {
             my $entry = MT->model('entry')->load($id);
             local $ctx->{'__stash'}->{'entry'} = $entry;
             local $vars->{'__first__'} = ( $count == 1 );
-            local $vars->{'__last__'}  = ( $lastn == $count || $count == $#ids );
+            local $vars->{'__last__'}  = ( $lastn == $count || $count == scalar (@ids) );
             defined( $out .= $ctx->slurp( $args, $cond ) ) or return;
             last if ($lastn == $count);
         }
