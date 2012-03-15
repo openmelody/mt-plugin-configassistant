@@ -827,7 +827,8 @@ EOH
     if ($value) {
         my @ids = split(',',$value);
         foreach my $id (@ids) {
-            my $obj = MT->model('entry')->load($id);
+            my $obj = MT->model('entry')->load($id)
+                or next;
             my $obj_name = ( $obj ? $obj->title : '' ) || '';
             my $class_label = $obj->class_label;
 
