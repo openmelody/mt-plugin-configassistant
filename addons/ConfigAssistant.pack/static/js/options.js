@@ -1,4 +1,6 @@
 // Utility Functions
+
+// `link-group` config type
 function handle_edit_click() {
     var p = jQuery(this).parent();
     var link = p.find('a.link');
@@ -11,6 +13,7 @@ function handle_edit_click() {
     p.parent().find('input.label').focus();
     return false;
 };
+
 function render_link(label,url) {
     var dom = '<li class="pkg"><a class="link" href="'+url+'">'+label+'</a> <a class="remove" href="javascript:void(0);"><img src="'+StaticURI+'images/icon_close.png" alt="remove" title="remove" /></a> <a class="edit" href="javascript:void(0);">edit</a></li>';
     var e = jQuery(dom);
@@ -18,6 +21,7 @@ function render_link(label,url) {
     e.find('a.remove').click( handle_delete_click );
     return e;
 };
+
 function handle_save_click() {
     var label = jQuery(this).parent().find('input[class=label]').val();
     var url = jQuery(this).parent().find('input[class=url]').val();
@@ -26,13 +30,11 @@ function handle_save_click() {
     jQuery(this).parent().replaceWith( render_link(label,url) );
     return false;
 };
+
 function handle_delete_click() {
     jQuery(this).parent().remove(); return false;
 };
-function handle_remove_file() {
-    jQuery(this).parents('.field-content').find('.clear-file').val(1);
-    jQuery(this).parent().remove(); return false;
-};
+
 function render_link_form(label,url) {
     var dom = '<li><label class="link-text">Label: <input type="text" class="label" value="'+(typeof label != 'undefined' ? label : '')+'" /></label><label class="link-url">URL: <input type="text" class="url" value="'+(typeof url != 'undefined' ? url : '')+'" /></label> <button>Save</button></li>';
     var e = jQuery(dom);
@@ -51,7 +53,13 @@ function render_link_form(label,url) {
     return e;
 };
 
-// text-group Utility Functions
+// `file` config type
+function handle_remove_file() {
+    jQuery(this).parents('.field-content').find('.clear-file').val(1);
+    jQuery(this).parent().remove(); return false;
+};
+
+// `text-group` config type
 function text_handle_edit_click() {
     var p = jQuery(this).parent();
     var text = p.find('span.text');
@@ -64,6 +72,7 @@ function text_handle_edit_click() {
     p.parent().find('input.label').focus();
     return false;
 };
+
 function render_text(label) {
     var dom = '<li class="pkg"><span class="text">'+label+'</span> <a class="remove" href="javascript:void(0);"><img src="'+StaticURI+'images/icon_close.png" alt="remove" title="remove" /></a> <a class="edit" href="javascript:void(0);">edit</a></li>';
     var e = jQuery(dom);
@@ -71,6 +80,7 @@ function render_text(label) {
     e.find('a.remove').click( text_handle_delete_click );
     return e;
 };
+
 function text_handle_save_click() {
     var label = jQuery(this).parent().find('input[class=label]').val();
     if (!label) { return false; }
@@ -78,9 +88,11 @@ function text_handle_save_click() {
     jQuery(this).parent().replaceWith( render_text(label) );
     return false;
 };
+
 function text_handle_delete_click() {
     jQuery(this).parent().remove(); return false;
 };
+
 function render_text_form(label,url) {
     var dom = '<li><label class="link-text">Label: <input type="text" class="label" value="'+(typeof label != 'undefined' ? label : '')+'" /></label> <button>Save</button></li>';
     var e = jQuery(dom);
@@ -99,9 +111,7 @@ function render_text_form(label,url) {
     return e;
 };
 
-
 // Author config type
-
 function removeAuthor(field_id) {
     jQuery('#' + field_id).val('');
     jQuery('#' + field_id + '_display_name').html('');

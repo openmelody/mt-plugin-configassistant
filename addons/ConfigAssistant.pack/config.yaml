@@ -50,47 +50,47 @@ applications:
 
 config_types:
   author:
-    handler: $ConfigAssistant::ConfigAssistant::Plugin::type_author
+    handler: $ConfigAssistant::ConfigAssistant::ConfigTypes::type_author
   blogs:
-    handler: $ConfigAssistant::ConfigAssistant::Plugin::type_blogs
+    handler: $ConfigAssistant::ConfigAssistant::ConfigTypes::type_blogs
   category:
-    handler: $ConfigAssistant::ConfigAssistant::Plugin::type_category
+    handler: $ConfigAssistant::ConfigAssistant::ConfigTypes::type_category
   category_list:
-    handler: $ConfigAssistant::ConfigAssistant::Plugin::type_category_list
-  checkbox: 
-    handler: $ConfigAssistant::ConfigAssistant::Plugin::type_checkbox
-  colorpicker: 
-    handler: $ConfigAssistant::ConfigAssistant::Plugin::type_colorpicker
+    handler: $ConfigAssistant::ConfigAssistant::ConfigTypes::type_category_list
+  checkbox:
+    handler: $ConfigAssistant::ConfigAssistant::ConfigTypes::type_checkbox
+  colorpicker:
+    handler: $ConfigAssistant::ConfigAssistant::ConfigTypes::type_colorpicker
   datetime:
-    handler: $ConfigAssistant::ConfigAssistant::Plugin::type_datetime
+    handler: $ConfigAssistant::ConfigAssistant::ConfigTypes::type_datetime
   entry:
-    handler: $ConfigAssistant::ConfigAssistant::Plugin::type_entry
+    handler: $ConfigAssistant::ConfigAssistant::ConfigTypes::type_entry
   entry_or_page:
-    handler: $ConfigAssistant::ConfigAssistant::Plugin::type_entry_or_page
-  file: 
-    handler: $ConfigAssistant::ConfigAssistant::Plugin::type_file
+    handler: $ConfigAssistant::ConfigAssistant::ConfigTypes::type_entry_or_page
+  file:
+    handler: $ConfigAssistant::ConfigAssistant::ConfigTypes::type_file
   folder:
-    handler: $ConfigAssistant::ConfigAssistant::Plugin::type_folder
+    handler: $ConfigAssistant::ConfigAssistant::ConfigTypes::type_folder
   folder_list:
-    handler: $ConfigAssistant::ConfigAssistant::Plugin::type_folder_list
+    handler: $ConfigAssistant::ConfigAssistant::ConfigTypes::type_folder_list
   link-group:
-    handler: $ConfigAssistant::ConfigAssistant::Plugin::type_link_group
+    handler: $ConfigAssistant::ConfigAssistant::ConfigTypes::type_link_group
   page:
-    handler: $ConfigAssistant::ConfigAssistant::Plugin::type_page
+    handler: $ConfigAssistant::ConfigAssistant::ConfigTypes::type_page
+  radio:
+    handler: $ConfigAssistant::ConfigAssistant::ConfigTypes::type_radio
   radio-image:
-    handler: $ConfigAssistant::ConfigAssistant::Plugin::type_radio_image
-  radio: 
-    handler: $ConfigAssistant::ConfigAssistant::Plugin::type_radio
-  select: 
-    handler: $ConfigAssistant::ConfigAssistant::Plugin::type_select
+    handler: $ConfigAssistant::ConfigAssistant::ConfigTypes::type_radio_image
+  select:
+    handler: $ConfigAssistant::ConfigAssistant::ConfigTypes::type_select
   tagged-entry:
-    handler: $ConfigAssistant::ConfigAssistant::Plugin::type_tagged_entry
+    handler: $ConfigAssistant::ConfigAssistant::ConfigTypes::type_tagged_entry
   text-group:
-    handler: $ConfigAssistant::ConfigAssistant::Plugin::type_text_group
-  text: 
-    handler: $ConfigAssistant::ConfigAssistant::Plugin::type_text
+    handler: $ConfigAssistant::ConfigAssistant::ConfigTypes::type_text_group
+  text:
+    handler: $ConfigAssistant::ConfigAssistant::ConfigTypes::type_text
   textarea:
-    handler: $ConfigAssistant::ConfigAssistant::Plugin::type_textarea
+    handler: $ConfigAssistant::ConfigAssistant::ConfigTypes::type_textarea
 
 blog_preferences:
   __default__:
