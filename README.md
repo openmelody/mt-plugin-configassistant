@@ -325,7 +325,7 @@ field:
 * `author` - Select an author from a popup dialog. To appear in the popup, an
   author must have a Role, associating them with the blog in which this field
   is used. This field supports two additional optional keys:
-  
+
   * `roles` - where a comma-separated list of valid Roles may be supplied to
     filter the popup dialog contents.
   * `all_authors` - if flagged `1` then all authors in the system with post
@@ -355,15 +355,26 @@ field:
 * `datetime` - Produces a date and time selection dialog for selecting a
   timestamp.
 
-* `entry` - Produces the ability to select a single entry via a small pop-up
-  dialog. In the dialog, the user will be permitted to search the system via
-  keyword for the entry they are looking for. This field type supports the
-  field property of `all_blogs`, a boolean value which determines whether the
-  user will be constricted to searching entries in the current blog, or all
-  blogs on the system.
+* `entry` - Produces the ability to select a single entry or many entries via
+  a small pop-up dialog. In the dialog, the user will be permitted to search
+  the system via keyword for the entry they are looking for. This field type
+  supports additional properties:
 
-* `entry_or_page` - Operates identically to the `entry` type except that it
-  allows the ability to select either an entry or page for the field.
+  * `all_blogs` - a boolean value which determines whether the user will be
+    constricted to searching/selecting entries in the current blog, or all
+    blogs on the system.
+  * `multiple` - a boolean value which allows multiple entries to be selected.
+  * `inactive_area` - a boolean value which adds a separate area to store
+    selected entry or entries but not publish them -- useful when you need to
+    temporarily remove an item from the home page, for example.
+
+  When the keys `multiple` or `inactive_area` are true, selected entries can
+  be sorted by drag and drop, making it easy to order content.
+
+* `entry_or_page` - Operates identically to the `entry` config type except 
+  that it allows the ability to select either an Entry or Page (or any 
+  combination of Entries and Pages). The same `all_blogs`, `multiple`, and
+  `inactive_area` keys are also supported.
 
 * `file` - Allows a user to upload a file, which in turn gets converted into
   an asset. An additional field property is supported for file types:
@@ -386,8 +397,9 @@ field:
   tag to make it easier to loop over the links entered by the user in your
   templates. See "Link Group Template Tags" below.
 
-* `page` - Operates identically to the `entry` type except that it pulls up a
-  list of pages in the selected blog (as opposed to entries).
+* `page` - Operates identically to the `entry` type except that it allows the
+  ability to select Pages instead of Entries. The same `all_blogs`,
+  `multiple`, and `inactive_area` keys are also supported.
 
 * `radio` - Produces a set of radio buttons of arbitrary values. Those values
   are defined by specifying a sibling element called `values` which should
@@ -427,6 +439,38 @@ field:
   template tag to make it easier to loop over the text items entered by the
   user in your templates. See "Text Group Template Tags" below.
 
+** Entry, Page, and Entry Or Page Tags **
+
+These three field types basically work the same, so the YAML used in your
+theme will look similar, too. Consider this example:
+
+    my_favorite_entries:
+        label: 'My Favorite Entries'
+        type: entry
+        multiple: 1
+        inactive_area: 1
+        tag: Faves
+
+This will build a field that allows for the selection of favorite Entries.
+With the `multiple` key set many entries can be selected, and drag and drop to
+sort the order of the selected entries will be available. With the
+`inactive_area` key set Entries can be dragged to the inactive area,
+preventing them from being published in the My Favorite Entries section, but
+keeping them ready for easy re-use. (Note that moving Entries to the inactive
+area does not unpublish them, it simply doesn't publish them where the `Faves`
+tag is used.)
+
+To publish My Favorite Entries a special block tag is available. Append
+`Entries` to the tag defined to access all of the Entry context tags. Example:
+
+    <mt:FavesEntries>
+        <p><a href="<mt:EntryPermalink>"><mt:EntryTitle></a></p>
+    </mt:FavesEntries>
+
+The same capabilities exist for the Entry, Page, and Entry or Page field
+types, and the capabilities function the same way for each. Regardless of
+using the Entry, Page, or Entry or Page field type, `Entries` is appended to
+access the entry/page context.
 
 **Category and Folder Tags**
 

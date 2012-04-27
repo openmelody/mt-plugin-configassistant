@@ -510,15 +510,22 @@ sub _hdlr_field_asset {
     }
 }
 
+# The tag handler for the Entry or Page field type.
 sub _hdlr_field_entry_loop {
     my $plugin = shift;
     my ( $ctx, $args, $cond ) = @_;
     my $field  = $ctx->stash('field') or return _no_field($ctx);
     my $value  = _get_field_value($ctx);
-    my @ids    = split(',',$value);
-    my $out    = '';
-    my $count  = 0;
-    my $lastn  = $args->{'lastn'} || 0;
+
+    # The value contains both active and inactive entries. We only want the
+    # active ones, because the inactive ones aren't supposed to get published.
+    my ($active_ids,$inactive_ids) = split(';', $value);
+    $active_ids  =~ s/active://; # Strip the leading identifier
+    my @ids = split(',', $active_ids);
+
+    my $out   = '';
+    my $count = 0;
+    my $lastn = $args->{'lastn'} || 0;
     if ( $value ne '' && $value ne '0' ) {
         my $vars = $ctx->{__stash}{vars};
         foreach my $id (@ids) {
@@ -1031,11 +1038,12 @@ sub select_entry {
     my $tmpl = $plugin->load_tmpl(
                                    'select_entry.mtml',
                                    {
-                                      entry_class   => $class,
-                                      entry_id      => $obj->id,
-                                      entry_title   => $obj->title,
-                                      entry_blog_id => $obj->blog_id,
-                                      edit_field    => $edit_field,
+                                      entry_class     => $class,
+                                      entry_id        => $obj->id,
+                                      entry_title     => $obj->title,
+                                      entry_permalink => $obj->permalink,
+                                      entry_blog_id   => $obj->blog_id,
+                                      edit_field      => $edit_field,
                                    }
     );
     return $tmpl;
@@ -1118,23 +1126,26 @@ sub list_entry_or_page {
 sub select_entry_or_page {
     my $app = shift;
 
-    my $entry_id = $app->param('id')
-        or return $app->errtrans('No id');
-
-    my $entry = MT->model('entry')->load($entry_id)
-        or return $app->errtrans( 'No entry or page #[_1]', $entry_id );
     my $edit_field = $app->param('edit_field')
         or return $app->errtrans('No edit_field');
+
+    my $obj_id = $app->param('id')
+        or return $app->errtrans('No id');
+
+    my $obj = MT->model('entry')->load($obj_id)
+        or return $app->errtrans( 'No entry or page #[_1]', $obj_id );
 
     my $plugin = MT->component('ConfigAssistant')
         or die "OMG NO COMPONENT!?!";
     my $tmpl   = $plugin->load_tmpl(
         'select_entry.mtml',
-        {   entry_id      => $entry->id,
-            entry_title   => $entry->title,
-            entry_class   => lc($entry->class_label),
-            entry_blog_id => $entry->blog_id,
-            edit_field    => $edit_field,
+        {
+            entry_id        => $obj->id,
+            entry_title     => $obj->title,
+            entry_class     => lc($obj->class_label),
+            entry_permalink => $obj->permalink,
+            entry_blog_id   => $obj->blog_id,
+            edit_field      => $edit_field,
         }
     );
     return $tmpl;

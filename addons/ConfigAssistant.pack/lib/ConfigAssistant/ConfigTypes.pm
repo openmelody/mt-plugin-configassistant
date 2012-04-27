@@ -382,197 +382,211 @@ JS
 sub type_entry {
     my $app = shift;
     my ( $ctx, $field_id, $field, $value ) = @_;
-    my $out;
-    my $obj_class = $ctx->stash('object_class') || 'entry';
-    my $obj;
-    my $obj_name = ''; # A default value to alleviate warnings.
-    my $obj_id   = ''; # Same!
-    my $obj_blog_id = '';
-
-    # The $value is the object ID. Only if $value exists should we try to 
-    # load the object. Otherwise, the most recent entry/page is loaded
-    # and the $obj_name is incorrectly populated with the most recent object
-    # title. This way, $obj_name is blank if there is no $value, which is
-    # clearer to the user.
-    if ($value) {
-        $obj         = MT->model($obj_class)->load($value);
-        $obj_name    = ( $obj ? $obj->title : '' ) || '';
-        $obj_id      = ( $obj ? $obj->id : 0 ) || '';
-        $obj_blog_id = $obj->blog_id;
-    }
-    else {
-        $value = '';
-    }
-
-    my $blog_id   = $field->{all_blogs} ? 0 : $app->blog->id;
-    unless ( $ctx->var('entry_chooser_js') ) {
-        $out .= <<EOH;
-    <script type="text/javascript">
-        function removeCustomFieldEntry(el_id, val) {
-            var orig = \$('#'+el_id).val();
-            var newval = '';
-            var ids = orig.split(',');
-            for (var i = 0; i < ids.length; i++) {
-                if (ids[i] != val) {
-                    if (newval != '') newval += ',';
-                    newval += ids[i];
-                }
-            }
-            \$('#'+el_id).val(newval);
-            \$('#'+el_id+'_preview').remove();
-        }
-        function insertCustomFieldEntry(title, obj_class, entry_id, blog_id, el_id) {
-            jQuery('#'+el_id).val(entry_id);
-            try {
-                jQuery('#'+el_id+'_preview').html(
-                    title 
-                    + ' (<a href="?__mode=edit&_type=entry' 
-                    + '&blog_id=' + blog_id + '&id=' + entry_id 
-                    + '">edit ' + obj_class + '</a>)'
-                );
-            } catch(e) {
-                log.error(e);
-            };
-        }
-    </script>
-EOH
-        $ctx->var( 'entry_chooser_js', 1 );
-    }
-    my $class = MT->model($obj_class);
-    my $label = $class->class_label;
-    my $label_lc = lc($label);
-    $ctx->var( 'entry_class_label', $label );
-    $ctx->var( 'entry_class_labelp', $class->class_label_plural );
-
-    my $edit_link = $value
-        ? "(<a href=\"?__mode=edit&_type=$label_lc&blog_id=$obj_blog_id"
-            . "&id=$obj_id\">edit $label_lc</a>) "
-            . '<a href="javascript:void(0);" onclick="removeCustomFieldEntry(\'' 
-            . $field_id . '\',' . $obj_id 
-            . ')"><img src="' . $app->static_path
-            . 'images/status_icons/close.gif" width="9" height="9" alt="Remove ' 
-            . $label_lc . '" title="Remove ' . $label_lc . '" /></a>'
-        : '';
-
-    $out .= <<EOH;
-<div class="pkg">
-  <input name="$field_id" id="$field_id" class="hidden" type="hidden" value="$value" />
-  <button type="submit"
-          onclick="return openDialog(this.form, 'ca_config_entry', 'blog_id=$blog_id&edit_field=$field_id&status=2&class=$obj_class')">Choose $label</button>
-  <div id="${field_id}_preview" class="preview">
-    $obj_name
-    $edit_link
-  </div>
-</div>
-EOH
-    $ctx->stash('object_class','');
-    return $out;
-} ## end sub type_entry
+    $ctx->stash('object_class',       'entry');
+    $ctx->stash('object_class_label', 'Entry');
+    return _type_object( $app, @_ );
+}
 
 # the `entry_or_page` config type allows you select an Entry or Page from the
 # current blog or the system.
 sub type_entry_or_page {
     my $app = shift;
     my ( $ctx, $field_id, $field, $value ) = @_;
+    $ctx->stash('object_class',       'entry_or_page');
+    $ctx->stash('object_class_label', 'Entry or Page');
+    return _type_object( $app, @_ );
+}
+
+# This function is used by several of the config types: `entry_or_page`,
+# `entry`, and `page`.
+sub _type_object {
+    my $app = shift;
+    my ( $ctx, $field_id, $field, $value ) = @_;
+    my $blog_id     = $field->{all_blogs} ? 0 : $app->blog->id;
+    my $obj_class   = $ctx->stash('object_class') || '';
+    my $list_method = 'ca_config_' . $obj_class;
     my $out;
     my $obj;
-    my $obj_class = 'entry';
-    my $blog_id = $field->{all_blogs} ? 0 : $app->blog->id;
-    my $preview = '';
-    my $static_path = $app->static_path;
 
-    unless ( $ctx->var('entry_chooser_js') ) {
-        $out .= <<EOH;
-        <script type="text/javascript">
-            function removeCustomFieldEntry(id, val) {
-                var orig = \$('#'+id).val();
-                var newval = '';
-                var ids = orig.split(',');
-                for (var i = 0; i < ids.length; i++) {
-                    if (ids[i] != val) {
-                        if (newval != '') newval += ',';
-                        newval += ids[i];
-                    }
+    my $active   = '';
+    my $inactive = '';
+
+    my $label = $ctx->stash('object_class_label');
+    $ctx->var( 'entry_class_label', $label);
+
+    # If `multiple` is true, then the field should allow for many
+    # Pages/Entries to be selected.
+    my $multiple = $field->{multiple} ? 'multiple' : '';
+
+    # If `inactive_area` is true, then a special inactive area should be
+    # available to store (but not publish) entries.
+    my $inactive_area = ($field->{inactive_area}) ? 1 : 0;
+
+    # Add the sortable fields only if their can be multiple Entries/Pages, or
+    # if the Inactive Area can be used.
+    my $js = '';
+    my $sortable = '';
+    if ($multiple || $inactive_area) {
+        # If the field allows multiple objects, or if it allows the inactive
+        # area to be used, it's sortable.
+        $sortable = ' sortable';
+        # Add the JS to make things work.
+        $js = <<JS;
+    <script type="text/javascript">
+        jQuery(document).ready(function() {
+            jQuery('ul#${field_id}_preview, ul#${field_id}_inactive').sortable({
+                revert: true,
+                connectWith: '.${field_id}_sortable',
+                stop: function(event, ui) {
+                    var active   = new Array();
+                    var inactive = new Array();
+
+                    jQuery('ul#${field_id}_preview li').each(function(index,value){
+                        var id = jQuery(this).attr('id');
+                        id = id.replace('obj-','');
+                        active.push(id);
+                    });
+
+                    jQuery('ul#${field_id}_inactive li').each(function(index,value){
+                        var id = jQuery(this).attr('id');
+                        id = id.replace('obj-','');
+                        inactive.push(id);
+                    });
+
+                    jQuery('#$field_id').val( 'active:' + active.join(',') + ';inactive:' + inactive.join(',') );
                 }
-                \$('#'+id).val(newval);
-                \$('#'+id+'_preview #obj-'+val).remove();
-            }
-            function insertCustomFieldEntry(title, obj_class, entry_id, blog_id, el_id) {
-
-                var orig = \$('#'+el_id).val();
-                var is_mult = \$('#'+el_id+'_preview').hasClass('multiple');
-                var newval;
-                if (is_mult) { 
-                    new_entry_id = orig ? orig + ',' + entry_id : entry_id;
-                } else {
-                    new_entry_id = entry_id;
-                }
-                \$('#'+el_id).val( new_entry_id );
-
-                try {
-                    var html = '<li id="obj-' + entry_id 
-                        + '" class="obj-type obj-type-' + obj_class 
-                        + '"><span class="obj-title">' + title 
-                        + '</span> <a href="javascript:void(0);" onclick="removeCustomFieldEntry(' 
-                        + el_id + ',' + entry_id + ')"><img src="${static_path}images/status_icons/close.gif" width="9" height="9" alt="Remove ' + obj_class + '" title="Remove ' + obj_class + '" /></a></li>';
-
-                    if ( is_mult ) {
-                      \$('#'+el_id+'_preview').append(html);
-                    } else {
-                      \$('#'+el_id+'_preview').html(html);
-                    }
-                } catch(e) {
-                    log.error(e);
-                };
-            }
-        </script>
-EOH
-        $ctx->var( 'entry_chooser_js', 1 );
+            }).disableSelection();
+        });
+    </script>
+JS
     }
 
-    # The $value is the object ID. Only if $value exists should we try to
-    # load the object. Otherwise, the most recent entry/page is loaded
+    # The $value is an array of object IDs. Only if $value exists should we
+    # try to load the objects. Otherwise, the most recent entry/page is loaded
     # and the $obj_name is incorrectly populated with the most recent object
     # title. This way, $obj_name is blank if there is no $value, which is
     # clearer to the user.
     if ($value) {
-        my @ids = split(',',$value);
-        foreach my $id (@ids) {
+        my ($active_ids,$inactive_ids) = split(';', $value);
+
+        $active_ids  =~ s/active://; # Strip the leading identifier
+        my @active_ids = split(',', $active_ids);
+        foreach my $id (@active_ids) {
             my $obj = MT->model('entry')->load($id)
                 or next;
-            my $obj_name = ( $obj ? $obj->title : '' ) || '';
-            my $class_label = $obj->class_label;
 
-            $preview .= '<li id="obj-' . $obj->id 
-                . '" class="obj-type obj-type-' . $obj->class 
-                . '"><span class="obj-title">' . $obj_name 
-                . '</span> <a href="javascript:void(0);" onclick="removeCustomFieldEntry(\'' 
-                . $field_id . '\',' . $obj->id 
-                . ')"><img src="' . $static_path
-                . 'images/status_icons/close.gif" width="9" height="9" alt="Remove ' 
-                . $class_label . '" title="Remove ' . $class_label . '" /></a></li>';
+            # Build the list item HTML.
+            $active .= _entry_list_item({
+                object   => $obj,
+                sortable => $sortable,
+                field_id => $field_id,
+                app      => $app,
+            });
+        }
+
+        $inactive_ids  =~ s/inactive://; # Strip the leading identifier
+        my @inactive_ids = split(',', $inactive_ids);
+        foreach my $id (@inactive_ids) {
+            my $obj = MT->model('entry')->load($id)
+                or next;
+
+            # Build the list item HTML.
+            $inactive .= _entry_list_item({
+                object   => $obj,
+                sortable => $sortable,
+                field_id => $field_id,
+                app      => $app,
+            });
         }
     }
     else {
         $value = ''; # To suppress a warning.
     }
 
-    my $label = 'Entry or Page';
-    $ctx->var( 'entry_class_label', $label );
-    my $multiple = '';
-    if ($field->{multiple}) { $multiple = 'multiple'; }
+    my $inactive_area_html = '';
+    if ($inactive_area) {
+        $inactive_area_html = <<INACTIVE_AREA;
+        <div class="inactive-container">
+            <p>Entry or Page inactive area</p>
+            <ul id="${field_id}_inactive" class="${field_id}_sortable">
+$inactive
+            </ul>
+        </div>
+INACTIVE_AREA
+    }
+
     $out .= <<EOH;
+$js
     <div class="pkg">
-      <input name="$field_id" id="$field_id" class="hidden" type="hidden" value="$value" />
-      <button type="submit"
-              onclick="return openDialog(this.form, 'ca_config_entry_or_page', 'blog_id=$blog_id&edit_field=$field_id')">Choose $label</button>
-      <ul id="${field_id}_preview" class="preview $multiple">
-        $preview
-      </ul>
+        <input name="$field_id"
+            id="$field_id"
+            class=""
+            type="text"
+            value="$value" />
+
+        <button type="submit"
+            onclick="return openDialog(this.form, '$list_method', 'blog_id=$blog_id&edit_field=$field_id&class=$obj_class')">
+            Choose $label
+        </button>
+
+        <div class="active-container">
+            <ul id="${field_id}_preview"
+                class="preview $multiple ${field_id}_sortable">
+$active
+            </ul>
+        </div>
+$inactive_area_html
     </div>
 EOH
 
     return $out;
+}
+
+# Build the list item HTML used for the Entry or Page field type.
+sub _entry_list_item {
+    my ($arg_ref) = @_;
+    my $obj      = $arg_ref->{object};
+    my $sortable = $arg_ref->{sortable};
+    my $field_id = $arg_ref->{field_id};
+    my $app      = $arg_ref->{app};
+
+    my $static_path = $app->static_path;
+    my $mt_uri      = $app->mt_uri;
+
+    my $obj_name = ( $obj ? $obj->title : '' ) || '';
+    my $class_label = $obj->class_label;
+
+    my $html .= "\t\t\t\t" 
+        . '<li id="obj-' . $obj->id 
+        . '" class="obj-type obj-type-' . $obj->class . $sortable
+        . '"><span class="obj-title">' . $obj_name 
+        . '</span>' . "\n\t\t\t\t\t"
+        # Edit button
+        . '<a href="'. $mt_uri . '?__mode=view&amp;_type='
+        . lc($class_label) . '&amp;id=' . $obj->id . '&amp;blog_id='
+        . $obj->blog_id . '" target="_blank"'
+        . ' title="Edit in a new window.">'
+        . '<img src="' . $static_path 
+        . 'images/status_icons/draft.gif" width="9" height="9"'
+        . ' alt="Edit" />'
+        . '</a> ' . "\n\t\t\t\t\t"
+        # View button
+        . '<a href="' . $obj->permalink . '" target="_blank"'
+        . ' title="View in a new window.">'
+        . '<img src="' . $static_path
+        . 'images/status_icons/view.gif" width="13" height="9"'
+        . ' alt="View" />'
+        . '</a> ' . "\n\t\t\t\t\t"
+        # The remove button
+        . '<a href="javascript:void(0);" onclick="removeCustomFieldEntry(\'' 
+        . "$field_id','" . $obj->id 
+        . '\')" title="Remove this ' . $class_label . '"><img src="'
+        . $static_path . 'images/status_icons/close.gif" '
+        . ' width="9" height="9" alt="Remove" /></a>' . "\n\t\t\t\t"
+        # Close the list item.
+        . "</li>\n";
+
+    return $html;
 }
 
 # The `file` config type allows you to select a file to upload, which is
@@ -684,8 +698,9 @@ sub type_link_group {
 sub type_page {
     my $app = shift;
     my ( $ctx, $field_id, $field, $value ) = @_;
-    $ctx->stash( 'object_class', 'page' );
-    return type_entry( $app, @_ );
+    $ctx->stash('object_class',       'page');
+    $ctx->stash('object_class_label', 'Page');
+    return _type_object( $app, @_ );
 }
 
 # The `radio` config type creates radio buttons of options for you to choose

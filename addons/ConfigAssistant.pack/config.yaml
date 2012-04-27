@@ -36,9 +36,10 @@ applications:
     methods:
       theme_options:    $ConfigAssistant::ConfigAssistant::Plugin::theme_options
       ca_config_entry:  $ConfigAssistant::ConfigAssistant::Plugin::list_entry_mini
+      ca_config_page:   $ConfigAssistant::ConfigAssistant::Plugin::list_entry_mini
       ca_select_entry:  $ConfigAssistant::ConfigAssistant::Plugin::select_entry
-      ca_config_entry_or_page:  $ConfigAssistant::ConfigAssistant::Plugin::list_entry_or_page
-      ca_select_entry_or_page:  $ConfigAssistant::ConfigAssistant::Plugin::select_entry_or_page
+      ca_config_entry_or_page: $ConfigAssistant::ConfigAssistant::Plugin::list_entry_or_page
+      ca_select_entry_or_page: $ConfigAssistant::ConfigAssistant::Plugin::select_entry_or_page
       ca_select_author: $ConfigAssistant::ConfigAssistant::Plugin::select_author
       ca_save_config:   $ConfigAssistant::ConfigAssistant::Plugin::save_config
       run_static_copy:  $ConfigAssistant::ConfigAssistant::Static::manual_run

@@ -255,3 +255,47 @@ h2#page-title span.star { display: none; }
 .ui-timepicker-div dl dt{ height: 25px; }
 .ui-timepicker-div dl dd{ margin: -25px 0 10px 65px; }
 .ui-timepicker-div td { font-size: 90%; }
+
+
+.field-content ul {
+    clear: both;
+    margin-top: 10px 0;
+    padding: 5px 7px;
+    min-height: 20px;
+    width: 290px;
+}
+.field-content ul li { padding-bottom: 1px; }
+.field-content ul li span.obj-title { padding-right: 5px; }
+.field-content ul li a { padding-left: 5px; }
+
+.field-content div.active-container {
+    clear: left;
+    float: left;
+    width: 300px;
+    margin-top: 5px;
+}
+
+.field-content div.inactive-container {
+    clear: none;
+    position: relative;
+    width: 300px;
+    margin-left: 10px;
+    float: left;
+}
+.field-content div.inactive-container p {
+    color: #555;
+    position: absolute;
+    bottom: -5px;
+    left: 7px;
+    font-size: 11px;
+}
+.field-content div.inactive-container ul {
+    background: #e2e2e2;
+    padding-bottom: 25px;
+}
+
+.field-content ul li.sortable {
+    padding-left: 25px;
+    cursor: pointer;
+    background: url(../images/sortable-small.png) left center no-repeat;
+}

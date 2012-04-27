@@ -117,3 +117,83 @@ function removeAuthor(field_id) {
     jQuery('#' + field_id + '_display_name').html('');
     jQuery('#field-' + field_id + ' a.remove-item-button').hide();
 }
+
+
+// Entry or Page config types
+function removeCustomFieldEntry(el_id, obj_id) {
+    // Strip the object ID off of the element.
+    var obj_ids = jQuery('#'+el_id).val();
+    var re = new RegExp(',?'+obj_id);
+    obj_ids = obj_ids.replace(re,'');
+    jQuery('#'+el_id).val( obj_ids );
+
+    // Remove the list item that shows the object.
+    jQuery('#field-'+el_id+' li#obj-'+obj_id).remove();
+}
+
+function insertCustomFieldEntry(obj_name, obj_class, obj_id, obj_permalink, blog_id, el_id) {
+    var obj_ids = jQuery('#'+el_id).val();
+    var is_mult = jQuery('#'+el_id+'_preview').hasClass('multiple');
+
+    // Check if the field is sortable (allows multiple objects, or has the
+    // inactive area) and make the new object work the same way.
+    var sortable = '';
+
+    if ( jQuery('#'+el_id+'_inactive').length ) {
+        sortable = ' sortable';
+    }
+
+    if (is_mult) {
+        var split_result = obj_ids.split(';');
+        var active   = split_result[0];
+        var inactive = split_result[1] || '';
+        active += ',' + obj_id;
+        obj_ids = active + ';' + inactive;
+
+        // If multiple objects are allowed, this is sortable.
+        sortable = ' sortable';
+    } else {
+        obj_ids = obj_id;
+    }
+    jQuery('#'+el_id).val( obj_ids );
+
+    try {
+        // Build the list item.
+        var html = '<li id="obj-' + obj_id
+            + '" class="obj-type obj-type-' + obj_class + sortable
+            + '"><span class="obj-title">' + obj_name
+            + '</span>'
+            // Edit button
+            + '<a href="'+ CMSScriptURI + '?__mode=view&amp;_type='
+            + obj_class + '&amp;id=' + obj_id + '&amp;blog_id='
+            + blog_id + '" target="_blank"'
+            + ' title="Edit in a new window.">'
+            + '<img src="' + StaticURI
+            + 'images/status_icons/draft.gif" width="9" height="9"'
+            + ' alt="Edit" />'
+            + '</a> '
+            // View button
+            + '<a href="' + obj_permalink + '" target="_blank"'
+            + ' title="View in a new window.">'
+            + '<img src="' + StaticURI
+            + 'images/status_icons/view.gif" width="13" height="9"'
+            + ' alt="View" />'
+            + '</a> '
+            // The remove button
+            + '<a href="javascript:void(0);" onclick="removeCustomFieldEntry(\'' 
+            + el_id + ',' + obj_id
+            + ')" title="Remove this ' + obj_class + '"><img src="'
+            + StaticURI + 'images/status_icons/close.gif" '
+            + ' width="9" height="9" alt="Remove" /></a>'
+            // Close the list item.
+            + '</li>';
+
+        if ( is_mult ) {
+          jQuery('#'+el_id+'_preview').append(html);
+        } else {
+          jQuery('#'+el_id+'_preview').html(html);
+        }
+    } catch(e) {
+        log.error(e);
+    };
+}
