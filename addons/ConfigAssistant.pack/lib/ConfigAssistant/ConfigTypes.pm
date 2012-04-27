@@ -520,8 +520,8 @@ $js
     <div class="pkg">
         <input name="$field_id"
             id="$field_id"
-            class=""
-            type="text"
+            class="hidden"
+            type="hidden"
             value="$value" />
 
         <button type="submit"
