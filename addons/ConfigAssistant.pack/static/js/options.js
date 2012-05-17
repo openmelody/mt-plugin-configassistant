@@ -143,18 +143,30 @@ function insertCustomFieldEntry(obj_name, obj_class, obj_id, obj_permalink, blog
         sortable = ' sortable';
     }
 
-    if (is_mult) {
-        var split_result = obj_ids.split(';');
-        var active   = split_result[0];
-        var inactive = split_result[1] || '';
-        active += ',' + obj_id;
-        obj_ids = active + ';' + inactive;
+    // The ID of this object is saved to a hidden field to track all active
+    // and inactive objects in use. We need to consider if any other objects
+    // use this field yet, and also whether multiple objects are allowed.
+    var split_result = obj_ids.split(';');
+    var active       = split_result[0];
+    var inactive     = split_result[1] || '';
 
+    if (is_mult) {
+        // Multiple objects area allowed in this field. If the `active`
+        // keyword was not used yet, add it.
+        if (active) {
+            active += ',' + obj_id;
+        }
+        else {
+            active = 'active:' + obj_id;
+        }
         // If multiple objects are allowed, this is sortable.
         sortable = ' sortable';
     } else {
-        obj_ids = obj_id;
+        // Only one object is allowed to be active.
+        active = 'active:' + obj_id;
     }
+
+    obj_ids = active + ';' + inactive;
     jQuery('#'+el_id).val( obj_ids );
 
     try {
