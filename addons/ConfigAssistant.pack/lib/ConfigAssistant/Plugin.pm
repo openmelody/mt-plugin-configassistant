@@ -515,18 +515,19 @@ sub _hdlr_field_entry_loop {
     my $plugin = shift;
     my ( $ctx, $args, $cond ) = @_;
     my $field  = $ctx->stash('field') or return _no_field($ctx);
-    my $value  = _get_field_value($ctx);
+    my $value  = _get_field_value($ctx) || '';
 
-    # The value contains both active and inactive entries. We only want the
-    # active ones, because the inactive ones aren't supposed to get published.
-    my ($active_ids,$inactive_ids) = split(';', $value);
-    $active_ids  =~ s/active://; # Strip the leading identifier
-    my @ids = split(',', $active_ids);
-
-    my $out   = '';
-    my $count = 0;
-    my $lastn = $args->{'lastn'} || 0;
     if ( $value ne '' && $value ne '0' ) {
+        # The value contains both active and inactive entries. We only want the
+        # active ones, because the inactive ones aren't supposed to get published.
+        my ($active_ids,$inactive_ids) = split(';', $value);
+        $active_ids  =~ s/active://; # Strip the leading identifier
+        my @ids = split(',', $active_ids);
+
+        my $out   = '';
+        my $count = 0;
+        my $lastn = $args->{'lastn'} || 0;
+
         my $vars = $ctx->{__stash}{vars};
         foreach my $id (@ids) {
             $count++;
