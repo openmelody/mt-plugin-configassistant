@@ -240,7 +240,12 @@ sub load_tags {
                             runner( '_hdlr_field_value',
                                     'ConfigAssistant::Plugin', @_ );
                         };
-                        if ( $option->{'type'} eq 'entry_or_page' ) {
+                        # Field type: `entry` or `page` or `entry_or_page`
+                        if (
+                            $option->{'type'} eq 'entry'
+                            || $option->{'type'} eq 'page'
+                            || $option->{'type'} eq 'entry_or_page'
+                        ) {
                             $tags->{block}->{ $tag . 'Entries' } = sub {
                                 my $blog = $_[0]->stash('blog');
                                 my $bset = $blog->template_set;
@@ -251,28 +256,16 @@ sub load_tags {
                                 runner( '_hdlr_field_entry_loop',
                                         'ConfigAssistant::Plugin', @_ );
                             };
-                        } ## end 
-                        elsif ( $option->{'type'} eq 'entry' ) {
-                            $tags->{block}->{ $tag . 'Entries' } = sub {
+                            # Redefine the function tag so that only the
+                            # active entries are returned.
+                            $tags->{function}->{$tag} = sub {
                                 my $blog = $_[0]->stash('blog');
                                 my $bset = $blog->template_set;
                                 $_[0]->stash( 'field', $bset . '_' . $opt );
                                 $_[0]->stash( 'plugin_ns',
                                               find_theme_plugin($bset)->id );
                                 $_[0]->stash( 'scope', 'blog' );
-                                runner( '_hdlr_field_entry_loop',
-                                        'ConfigAssistant::Plugin', @_ );
-                            };
-                        } ## end 
-                        if ( $option->{'type'} eq 'page' ) {
-                            $tags->{block}->{ $tag . 'Entries' } = sub {
-                                my $blog = $_[0]->stash('blog');
-                                my $bset = $blog->template_set;
-                                $_[0]->stash( 'field', $bset . '_' . $opt );
-                                $_[0]->stash( 'plugin_ns',
-                                              find_theme_plugin($bset)->id );
-                                $_[0]->stash( 'scope', 'blog' );
-                                runner( '_hdlr_field_entry_loop',
+                                runner( '_hdlr_field_value_entry',
                                         'ConfigAssistant::Plugin', @_ );
                             };
                         } ## end 

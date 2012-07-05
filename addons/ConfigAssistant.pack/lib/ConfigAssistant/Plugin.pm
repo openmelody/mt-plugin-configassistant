@@ -510,18 +510,19 @@ sub _hdlr_field_asset {
     }
 }
 
-# The tag handler for the Entry or Page field type.
+# The block tag handler for the Entry or Page field type.
 sub _hdlr_field_entry_loop {
     my $plugin = shift;
     my ( $ctx, $args, $cond ) = @_;
-    my $field  = $ctx->stash('field') or return _no_field($ctx);
-    my $value  = _get_field_value($ctx) || '';
+    my $field = $ctx->stash('field') or return _no_field($ctx);
+    my $value = _get_field_value($ctx) || '';
 
     if ( $value ne '' && $value ne '0' ) {
         # The value contains both active and inactive entries. We only want the
         # active ones, because the inactive ones aren't supposed to get published.
+        # The format is, for example: `active:1,2,5;inactive:3,4,6`
         my ($active_ids,$inactive_ids) = split(';', $value);
-        $active_ids  =~ s/active://; # Strip the leading identifier
+        $active_ids =~ s/active://; # Strip the leading identifier
         my @ids = split(',', $active_ids);
 
         my $out   = '';
@@ -545,6 +546,27 @@ sub _hdlr_field_entry_loop {
         return MT::Template::Context::_hdlr_pass_tokens_else(@_);
     }
 } ## end sub _hdlr_field_array_loop
+
+# The function tag handler for the Entry or Page field type. This overrides
+# the default _hdlr_field_value method's results.
+sub _hdlr_field_value_entry {
+    my $plugin = shift;
+    my ( $ctx, $args ) = @_;
+    my $field = $ctx->stash('field') or return _no_field($ctx);
+    my $value = _get_field_value($ctx);
+    return $args->{default}
+      if ( $args->{default} && ( !$value || $value eq '' ) );
+
+    # The value contains both active and inactive entries. We only want the
+    # active ones, because the inactive ones aren't supposed to get published.
+    # The format is, for example: `active:1,2,5;inactive:3,4,6`
+    my ($active_ids,$inactive_ids) = split(';', $value);
+    $active_ids =~ s/active://; # Strip the leading identifier
+    $value = $active_ids;
+
+    return $value;
+}
+
 
 sub _hdlr_field_array_loop {
     my $plugin = shift;
