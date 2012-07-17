@@ -469,34 +469,38 @@ JS
     if ($value) {
         my ($active_ids,$inactive_ids) = split(';', $value);
 
-        $active_ids  =~ s/active://; # Strip the leading identifier
-        my @active_ids = split(',', $active_ids);
-        foreach my $id (@active_ids) {
-            my $obj = MT->model('entry')->load($id)
-                or next;
+        if ($active_ids) {
+            $active_ids  =~ s/active://; # Strip the leading identifier
+            my @active_ids = split(',', $active_ids);
+            foreach my $id (@active_ids) {
+                my $obj = MT->model('entry')->load($id)
+                    or next;
 
-            # Build the list item HTML.
-            $active .= _entry_list_item({
-                object   => $obj,
-                sortable => $sortable,
-                field_id => $field_id,
-                app      => $app,
-            });
+                # Build the list item HTML.
+                $active .= _entry_list_item({
+                    object   => $obj,
+                    sortable => $sortable,
+                    field_id => $field_id,
+                    app      => $app,
+                });
+            }
         }
 
-        $inactive_ids  =~ s/inactive://; # Strip the leading identifier
-        my @inactive_ids = split(',', $inactive_ids);
-        foreach my $id (@inactive_ids) {
-            my $obj = MT->model('entry')->load($id)
-                or next;
+        if ($inactive_ids) {
+            $inactive_ids  =~ s/inactive://; # Strip the leading identifier
+            my @inactive_ids = split(',', $inactive_ids);
+            foreach my $id (@inactive_ids) {
+                my $obj = MT->model('entry')->load($id)
+                    or next;
 
-            # Build the list item HTML.
-            $inactive .= _entry_list_item({
-                object   => $obj,
-                sortable => $sortable,
-                field_id => $field_id,
-                app      => $app,
-            });
+                # Build the list item HTML.
+                $inactive .= _entry_list_item({
+                    object   => $obj,
+                    sortable => $sortable,
+                    field_id => $field_id,
+                    app      => $app,
+                });
+            }
         }
     }
     else {
