@@ -193,7 +193,7 @@ function insertCustomFieldEntry(obj_name, obj_class, obj_id, obj_permalink, blog
             + '</a> '
             // The remove button
             + '<a href="javascript:void(0);" onclick="removeCustomFieldEntry(\'' 
-            + el_id + ',' + obj_id
+            + el_id + "'," + obj_id
             + ')" title="Remove this ' + obj_class + '"><img src="'
             + StaticURI + 'images/status_icons/close.gif" '
             + ' width="9" height="9" alt="Remove" /></a>'
