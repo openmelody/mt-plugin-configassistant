@@ -429,44 +429,11 @@ sub save_config {
         # Index templates that have been flagged should be republished.
         use MT::WeblogPublisher;
         foreach ( keys %$repub_queue ) {
-            my $tmpl = MT->model('template')
-              ->load( { blog_id => $blog_id, identifier => $_, } );
-
-            if (!$tmpl) {
-                MT->log( {
-                       blog_id => $blog_id,
-                       level   => '2', # Warning
-                       message => "Config Assistant could not find a "
-                                  . "template with the identifier " . $_,
-                     }
-                );
-                next;
-            }
-
-            my $result = $app->rebuild_indexes(
-                                   Blog     => $app->blog,
-                                   Template => $tmpl,
-                                   Force    => 1,
-            );
-
-            # Report on the success/failure of the template republishing.
-            my ($message, $level);
-            if ($result) {
-                $message = "Config Assistant: Republishing template " 
-                           . $tmpl->name;
-                $level   = '1'; # Info
-            }
-            else {
-                $message = "Config Assistant could not republish template " 
-                           . $tmpl->name;
-                $level   = '4'; # Error
-            }
-            MT->log( {
-                   blog_id => $blog_id,
-                   level   => $level,
-                   message => $message,
-                 }
-            );
+            _republish_template({
+                tmpl_identifier => $_,
+                blog_id         => $blog_id,
+                app             => $app,
+            });
         }
 
         # END - contents of MT::Plugin->save_config
@@ -480,6 +447,92 @@ sub save_config {
     $app->add_return_arg( saved => $profile->{object}->id );
     $app->call_return;
 } ## end sub save_config
+
+# When saving Theme Options, a template may have been flagged to be
+# republished. If the specified template identifier refers to an index
+# template, republish it. If the identifier refers to an archive template
+# (Entry, Page, Category, etc) then we should republish the most recent item
+# in that archive.
+sub _republish_template {
+    my ($arg_ref) = @_;
+    my $tmpl_identifier = $arg_ref->{tmpl_identifier};
+    my $blog_id         = $arg_ref->{blog_id};
+    my $app             = $arg_ref->{app};
+
+    my $tmpl = MT->model('template')->load({
+        blog_id    => $blog_id,
+        identifier => $_,
+    });
+
+    if (!$tmpl) {
+        MT->log({
+            blog_id => $blog_id,
+            level   => MT->model('log')->WARNING(),
+            message => "Config Assistant could not find a template with "
+                . "the identifier $tmpl_identifier.",
+        });
+        return;
+    }
+
+    # Different template types are handled differently. Save the $result of
+    # publishing so that the Activity Log can be updated about the status.
+    my $result;
+    # This is an index template; just force republish it.
+    if ($tmpl->type eq 'index') {
+        $result = $app->rebuild_indexes(
+            BlogID   => $blog_id,
+            Template => $tmpl,
+            Force    => 1,
+        );
+    }
+    # Rebuild an archive template.
+    elsif ($tmpl->type eq 'archive') {
+        # Use the template to look up the template map to determine exactly
+        # what kind of archive this is.
+        my $tmpl_map = MT->model('templatemap')->load({
+            template_id => $tmpl->id,
+        });
+        if (!$tmpl_map) {
+            MT->log({
+                blog_id => $blog_id,
+                level   => MT->model('log')->WARNING(),
+                message => "Config Assistant could not find a template map "
+                    . "configured to use the template $tmpl_identifier.",
+            });
+            return;
+        }
+
+        # The template map exists so go ahead and republish. The `Limit` key
+        # is used to only republish the most recent entry/page. For a
+        # well-built site this should be enough: republishing the most recent
+        # entry should trigger MultiBlog or a cached/included module to be
+        # refreshed.
+        $result = $app->rebuild(
+            BlogID      => $blog_id,
+            ArchiveType => $tmpl_map->archive_type,
+            Limit       => 1, # Only limits entries.
+            NoIndexes   => 1,
+        );
+    }
+
+    # Report on the success/failure of the template republishing.
+    my ($message, $level);
+    if ($result) {
+        $level   = MT->model('log')->INFO();
+        $message = "Config Assistant is republishing " . $tmpl->type
+            . " template " . $tmpl->name . '.';
+    }
+    else {
+        $level   = MT->model('log')->ERROR;
+        $message = "Config Assistant could not republish " . $tmpl->type
+            . " template " . $tmpl->name . '.';
+    }
+    MT->log({
+        blog_id => $blog_id,
+        level   => $level,
+        message => $message,
+    });
+}
 
 sub _hdlr_field_value {
     my $plugin = shift;

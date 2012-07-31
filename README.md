@@ -308,7 +308,22 @@ In this example two options, or fields, have been defined: `feedburner_id` and
 * `order` - the sort order for the field within its fieldset
 
 * `republish` - a list of template identifiers (delimited by a comma) that
-  reference templates that should be rebuilt when a theme option changes
+  reference templates that should be rebuilt when a theme option changes.
+  Index or archive template types can be specified; specifying other types
+  (system, modules, widgets) doesn't work because those don't actually publish
+  anything.
+
+  * If the specified template identifier is for an index template, the
+    template is simply force republished.
+  * If the specified template identifier is for an Entry or Page archive
+    template, the most recent Entry or Page is republished. If using cached
+    and included modules/widgets then this is enough to refresh them.
+  * If the specified template identifier is for another type of archive
+    (Category, Yearly, Author, etc) then that template is republished in its
+    entirety. Use this with caution: republishing a type of archive can be
+    time-consuming. This is best used when there are a known limited number of
+    archives (for example, if only four categories will ever exist in your
+    blog), and when the Publish Queue is employed for that template type.
 
 * `scope` - (for plugin settings only, all theme options are required to be
   blog specific) determines whether the config option will be rendered at the
