@@ -549,7 +549,7 @@ sub _hdlr_field_asset {
     my ( $ctx, $args, $cond ) = @_;
     my $field = $ctx->stash('field') or return _no_field($ctx);
     my $value = _get_field_value($ctx);
-    return if !$value;
+    return if !$value || $value eq '';
     my $asset = MT->model('asset')->load($value);
     my $out;
     if ($asset) {
@@ -568,7 +568,7 @@ sub _hdlr_field_entry_loop {
     my $plugin = shift;
     my ( $ctx, $args, $cond ) = @_;
     my $field = $ctx->stash('field') or return _no_field($ctx);
-    my $value = _get_field_value($ctx) || '';
+    my $value = _get_field_value($ctx);
 
     if ( $value ne '' && $value ne '0' ) {
         # The value contains both active and inactive entries. We only want the
@@ -723,12 +723,13 @@ sub _get_field_value {
         $blog = MT->model('blog')->load($blog_id);
     }
     if ( $blog && $blog->id && $scope eq 'blog' ) {
-        $value = $plugin->get_config_value( $field, 'blog:' . $blog->id );
+        $value = $plugin->get_config_value( $field, 'blog:' . $blog->id )
+            || '';
     }
     else {
-        $value = $plugin->get_config_value($field);
+        $value = $plugin->get_config_value($field) || '';
     }
-    ###l4p $logger->debug('$value: ', l4mtdump($value||''));
+    ###l4p $logger->debug('$value: ', l4mtdump($value));
     return $value;
 } ## end sub _get_field_value
 
