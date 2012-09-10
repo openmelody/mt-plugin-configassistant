@@ -611,8 +611,10 @@ sub _hdlr_field_value_entry {
     # active ones, because the inactive ones aren't supposed to get published.
     # The format is, for example: `active:1,2,5;inactive:3,4,6`
     my ($active_ids,$inactive_ids) = split(';', $value);
-    $active_ids =~ s/active://; # Strip the leading identifier
-    $value = $active_ids;
+    if ($active_ids) {
+        $active_ids =~ s/active://; # Strip the leading identifier
+        $value = $active_ids;
+    }
 
     return $value;
 }
