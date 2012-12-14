@@ -133,7 +133,7 @@ sub theme_options {
         } keys %{$cfg}
       )
     {
-        next if $optname eq 'fieldsets';
+        next if $optname eq 'fieldsets' || $optname eq 'plugin';
         my $field = $cfg->{$optname};
         if ( my $cond = $field->{condition} ) {
             if ( !ref($cond) ) {
@@ -858,7 +858,7 @@ sub plugin_options {
         } keys %{$cfg}
       )
     {
-        next if $optname eq 'fieldsets';
+        next if $optname eq 'fieldsets' || $optname eq 'plugin';
         my $field = $cfg->{$optname};
 
         next
