@@ -94,7 +94,7 @@ HTML
 # popup dialog.
 sub select_author {
     my $app   = shift;
-    my $q     = $app->query;
+    my $q     = $app->can('query') ? $app->query : $app->param;
     my $param = {};
 
     # If an author has already been selected, show their display name. This is
