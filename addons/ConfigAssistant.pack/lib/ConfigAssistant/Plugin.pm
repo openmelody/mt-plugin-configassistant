@@ -1259,10 +1259,11 @@ sub xfrm_cfg_plugin {
       <button
         mt:mode="save_plugin_config"
         type="submit"
-        class="primary-button"><__trans phrase="Save Changes"></button>
+        class="save action primary button primary-button"><__trans phrase="Save Changes"></button>
 <mt:if name="plugin_settings_id">
       <button
         onclick="resetPlugin(getByID('plugin-<mt:var name="plugin_id">-form')); return false"
+        class="action button"
         type="submit"><__trans phrase="Reset to Defaults"></button>
 </mt:if>
     </div>
@@ -1276,15 +1277,17 @@ END_TMPL
 <mt:setvarblock name="html_head" append="1">
   <link rel="stylesheet" href="<mt:PluginStaticWebPath component="configassistant">css/app.css" type="text/css" />
   <link rel="stylesheet" href="<mt:PluginStaticWebPath component="configassistant">colorpicker/css/colorpicker.css" type="text/css" />
-<mt:unless tag="ProductName" eq="Melody">
+  <mt:If tag="Version" lt="5">
+    <mt:Unless tag="ProductName" eq="Melody">
   <script src="<mt:StaticWebPath>jquery/jquery.js" type="text/javascript"></script>
-</mt:unless>
+    </mt:Unless>
+  </mt:If>
   <script src="<mt:PluginStaticWebPath component="configassistant">js/options.js" type="text/javascript"></script>
   <script src="<mt:PluginStaticWebPath component="configassistant">colorpicker/js/colorpicker.js" type="text/javascript"></script>
 </mt:setvarblock>
 END_TMPL
 
-# MT 4.34
+# MT 4/5
 #  <form method="post" action="<mt:var name="script_url">" id="plugin-<mt:var name="plugin_id">-form">
 # Melody
 #  <form method="post" action="<$mt:var name="script_url"$>" id="plugin-<$mt:var name="plugin_id" dirify="1"$>-form">
