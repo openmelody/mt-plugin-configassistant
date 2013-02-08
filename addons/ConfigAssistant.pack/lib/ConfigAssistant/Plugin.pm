@@ -175,7 +175,7 @@ sub theme_options {
             $out .= "    <div class=\"field-content\">\n";
 
             if ( $field->{hint} ) {
-                $out .= "       <div>" . $field->{hint} . "</div>\n";
+                $out .= "       <div>" . &{$field->{hint}} . "</div>\n";
             }
             $out .= "    </div>\n";
             $out .= "  </div>\n";
@@ -221,7 +221,7 @@ sub theme_options {
             if ( $field->{hint} ) {
                 $out
                   .= "      <div class=\"hint\">"
-                  . $field->{hint}
+                  . &{$field->{hint}}
                   . "</div>\n";
             }
             $out .= "    </div>\n";
