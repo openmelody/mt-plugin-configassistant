@@ -982,8 +982,16 @@ sub type_textarea {
     my $app = shift;
     my ( $ctx, $field_id, $field, $value ) = @_;
     my $rows = $field->{rows} || '';
+    my $rows_class = 'low';
+    if ( $rows > 4 && $rows < 11 ) {
+        $rows_class = 'high';
+    }
+    elsif ( $rows > 11 ) {
+        $rows_class = 'highest';
+    }
+    
     my $out;
-    $out = "      <textarea name=\"$field_id\" class=\"full-width\" rows=\""
+    $out = "      <textarea name=\"$field_id\" class=\"text full $rows_class full-width\" rows=\""
       . $rows . "\">";
 
     # The additional "1" below will escape HTML entities properly
