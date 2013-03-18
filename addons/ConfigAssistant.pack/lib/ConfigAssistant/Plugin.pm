@@ -163,7 +163,8 @@ sub theme_options {
             my $out;
             my $show_label
               = defined $field->{show_label} ? $field->{show_label} : 1;
-            my $label = $field->{label} ne '' ? &{ $field->{label} } : '';
+            my $label = $field->{label} && ($field->{label} ne '')
+                ? &{ $field->{label} } : '';
             $out
               .= '  <div id="field-'
               . $field_id
