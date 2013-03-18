@@ -10,7 +10,11 @@
         '<mt:Var name="entry_blog_id">',
         '<mt:var name="edit_field">'
     );
-    closeDialog();
+    <mt:If tag="Version" lt="5">
+        closeDialog();
+    <mt:Else>
+        parent.jQuery.fn.mtDialog.close();
+    </mt:If>
 /* ]]> */
 </script>
 

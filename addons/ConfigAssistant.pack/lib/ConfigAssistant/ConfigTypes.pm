@@ -519,6 +519,17 @@ $inactive
 INACTIVE_AREA
     }
 
+    my $button = '';
+    if (MT->product_version =~ /^4/) {
+        $button = "onclick=\"return openDialog(this.form, '$list_method', "
+            . "'blog_id=$blog_id&edit_field=$field_id&class=$obj_class')\"";
+    }
+    else {
+        $button = "onclick=\"return jQuery.fn.mtDialog.open('" 
+            . $app->app_uri . "?__mode=$list_method&blog_id=$blog_id"
+            . "&edit_field=$field_id&class=$obj_class')\"";
+    }
+
     $out .= <<EOH;
 $js
     <div class="pkg">
@@ -528,10 +539,11 @@ $js
             type="hidden"
             value="$value" />
 
-        <button type="submit"
-            onclick="return openDialog(this.form, '$list_method', 'blog_id=$blog_id&edit_field=$field_id&class=$obj_class')">
+        <a type="submit"
+            $button
+            class="button">
             Choose $label
-        </button>
+        </a>
 
         <div class="active-container">
             <ul id="${field_id}_preview"
