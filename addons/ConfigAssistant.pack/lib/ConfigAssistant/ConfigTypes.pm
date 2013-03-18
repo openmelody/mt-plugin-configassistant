@@ -720,7 +720,7 @@ sub type_radio {
     my $delimiter = $field->{delimiter} || ',';
     my @values = split( /\s*$delimiter\s*/, $field->{values} );
 
-    $out .= "      <ul>\n";
+    $out .= "      <ul class=\"full full-width\">\n";
     foreach my $option (@values) {
 
         # $el_id ("element ID") is used as a unique identifier so that the
@@ -784,7 +784,7 @@ sub type_select {
     my $delimiter = $field->{delimiter} || ',';
     my @values = split( /\s*$delimiter\s*/, $field->{values} );
 
-    my $out .= "      <select name=\"$field_id\">\n";
+    my $out .= "      <select name=\"$field_id\" class=\"full\">\n";
 
     foreach my $label (@values) {
         my $v;
@@ -973,7 +973,7 @@ sub type_text {
     return "      <input type=\"text\" name=\"$field_id\" value=\""
       . encode_html( $value, 1
       )    # The additional "1" will escape HTML entities properly
-      . "\" class=\"full-width\" />\n";
+      . "\" class=\"text full full-width\" />\n";
 }
 
 # The `textarea` config type produced a form textarea for you to enter text.
