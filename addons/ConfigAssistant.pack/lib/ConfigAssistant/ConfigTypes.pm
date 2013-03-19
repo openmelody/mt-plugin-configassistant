@@ -995,10 +995,10 @@ sub type_textarea {
     my ( $ctx, $field_id, $field, $value ) = @_;
     my $rows = $field->{rows} || '';
     my $rows_class = 'low';
-    if ( $rows > 4 && $rows < 11 ) {
+    if ( $rows && $rows > 4 && $rows < 11 ) {
         $rows_class = 'high';
     }
-    elsif ( $rows > 11 ) {
+    elsif ( $rows && $rows > 11 ) {
         $rows_class = 'highest';
     }
     
