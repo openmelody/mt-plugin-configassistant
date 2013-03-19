@@ -361,11 +361,17 @@ sub type_datetime {
 
     my $js = <<JS;
 <script type="text/javascript">
-    jQuery(function(\$) {
-        \$('#%s').datetimepicker({
+    jQuery(function(jQuery) {
+        jQuery('#%s').datetimepicker({
+            dateFormat: 'yy-mm-dd',
+            dayNamesMin: ['S', 'M', 'T', 'W', 'T', 'F', 'S'],
+            monthNames: ['- 01','- 02','- 03','- 04','- 05','- 06','- 07','- 08','- 09','- 10','- 11','- 12'],
+            showMonthAfterYear: true,
+            prevText: '&lt;',
+            nextText: '&gt;',
             ampm: false,
             showSecond: true,
-            timeFormat: 'hh:mm:ss'
+            timeFormat: 'hh:mm:ss', controlType: 'select'
         });
     });
 </script>
