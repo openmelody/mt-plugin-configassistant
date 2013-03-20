@@ -26,7 +26,7 @@ sub type_author {
     # Show the author display name, if a valid author has been saved already.
     my $author_display_name = '';
     if ($value) {
-        $author_display_name = MT->model('author')->load($value)
+        $author_display_name = MT->model('author')->exist($value)
             ? MT->model('author')->load($value)->nickname
             : ''; # No author found
     }
@@ -52,7 +52,18 @@ sub type_author {
 
     # The all_authors key will be true if all authors should appear in the
     # pop-up, regardless of blog association.
-    my $all_authors = $field->{all_authors};
+    my $all_authors = $field->{all_authors} || '';
+
+    my $button = '';
+    if (MT->product_version =~ /^4/) {
+        $button = "onclick=\"return openDialog(this.form, 'ca_select_author', "
+            . "'blog_id=$blog_id&all_authors=$all_authors&idfield=$field_id"
+            . "&namefield=${field_id}_display_name)\"";
+    }
+    else {
+        $button = "onclick=\"return jQuery.fn.mtDialog.open('" . $app->app_uri
+            . "?__mode=ca_select_author&blog_id=$blog_id&idfield=$field_id')\"";
+    }
 
     my $out = <<HTML;
 <script type="text/javascript">
@@ -75,11 +86,11 @@ sub type_author {
 </script>
 <div class="pkg">
     <input name="$field_id" id="$field_id" class="hidden" type="hidden" value="$value" />
-    <button 
-        type="submit"
-        onclick="return openDialog(this.form, 'ca_select_author', query_string)">
-        Choose Author
-    </button>
+    <a
+        class="button"
+        $button
+        >Choose Author
+    </a>
     <div id="${field_id}_display_name" class="preview">
         $author_display_name
     </div>
@@ -172,19 +183,18 @@ sub select_author {
                   $app->translate("Selected author"),
                 search_prompt => $app->translate(
                     "Type a username to filter the choices below."),
-                panel_title       => $cur_author,
+                panel_title       => $cur_author || '',
                 panel_label       => $app->translate("Author Username"),
                 panel_description => $app->translate("Author Display Name"),
                 panel_type        => 'author',
                 panel_multi       => defined $app->param('multi')
-                ? $app->param('multi')
-                : 0,
+                                        ? $app->param('multi')
+                                        : 0,
                 panel_searchable => 1,
                 panel_first      => 1,
                 panel_last       => 1,
                 list_noncron     => 1,
                 idfield          => $app->param('idfield'),
-                namefield        => $app->param('namefield'),
             },
         }
     );

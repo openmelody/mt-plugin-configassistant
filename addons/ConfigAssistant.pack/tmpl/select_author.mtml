@@ -22,7 +22,7 @@ function returnMemberSelection(ok) {
         frm.submit();
 <mt:else>
         var el_id = getByID("<mt:var name="idfield" escape="js">", win.document);
-        var el_name = getByID("<mt:var name="namefield" escape="js">", win.document);
+        var el_name = getByID("<mt:var name="idfield" escape="js">_display_name", win.document);
         if (el_id && el_name) {
             var ids = new Array();
             var names = new Array();
@@ -31,9 +31,9 @@ function returnMemberSelection(ok) {
                 var inp = inputs[i];
                 var row = TC.getParentByTagName( inp, "tr" );
                 if (!row) continue;
-                
+
                 var labels = row.getElementsByClassName('panel-description');
-                
+
                 // If the Display Name hasn't been entered (and therefore
                 // "panel-description" is empty) try to use the username.
                 if (labels.length == 0) {
@@ -47,10 +47,18 @@ function returnMemberSelection(ok) {
             el_id.value = ids.join(',');
             el_name.innerHTML = names.join(',');
         }
+    <mt:If tag="Version" lt="5">
         closeDialog();
+    <mt:Else>
+        parent.jQuery.fn.mtDialog.close();
+    </mt:If>
 </mt:unless>
     } else {
+    <mt:If tag="Version" lt="5">
         closeDialog();
+    <mt:Else>
+        parent.jQuery.fn.mtDialog.close();
+    </mt:If>
     }
 }
 

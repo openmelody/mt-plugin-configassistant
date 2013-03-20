@@ -119,6 +119,11 @@ h2#page-title span.star { display: none; }
   -moz-border-radius: 5px;
   -webkit-border-radius: 5px;
 }
+
+.field-content a.button {
+    float: left;
+}
+
 #list-entries-dialog .listing-filter select {
   margin-left: 180px;
   font-size: 13px;
