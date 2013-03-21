@@ -70,8 +70,6 @@ config_types:
     handler: $ConfigAssistant::ConfigAssistant::ConfigTypes::type_file
   folder:
     handler: $ConfigAssistant::ConfigAssistant::ConfigTypes::type_folder
-  folder_list:
-    handler: $ConfigAssistant::ConfigAssistant::ConfigTypes::type_folder_list
   link-group:
     handler: $ConfigAssistant::ConfigAssistant::ConfigTypes::type_link_group
   page:
@@ -93,6 +91,8 @@ config_types:
   # Deprecated
   category_list:
     handler: $ConfigAssistant::ConfigAssistant::ConfigTypes::type_category_list
+  folder_list:
+    handler: $ConfigAssistant::ConfigAssistant::ConfigTypes::type_folder_list
 
 blog_preferences:
   __default__:

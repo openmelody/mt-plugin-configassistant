@@ -401,11 +401,11 @@ field:
   "Asset Template Tags" below.
 
 * `folder` - Produces the ability to select a single folder via a drop-down
-  listing.
+  listing. This field supports additional optional keys:
 
-* `folder_list` - Produces the ability to select a single category via a
-  drop-down listing. This form of config option accepts the "show_children"
-  option which will toggle the displaying of child folders on and off.
+   * `multiple` - set to `1` to create a multi-select listing, allowing multiple folders to be selected.
+   * `show_children` - set to `1` to include child folders, in addition to
+     parent.
 
 * `link-group` - Produces an ordered list of links manually entered by the
   user. Options of this type will have defined for them an additional template

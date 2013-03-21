@@ -669,6 +669,7 @@ sub type_folder {
     return type_category( $app, @_ );
 }
 
+# Deprecated.
 # The `folder_list` config type is analagous to the `category_list` config
 # type; it lets you make a multiple selection of Folders in the blog or
 # system.
