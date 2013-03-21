@@ -56,8 +56,6 @@ config_types:
     handler: $ConfigAssistant::ConfigAssistant::ConfigTypes::type_blogs
   category:
     handler: $ConfigAssistant::ConfigAssistant::ConfigTypes::type_category
-  category_list:
-    handler: $ConfigAssistant::ConfigAssistant::ConfigTypes::type_category_list
   checkbox:
     handler: $ConfigAssistant::ConfigAssistant::ConfigTypes::type_checkbox
   colorpicker:
@@ -92,6 +90,9 @@ config_types:
     handler: $ConfigAssistant::ConfigAssistant::ConfigTypes::type_text
   textarea:
     handler: $ConfigAssistant::ConfigAssistant::ConfigTypes::type_textarea
+  # Deprecated
+  category_list:
+    handler: $ConfigAssistant::ConfigAssistant::ConfigTypes::type_category_list
 
 blog_preferences:
   __default__:

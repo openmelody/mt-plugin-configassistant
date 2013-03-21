@@ -352,11 +352,11 @@ field:
   dramatically impact performance (negatively).*
 
 * `category` - Produces the ability to select a single category via a
-  drop-down listing.
+  drop-down listing. This field supports additional optional keys:
 
-* `category_list` - Produces the ability to select multiple categories via a
-  multi-select listing. This form of config option accepts the "show_children"
-  option which will toggle the displaying of child categories on and off.
+  * `multiple` - set to `1` to create a multi-select listing, allowing multiple categories to be selected.
+  * `show_children` - set to `1` to include child categories, in addition to
+    parent.
 
 * `checkbox` - Produces a single checkbox, ideal for boolean values, or a set
   of checkboxes. When using this type to display multiple checkboxes, use the

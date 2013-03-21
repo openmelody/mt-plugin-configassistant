@@ -224,65 +224,74 @@ sub type_blogs {
 } ## end sub type_blogs
 
 # The `category` config type allows you to select a category from the blog.
+# This field can be configured to show parent and child categories or parents
+# only, as well as a single- or multiple-select list.
 sub type_category {
     my $app = shift;
     my ( $ctx, $field_id, $field, $value ) = @_;
-    $value = defined($value) ? $value : '';
-    my $out;
-    my $obj_class = $ctx->stash('object_class') || 'category';
-    my @cats = MT->model($obj_class)
-      ->load( { blog_id => $app->blog->id }, { sort => 'label' } );
-    $out .= "      <select name=\"$field_id\">\n";
-    $out
-      .= "        <option value=\"0\" "
-      . ( $value eq '' ? " selected" : "" )
-      . ">None Selected</option>\n";
 
-    foreach (@cats) {
-        $out
-          .= "        <option value=\""
-          . $_->id . "\" "
-          . ( $value eq $_->id ? " selected" : "" ) . ">"
-          . $_->label
-          . "</option>\n";
+    # If the saved value is an array of items, that means it's a multiple-
+    # select list. If it's a single value, just push it into an array to work
+    # with.
+    $value = 0 unless defined $value;
+    my @values = ref $value eq 'ARRAY' ? @$value : ($value);
+
+    # If this is a multiple-select category list, it needs to be formatted as
+    # such.
+    my $multiple = ( $field->{multiple} )
+        ? ' style="height: 100px;" multiple="true"'
+        : '';
+
+    my $terms = {};
+    $terms->{blog_id} = $app->blog->id;
+
+    # By default, show parent and child categories. Only exclude child
+    # categories if explicitly set to do so (`show_children: 0`).
+    if ( defined( $field->{show_children} ) && $field->{show_children} == 0 ) {
+        $terms->{parent} = 0;
     }
-    $out .= "      </select>\n";
+
+    my $obj_class = $ctx->stash('object_class') || 'category';
+    my @cats = MT->model($obj_class)->load(
+        $terms,
+        {
+            sort      => 'label',
+            direction => 'ascend',
+        }
+    );
+
+    my $out = "<select name=\"$field_id\"$multiple>\n";
+    # Add a "None Selected" option so categories can be de-selected.
+    $out .= '    <option value="0" '
+        . ((grep /^0$/, @values) ? ' selected' : '')
+        . ">None Selected</option>\n";
+
+    foreach my $cat (@cats) {
+        my $cat_id = $cat->id;
+        $out
+            .= '    <option value="' . $cat->id . '"'
+            . ((grep /^$cat_id$/, @values) ? ' selected' : '') . '>'
+            . $cat->label
+            . "</option>\n";
+    }
+
+    $out .= "</select>\n";
     return $out;
 } ## end sub type_category
 
-# The `category_list` config type allows you to select several categories from
-# the blog using a multi-select list.
+# Deprecated.
+# The `category_list` config type is basically a multi-select category field.
 sub type_category_list {
     my $app = shift;
     my ( $ctx, $field_id, $field, $value ) = @_;
-    $value = 0 unless defined $value;
-    my @values = ref $value eq 'ARRAY' ? @$value : ($value);
-    my $out;
-    my $obj_class = $ctx->stash('object_class') || 'category';
 
-    my $params = {};
-    $params->{blog_id} = $app->blog->id;
-    $params->{parent} = 0 unless $ctx->stash('show_children');
+    # Set some default for how the old `category_list` field type is supposed
+    # to work.
+    $field->{multiple}      = 1;
+    $field->{show_children} = ($field->{show_children}) ? 1 : 0;
 
-    my @cats = MT->model($obj_class)->load( $params, { sort => 'label' } );
-    $out
-      .= "      <select style=\"width: 300px;height:100px\" name=\"$field_id\" multiple=\"true\">\n";
-    foreach my $cat (@cats) {
-        my $found = 0;
-        foreach (@values) {
-            if ( $cat->id == $_ ) {
-                $found = 1;
-            }
-        }
-        $out
-          .= "        <option value=\""
-          . $cat->id . "\" "
-          . ( $found ? " selected" : "" ) . ">"
-          . $cat->label
-          . "</option>\n";
-    }
-    $out .= "      </select>\n";
-    return $out;
+    # Now just pass it to the standard `category` config type.
+    type_category($app, $ctx, $field_id, $field, $value);
 } ## end sub type_category_list
 
 # The `checkbox` config type allows you to add a checkbox option.
