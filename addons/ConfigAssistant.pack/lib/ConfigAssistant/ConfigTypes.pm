@@ -280,6 +280,11 @@ sub type_checkbox {
     my $app = shift;
     my ( $ctx, $field_id, $field, $value ) = @_;
     my $out;
+
+    # If a previously saved value doesn't exist then be sure to set it as an
+    # empty string.
+    $value = '' if !$value;
+
     if ( $field->{values} ) {
         my $delimiter = $field->{delimiter} || ',';
         my @values = split( $delimiter, $field->{values} );
