@@ -294,7 +294,10 @@ sub load_tags {
                                         'ConfigAssistant::Plugin', @_ );
                             };
                         } ## end if ( $option->{'type'}...)
-                        elsif ( $option->{'type'} eq 'file' ) {
+                        elsif (
+                            $option->{'type'} eq 'file'
+                            || $option->{'type'} eq 'asset'
+                        ) {
                             $tags->{block}->{ $tag . 'Asset' } = sub {
                                 my $blog = $_[0]->stash('blog');
                                 my $bset = $blog->template_set;

@@ -337,6 +337,14 @@ In this example two options, or fields, have been defined: `feedburner_id` and
 Below is a list of acceptable values for the `type` parameter for any defined 
 field:
 
+* `asset` - Select an asset from a popup dialog. An additional template tag is
+  created for you which gives you access to the asset created for you when the
+  file is uploaded. See "Asset Template Tags" below.
+
+  * `filter_class`: filter an asset listing popup by specifying the asset
+    class. Popular values are `image`, `audio`, `video`, and `file`, though any
+    registered asset type is valid.
+
 * `author` - Select an author from a popup dialog. To appear in the popup, an
   author must have a Role, associating them with the blog in which this field
   is used. This field supports two additional optional keys:
@@ -637,10 +645,10 @@ You can use them like so:
 
 **Asset Template Tags**
 
-For each option of type `file` that is defined, two template tags are defined.
-The first is the one specified by the user using the `tag` parameter
-associated with the option in the `config.yaml`. This template tag will return
-the Asset ID of the asset created for you.
+For each option of type `asset` and `file` that is defined, two template tags
+are defined. The first is the one specified by the user using the `tag`
+parameter associated with the option in the `config.yaml`. This template tag
+will return the Asset ID of the asset created for you.
 
 The second template tag is `<TAGNAME>Asset`. This template tag is a container
 or block tag that adds the uploaded asset to the current context allowing you
