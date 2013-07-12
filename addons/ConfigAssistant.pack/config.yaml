@@ -4,8 +4,8 @@ key: ConfigAssistant
 author_link: http://openmelody.org/
 author_name: "Byrne Reese, Open Melody Software Group"
 description: This plugin provides a simple YAML based framework for creating plugin and theme configuration options.
-version: 2.3.10
-static_version: 17
+version: 2.3.11
+static_version: 18
 schema_version: 4
 
 object_types:
@@ -25,6 +25,10 @@ callbacks:
   MT::App::CMS::template_param.cfg_plugin:  $ConfigAssistant::ConfigAssistant::Plugin::xfrm_cfg_plugin_param
   MT::App::CMS::template_source.cfg_plugin: $ConfigAssistant::ConfigAssistant::Plugin::xfrm_cfg_plugin
   blog_template_set_change:                 $ConfigAssistant::ConfigAssistant::Prefs::on_template_set_change
+  # For the asset Config Type
+  template_param.asset_insert:
+    handler: $ConfigAssistant::ConfigAssistant::ConfigTypes::Asset::asset_insert_param
+    priority: 1
 
 config_settings:
   PluginStaticVersion:
@@ -50,6 +54,8 @@ applications:
         setup_terms_args: $ConfigAssistant::ConfigAssistant::Plugin::entry_search_api_prep
 
 config_types:
+  asset:
+    handler: $ConfigAssistant::ConfigAssistant::ConfigTypes::Asset::type_asset
   author:
     handler: $ConfigAssistant::ConfigAssistant::ConfigTypes::type_author
   blogs:

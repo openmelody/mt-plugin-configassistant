@@ -209,3 +209,71 @@ function insertCustomFieldEntry(obj_name, obj_class, obj_id, obj_permalink, blog
         log.error(e);
     };
 }
+
+// The Asset custom field type uses this function to insert the asset.
+function insertSelectedAsset(obj_title, obj_id, obj_permalink, field, blog_id) {
+    // This is just a standard Selected Entries or Selected Pages insert.
+    // Create a list item populated with title, edit, view, and remove links.
+    var div = createObjectListing(
+        obj_title,
+        obj_id,
+        'asset',
+        obj_permalink,
+        blog_id
+    );
+
+    // Insert the list item with the button, preview, etc into the field area.
+    jQuery('#preview_'+field).html(div);
+    jQuery('input#'+field).val( obj_id );
+}
+
+// Create an object listing for an entry or page. This is used for Selected
+// Entry, Selected Page, and Reciprocal Objects.
+function createObjectListing(obj_title, obj_id, obj_class, obj_permalink, blog_id) {
+    var $preview = jQuery('<span/>')
+        .addClass('obj-title')
+        .text(obj_title);
+    // Edit link.
+    var $edit = jQuery('<a/>')
+        .attr('href', CMSScriptURI+'?__mode=view&_type='+obj_class+'&id='+obj_id+'&blog_id='+blog_id)
+        .addClass('edit')
+        .attr('style', 'padding-left: 3px;')
+        .attr('target', '_blank')
+        .attr('title', 'Edit in a new window')
+        .html('<img src="'+StaticURI+'images/status_icons/draft.gif" width="9" height="9" alt="Edit" />');
+    // View link.
+    var $view = jQuery('<a/>')
+        .attr('href', obj_permalink)
+        .addClass('view')
+        .attr('style', 'padding-left: 3px;')
+        .attr('target', '_blank')
+        .attr('title', 'View in a new window')
+        .html('<img src="'+StaticURI+'images/status_icons/view.gif" width="13" height="9" alt="View" />');
+    // Delete button.
+    var $remove = jQuery('<img/>')
+        .addClass('remove')
+        .attr('style', 'padding-left: 3px;')
+        .attr('title', 'Remove selected entry')
+        .attr('alt', 'Remove selected entry')
+        .attr('src', StaticURI+'images/status_icons/close.gif')
+        .attr('width', 9)
+        .attr('height', 9);
+
+    // Insert all of the above into a div.
+    var div = jQuery('<div/>')
+        .attr('id', 'obj-'+obj_id)
+        .append($preview)
+        .append($edit)
+        .append($view)
+        .append($remove);
+
+    return div;
+}
+
+jQuery(document).ready(function() {
+    // Delete an asset: remove the field value, and the preview with links.
+    jQuery(document).on('click', 'div.asset-object div img.remove', function(){
+        jQuery(this).parent().parent().parent().find('input.hidden').val('');
+        jQuery(this).parent().remove();
+    });
+});
