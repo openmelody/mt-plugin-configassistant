@@ -209,13 +209,13 @@ sub type_blogs {
     $out .= "      <select name=\"$field_id\">\n";
     $out
       .= "        <option value=\"0\" "
-      . ( 0 == $value ? " selected" : "" )
+      . ( $value && 0 == $value ? " selected" : "" )
       . ">None Selected</option>\n";
     foreach (@blogs) {
         $out
           .= "        <option value=\""
           . $_->id . "\" "
-          . ( $value == $_->id ? " selected" : "" ) . ">"
+          . ( $value && $value == $_->id ? " selected" : "" ) . ">"
           . $_->name
           . "</option>\n";
     }
