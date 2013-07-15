@@ -84,6 +84,12 @@ sub theme_options {
     my ($param) = @_;
     my $q       = $app->can('query') ? $app->query : $app->param;
     my $blog    = $app->blog;
+    
+    # No blog was found, so this must be the system level. Just go to the
+    # System Dashboard.
+    if (!$blog) {
+        return $app->redirect( $app->mt_uri . '?__mode=dashboard&blog_id=0' );
+    }
 
     $param ||= {};
 
