@@ -7,9 +7,10 @@ use warnings;
 sub type_asset {
     my $app = shift;
     my ( $ctx, $field_id, $field, $value ) = @_;
-    $value ||= ''; # Define $value if no saved/default.
-    my $blog_id = $app->blog->id;
+    $value       ||= ''; # Define $value if no saved/default.
+    my $blog_id    = $app->blog->id;
     my $asset_html = '';
+    my $mt_uri     = $app->mt_uri;
 
     # The asset listing screen can be filtered to show only certain types of
     # assets, such as images.
@@ -52,14 +53,14 @@ HTML
     }
 
     my $out = <<HTML;
-<div class="pkg">
+<div class="pkg" style="float: left; width: 100%;">
     <input name="$field_id" id="$field_id" class="hidden" type="hidden" value="$value" />
 
-    <button
-        type="submit"
-        onclick="openDialog(null,'list_assets','_type=asset&edit_field=$field_id&blog_id=$blog_id&dialog_view=1&asset_select=1$filter_class');return false;">
-        Choose asset
-    </button>
+    <a
+        class="button mt-open-dialog"
+        href="${mt_uri}?__mode=list_asset&amp;_type=asset&amp;edit_field=$field_id&amp;blog_id=$blog_id&amp;dialog_view=1&amp;asset_select=1$filter_class">
+        Choose Asset
+    </a>
 
     <div id="preview_${field_id}" class="asset-object">
         $asset_html
