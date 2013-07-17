@@ -34,15 +34,11 @@ sub type_author {
     # If the author display name was set above, then create a remove button.
     my $remove_button = '';
     if ($author_display_name ne '') {
-        $remove_button = '<a href="javascript:void(0);" '
-            . 'onclick="removeAuthor(\'' . $field_id . '\')" '
-            . 'id="' . $field_id . '_remove_button" '
-            . 'class="remove-item-button">'
-            . '    <img src="' . $app->static_path . 'images/status_icons/close.gif" '
-            . '        width="9" height="9" '
-            . '        alt="Remove ' . $author_display_name . '" '
-            . '        title="Remove ' . $author_display_name . '" />'
-            . '</a>';
+        $remove_button = '<img class="remove" '
+            . 'src="' . $app->static_path . 'images/status_icons/close.gif" '
+            . 'width="9" height="9" '
+            . 'alt="Remove ' . $author_display_name . '" '
+            . 'title="Remove ' . $author_display_name . '" />';
     }
 
     # If any roles were defined, supply them so that only valid authors can
