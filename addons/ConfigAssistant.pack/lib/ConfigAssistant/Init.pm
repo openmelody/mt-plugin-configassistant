@@ -221,7 +221,7 @@ sub load_tags {
                         $tags->{block}->{$tag} = sub {
                             my $blog = $_[0]->stash('blog');
                             my $bset = $blog->template_set;
-                            $_[0]->stash( 'field', $bset . '_' . $opt );
+                            $_[0]->stash( 'config_type', $bset . '_' . $opt );
                             $_[0]->stash( 'plugin_ns',
                                           find_theme_plugin($bset)->id );
                             $_[0]->stash( 'scope', 'blog' );
@@ -233,7 +233,7 @@ sub load_tags {
                         $tags->{function}->{$tag} = sub {
                             my $blog = $_[0]->stash('blog');
                             my $bset = $blog->template_set;
-                            $_[0]->stash( 'field', $bset . '_' . $opt );
+                            $_[0]->stash( 'config_type', $bset . '_' . $opt );
                             $_[0]->stash( 'plugin_ns',
                                           find_theme_plugin($bset)->id );
                             $_[0]->stash( 'scope', 'blog' );
@@ -249,7 +249,7 @@ sub load_tags {
                             $tags->{block}->{ $tag . 'Entries' } = sub {
                                 my $blog = $_[0]->stash('blog');
                                 my $bset = $blog->template_set;
-                                $_[0]->stash( 'field', $bset . '_' . $opt );
+                                $_[0]->stash( 'config_type', $bset . '_' . $opt );
                                 $_[0]->stash( 'plugin_ns',
                                               find_theme_plugin($bset)->id );
                                 $_[0]->stash( 'scope', 'blog' );
@@ -261,7 +261,7 @@ sub load_tags {
                             $tags->{function}->{$tag} = sub {
                                 my $blog = $_[0]->stash('blog');
                                 my $bset = $blog->template_set;
-                                $_[0]->stash( 'field', $bset . '_' . $opt );
+                                $_[0]->stash( 'config_type', $bset . '_' . $opt );
                                 $_[0]->stash( 'plugin_ns',
                                               find_theme_plugin($bset)->id );
                                 $_[0]->stash( 'scope', 'blog' );
@@ -273,7 +273,7 @@ sub load_tags {
                             $tags->{block}->{ $tag . 'Loop' } = sub {
                                 my $blog = $_[0]->stash('blog');
                                 my $bset = $blog->template_set;
-                                $_[0]->stash( 'field', $bset . '_' . $opt );
+                                $_[0]->stash( 'config_type', $bset . '_' . $opt );
                                 $_[0]->stash( 'plugin_ns',
                                               find_theme_plugin($bset)->id );
                                 $_[0]->stash( 'scope', 'blog' );
@@ -284,7 +284,7 @@ sub load_tags {
                                 ###l4p $logger ||= MT::Log::Log4perl->new(); $logger->trace();
                                 my $blog = $_[0]->stash('blog');
                                 my $bset = $blog->template_set;
-                                $_[0]->stash( 'field', $bset . '_' . $opt );
+                                $_[0]->stash( 'config_type', $bset . '_' . $opt );
                                 $_[0]->stash( 'plugin_ns',
                                               find_theme_plugin($bset)->id );
                                 $_[0]->stash( 'scope', 'blog' );
@@ -301,7 +301,7 @@ sub load_tags {
                             $tags->{block}->{ $tag . 'Asset' } = sub {
                                 my $blog = $_[0]->stash('blog');
                                 my $bset = $blog->template_set;
-                                $_[0]->stash( 'field', $bset . '_' . $opt );
+                                $_[0]->stash( 'config_type', $bset . '_' . $opt );
                                 $_[0]->stash( 'plugin_ns',
                                               find_theme_plugin($bset)->id );
                                 $_[0]->stash( 'scope', 'blog' );
@@ -313,7 +313,7 @@ sub load_tags {
                             $tags->{block}->{ $tag . 'Links' } = sub {
                                 my $blog = $_[0]->stash('blog');
                                 my $bset = $blog->template_set;
-                                $_[0]->stash( 'field', $bset . '_' . $opt );
+                                $_[0]->stash( 'config_type', $bset . '_' . $opt );
                                 $_[0]->stash( 'plugin_ns',
                                               find_theme_plugin($bset)->id );
                                 $_[0]->stash( 'scope', 'blog' );
@@ -333,7 +333,7 @@ sub load_tags {
                             $tags->{block}->{ $tag . 'Items' } = sub {
                                 my $blog = $_[0]->stash('blog');
                                 my $bset = $blog->template_set;
-                                $_[0]->stash( 'field', $bset . '_' . $opt );
+                                $_[0]->stash( 'config_type', $bset . '_' . $opt );
                                 $_[0]->stash( 'plugin_ns',
                                               find_theme_plugin($bset)->id );
                                 $_[0]->stash( 'scope', 'blog' );
@@ -345,7 +345,7 @@ sub load_tags {
                             $tags->{function}->{ $tag } = sub {
                                 my $blog = $_[0]->stash('blog');
                                 my $bset = $blog->template_set;
-                                $_[0]->stash( 'field', $bset . '_' . $opt );
+                                $_[0]->stash( 'config_type', $bset . '_' . $opt );
                                 $_[0]->stash( 'plugin_ns',
                                               find_theme_plugin($bset)->id );
                                 $_[0]->stash( 'scope', 'blog' );
@@ -368,7 +368,7 @@ sub load_tags {
                                 $_[0]->stash( 'obj_class', $obj_class );
                                 my $blog = $_[0]->stash('blog');
                                 my $bset = $blog->template_set;
-                                $_[0]->stash( 'field', $bset . '_' . $opt );
+                                $_[0]->stash( 'config_type', $bset . '_' . $opt );
                                 $_[0]->stash( 'plugin_ns',
                                               find_theme_plugin($bset)->id );
                                 $_[0]->stash( 'scope', 'blog' );
@@ -405,16 +405,16 @@ sub load_tags {
             # template set id and the option/setting name.
             if ( $tag =~ s/\?$// ) {
                 $tags->{block}->{$tag} = sub {
-                    $_[0]->stash( 'field',     $opt );
-                    $_[0]->stash( 'plugin_ns', find_option_plugin($opt)->id );
-                    $_[0]->stash( 'scope',     lc( $option->{scope} ) );
+                    $_[0]->stash( 'config_type', $opt );
+                    $_[0]->stash( 'plugin_ns',   find_option_plugin($opt)->id );
+                    $_[0]->stash( 'scope',       lc( $option->{scope} ) );
                     runner( '_hdlr_field_cond', 'ConfigAssistant::Plugin',
                             @_ );
                 };
             }
             elsif ( $tag ne '' ) {
                 $tags->{function}->{$tag} = sub {
-                    $_[0]->stash( 'field',     $opt );
+                    $_[0]->stash( 'config_type',     $opt );
                     $_[0]->stash( 'plugin_ns', find_option_plugin($opt)->id );
                     $_[0]->stash( 'scope',     lc( $option->{scope} ) );
                     runner( '_hdlr_field_value', 'ConfigAssistant::Plugin',
@@ -424,7 +424,7 @@ sub load_tags {
                     $tags->{block}->{ $tag . 'Loop' } = sub {
                         my $blog = $_[0]->stash('blog');
                         my $bset = $blog->template_set;
-                        $_[0]->stash( 'field', $opt );
+                        $_[0]->stash( 'config_type', $opt );
                         $_[0]->stash( 'plugin_ns',
                                       find_theme_plugin($bset)->id );
                         $_[0]->stash( 'scope', lc( $option->{scope} ) );
@@ -434,7 +434,7 @@ sub load_tags {
                     $tags->{block}->{ $tag . 'Contains' } = sub {
                         my $blog = $_[0]->stash('blog');
                         my $bset = $blog->template_set;
-                        $_[0]->stash( 'field', $opt );
+                        $_[0]->stash( 'config_type', $opt );
                         $_[0]->stash( 'plugin_ns',
                                       find_theme_plugin($bset)->id );
                         $_[0]->stash( 'scope', lc( $option->{scope} ) );
@@ -447,7 +447,7 @@ sub load_tags {
                     $tags->{block}->{ $tag . 'Asset' } = sub {
                         my $blog = $_[0]->stash('blog');
                         my $bset = $blog->template_set;
-                        $_[0]->stash( 'field', $opt );
+                        $_[0]->stash( 'config_type', $opt );
                         $_[0]->stash( 'plugin_ns',
                                       find_theme_plugin($bset)->id );
                         $_[0]->stash( 'scope', lc( $option->{scope} ) );
@@ -460,7 +460,7 @@ sub load_tags {
                     $tags->{block}->{ $tag . 'Links' } = sub {
                         my $blog = $_[0]->stash('blog');
                         my $bset = $blog->template_set;
-                        $_[0]->stash( 'field', $opt );
+                        $_[0]->stash( 'config_type', $opt );
                         $_[0]->stash( 'plugin_ns',
                                       find_theme_plugin($bset)->id );
                         $_[0]->stash( 'scope', lc( $option->{scope} ) );
@@ -473,7 +473,7 @@ sub load_tags {
                     $tags->{function}->{ $tag } = sub {
                         my $blog = $_[0]->stash('blog');
                         my $bset = $blog->template_set;
-                        $_[0]->stash( 'field', $opt );
+                        $_[0]->stash( 'config_type', $opt );
                         $_[0]->stash( 'plugin_ns',
                                       find_theme_plugin($bset)->id );
                         $_[0]->stash( 'scope', lc( $option->{scope} ) );
@@ -494,7 +494,7 @@ sub load_tags {
                         $_[0]->stash( 'obj_class', $obj_class );
                         my $blog = $_[0]->stash('blog');
                         my $bset = $blog->template_set;
-                        $_[0]->stash( 'field', $opt );
+                        $_[0]->stash( 'config_type', $opt );
                         $_[0]->stash( 'plugin_ns',
                                       find_theme_plugin($bset)->id );
                         $_[0]->stash( 'scope', lc( $option->{scope} ) );
@@ -516,10 +516,10 @@ sub load_tags {
                 MT->log(
                     "The usage of the tag '$tag' has been deprecated. Please use mt:PluginStaticFilePath instead"
                 );
-                $_[0]->stash( 'field',     $tag );
-                $_[0]->stash( 'plugin_ns', $obj->id );
-                $_[0]->stash( 'scope',     'system' );
-                $_[0]->stash( 'default',   $dir );
+                $_[0]->stash( 'config_type', $tag );
+                $_[0]->stash( 'plugin_ns',   $obj->id );
+                $_[0]->stash( 'scope',       'system' );
+                $_[0]->stash( 'default',     $dir );
             };
 
             # Create the plugin-specific static web path tag, such as "ConfigAssistantStaticWebPath."
@@ -531,10 +531,10 @@ sub load_tags {
                 MT->log(
                     "The usage of the tag '$tag' has been deprecated. Please use mt:PluginStaticWebPath instead"
                 );
-                $_[0]->stash( 'field',     $tag );
-                $_[0]->stash( 'plugin_ns', $obj->id );
-                $_[0]->stash( 'scope',     'system' );
-                $_[0]->stash( 'default',   $url );
+                $_[0]->stash( 'config_type', $tag );
+                $_[0]->stash( 'plugin_ns',   $obj->id );
+                $_[0]->stash( 'scope',       'system' );
+                $_[0]->stash( 'default',     $url );
             };
         } ## end if ( $r && $r->{'static_version'...})
     } ## end for my $sig ( keys %MT::Plugins)

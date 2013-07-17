@@ -544,7 +544,7 @@ sub _republish_template {
 sub _hdlr_field_value {
     my $plugin = shift;
     my ( $ctx, $args ) = @_;
-    my $field = $ctx->stash('field') or return _no_field($ctx);
+    my $field = $ctx->stash('config_type') or return _no_field($ctx);
     my $value = _get_field_value($ctx);
     return $args->{default}
       if ( $args->{default} && ( !$value || $value eq '' ) );
@@ -554,7 +554,7 @@ sub _hdlr_field_value {
 sub _hdlr_field_asset {
     my $plugin = shift;
     my ( $ctx, $args, $cond ) = @_;
-    my $field = $ctx->stash('field') or return _no_field($ctx);
+    my $field = $ctx->stash('config_type') or return _no_field($ctx);
     my $value = _get_field_value($ctx);
     return if !$value || $value eq '';
     my $asset = MT->model('asset')->load($value);
@@ -574,7 +574,7 @@ sub _hdlr_field_asset {
 sub _hdlr_field_entry_loop {
     my $plugin = shift;
     my ( $ctx, $args, $cond ) = @_;
-    my $field = $ctx->stash('field') or return _no_field($ctx);
+    my $field = $ctx->stash('config_type') or return _no_field($ctx);
     my $value  = _get_field_value($ctx);
     unless ( $value ) {
         require MT::Template::ContextHandlers;
@@ -609,7 +609,7 @@ sub _hdlr_field_entry_loop {
 sub _hdlr_field_value_entry {
     my $plugin = shift;
     my ( $ctx, $args ) = @_;
-    my $field = $ctx->stash('field') or return _no_field($ctx);
+    my $field = $ctx->stash('config_type') or return _no_field($ctx);
     my $value = _get_field_value($ctx);
     return $args->{default}
       if ( $args->{default} && ( !$value || $value eq '' ) );
@@ -630,7 +630,7 @@ sub _hdlr_field_value_entry {
 sub _hdlr_field_array_loop {
     my $plugin = shift;
     my ( $ctx, $args, $cond ) = @_;
-    my $field  = $ctx->stash('field') or return _no_field($ctx);
+    my $field  = $ctx->stash('config_type') or return _no_field($ctx);
     my $values = _get_field_value($ctx);
     my $out    = '';
     my $count  = 0;
@@ -654,7 +654,7 @@ sub _hdlr_field_array_contains {
     my $plugin = shift;
     my ( $ctx, $args, $cond ) = @_;
     ###l4p $logger ||= MT::Log::Log4perl->new(); $logger->trace();
-    my $field = $ctx->stash('field') or return _no_field($ctx);
+    my $field = $ctx->stash('config_type') or return _no_field($ctx);
     my $value = $args->{'value'};
     my $array = _get_field_value($ctx);
     ###l4p require Carp; (ref $array eq 'ARRAY') or $logger->warn('_get_field_value did not return an array reference: '.($array||'')." ".Carp::longmess());
@@ -668,7 +668,7 @@ sub _hdlr_field_array_contains {
 sub _hdlr_field_category_list {
     my $plugin = shift;
     my ( $ctx, $args, $cond ) = @_;
-    my $field = $ctx->stash('field') or return _no_field($ctx);
+    my $field = $ctx->stash('config_type') or return _no_field($ctx);
     my $value = _get_field_value($ctx);
     my @ids = ref($value) eq 'ARRAY' ? @$value : ($value);
     my $class = $ctx->stash('obj_class');
@@ -696,7 +696,7 @@ sub _hdlr_field_category_list {
 sub _hdlr_field_datetime {
     my $plugin = shift;
     my ($ctx, $args, $cond) = @_;
-    my $field = $ctx->stash('field') or return _no_field($ctx);
+    my $field = $ctx->stash('config_type') or return _no_field($ctx);
     my $value = _get_field_value($ctx);
 
     my @pieces = split(/[\s]/, $value);
@@ -714,7 +714,7 @@ sub _get_field_value {
     ###l4p $logger ||= MT::Log::Log4perl->new(); $logger->trace();
     my $plugin_ns = $ctx->stash('plugin_ns');
     my $scope     = $ctx->stash('scope') || 'blog';
-    my $field     = $ctx->stash('field');
+    my $field     = $ctx->stash('config_type');
  
     my $plugin    = MT->component($plugin_ns);        # is this necessary?
     my $value;
@@ -737,7 +737,7 @@ sub _get_field_value {
 sub _hdlr_field_link_group {
     my $plugin = shift;
     my ( $ctx, $args, $cond ) = @_;
-    my $field = $ctx->stash('field') or return _no_field($ctx);
+    my $field = $ctx->stash('config_type') or return _no_field($ctx);
     my $value = _get_field_value($ctx);
     $value = '"[]"' if ( !$value || $value eq '' );
     eval "\$value = \"$value\"";
@@ -766,7 +766,7 @@ sub _hdlr_field_link_group {
 sub _hdlr_field_text_group {
     my $plugin = shift;
     my ( $ctx, $args, $cond ) = @_;
-    my $field = $ctx->stash('field') or return _no_field($ctx);
+    my $field = $ctx->stash('config_type') or return _no_field($ctx);
     my $value = _get_field_value($ctx);
     $value = '"[]"' if ( !$value || $value eq '' );
     eval "\$value = \"$value\"";
@@ -796,7 +796,7 @@ sub _hdlr_field_cond {
     my ( $ctx, $args ) = @_;
     my $plugin_ns = $ctx->stash('plugin_ns');
     my $scope     = $ctx->stash('scope') || 'blog';
-    my $field     = $ctx->stash('field') or return _no_field($ctx);
+    my $field     = $ctx->stash('config_type') or return _no_field($ctx);
 
     my $blog = $ctx->stash('blog');
     if ( !$blog ) {
