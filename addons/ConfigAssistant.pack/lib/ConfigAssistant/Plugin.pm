@@ -1007,35 +1007,6 @@ sub plugin_options {
       ->load_tmpl( 'plugin_options.mtml', $param );
 } ## end sub plugin_options
 
-sub entry_search_api_prep {
-    return _search_api_prep('entry',@_);
-}
-sub page_search_api_prep {
-    return _search_api_prep('page',@_);
-}
-sub _search_api_prep {
-    my ( $type, $terms, $args, $blog_id ) = @_;
-    my $app = MT->instance;
-    my $q = $app->can('query') ? $app->query : $app->param;
-    $terms->{blog_id}  = $blog_id if $blog_id;
-    if ( $type ne 'template' ) {
-        my $search_api     = $app->registry("search_apis");
-        my $api            = $search_api->{$type};
-        my $date_col       = $api->{date_column} || 'created_on';
-        $args->{sort}      = $date_col;
-        $args->{direction} = 'descend';
-    }
-    return unless $app->mode eq 'ca_config_entry';
-    $terms->{status}   = $q->param('status') if ( $q->param('status') );
-    $terms->{class}    = $app->param('class');
-}
-
-#sub entry_search_api_prep {
-#    my $app = MT->instance;
-#    my ( $terms, $args, $blog_id ) = @_;
-#    $terms->{status} = $app->param('status') if ( $app->param('status') );
-#}
-
 sub list_entry_mini {
     my $app = shift;
     my $q = $app->can('query') ? $app->query : $app->param;
@@ -1063,12 +1034,12 @@ sub list_entry_mini {
            type     => $obj_type,
            template => $tmpl,
            params   => {
-                       panel_searchable   => 1,
-                       edit_blog_id       => $blog_id,
-                       edit_field         => $q->param('edit_field'),
-                       search             => $q->param('search'),
-                       blog_id            => $blog_id,
-                       class              => $obj_type,
+               panel_searchable => 1,
+               edit_blog_id     => $blog_id,
+               edit_field       => $q->param('edit_field'),
+               search           => $q->param('search'),
+               blog_id          => $blog_id,
+               class            => $obj_type,
            },
            code => sub {
                my ( $obj, $row ) = @_;
@@ -1095,7 +1066,6 @@ sub list_entry_mini {
            },
            terms => $terms,
            args  => \%args,
-           limit => 10,
         }
     );
 } ## end sub list_entry_mini

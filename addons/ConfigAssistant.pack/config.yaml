@@ -49,9 +49,6 @@ applications:
       run_static_copy:  $ConfigAssistant::ConfigAssistant::Static::manual_run
       ca_prefs_apply:   $ConfigAssistant::ConfigAssistant::Prefs::apply
       ca_prefs_chooser: $ConfigAssistant::ConfigAssistant::Prefs::chooser
-    search_apis:
-      entry:
-        setup_terms_args: $ConfigAssistant::ConfigAssistant::Plugin::entry_search_api_prep
 
 config_types:
   asset:

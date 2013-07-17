@@ -537,7 +537,7 @@ JS
     if ($inactive_area) {
         $inactive_area_html = <<INACTIVE_AREA;
         <div class="inactive-container">
-            <p>Entry or Page inactive area</p>
+            <p>$label inactive area</p>
             <ul id="${field_id}_inactive" class="${field_id}_sortable">
 $inactive
             </ul>
