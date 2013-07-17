@@ -701,16 +701,18 @@ sub type_link_group {
     foreach (@$list) {
         $html
           .= '        <li><a class="link" href="'
-          . $_->{'url'} . '">'
+          . $_->{'url'} . '" target="_blank">'
           . $_->{'label'}
-          . '</a> <a class="remove" href="javascript:void(0);"><img src="'
-          . $static
-          . '/images/icon_close.png" alt="remove" title="remove" /></a> '
-          . '<a class="edit" href="javascript:void(0);">edit</a></li>' . "\n";
+          . '</a> <img class="edit" src="' . $static
+          . 'images/status_icons/draft.gif" alt="Edit" title="Edit" /> '
+          . '<img class="remove" src="' . $static
+          . 'images/status_icons/close.gif" alt="Remove" title="Remove" />'
+          . '</li>'
+          . "\n";
     }
     $html
       .= "          <li class=\"last\">"
-      . "<a href=\"javascript:void(0);\" class=\"add-link\">Add Link</a>"
+      . "<span class=\"button add-link\">Add Link</span>"
       . "</li>\n"
       . "    </ul>\n"
       . "</div>\n"
@@ -720,7 +722,6 @@ sub type_link_group {
       . "\" />\n<script type=\"text/javascript\">
   jQuery('#'+'$field_id-link-group').parents('form').submit( function (){
     var struct = Array();
-    jQuery(this).find('#'+'$field_id-link-group ul li button').trigger('click');
     jQuery(this).find('#'+'$field_id-link-group ul li a.link').each( function(i, e) {
       var u = jQuery(this).attr('href');
       var l = jQuery(this).html();
@@ -729,9 +730,9 @@ sub type_link_group {
     var json = struct.toJSON().escapeJS();
     jQuery('#'+'$field_id').val( json );
   });
-  jQuery('#'+'$field_id-link-group ul li a.add-link').click( handle_edit_click );
-  jQuery('#'+'$field_id-link-group ul li a.remove').click( handle_delete_click );
-  jQuery('#'+'$field_id-link-group ul li a.edit').click( handle_edit_click );
+  jQuery('#'+'$field_id-link-group ul li span.add-link').click( handle_edit_click );
+  jQuery('#'+'$field_id-link-group ul li img.remove').click( handle_delete_click );
+  jQuery('#'+'$field_id-link-group ul li img.edit').click( handle_edit_click );
 </script>\n";
     return $html;
 } ## end sub type_link_group

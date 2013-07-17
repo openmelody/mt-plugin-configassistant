@@ -59,7 +59,7 @@ h2#page-title span.star { display: none; }
   padding-right: 10px;
 }
 
-.field-type-link-group a.add-link, .field-type-text-group a.add-item {
+.mt4 .field-type-link-group a.add-link, .mt4 .field-type-text-group a.add-item {
     display: block;
     float: left;
     color: white;
@@ -103,6 +103,7 @@ h2#page-title span.star { display: none; }
   left:0px;  
   z-index:1;  
 }
+.link-group-container li.last { display: inline-block; margin-bottom: 0; }
 
 #configassistant-form .field-content .preview {
   float: left;
