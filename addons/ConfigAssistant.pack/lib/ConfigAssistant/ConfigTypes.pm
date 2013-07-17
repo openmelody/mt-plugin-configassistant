@@ -972,16 +972,18 @@ sub type_text_group {
 
     foreach (@$list) {
         $html
-          .= '        <li><span class="text">'
+          .= '        <li><span class="content">'
           . $_->{'label'}
-          . '</span> <a class="remove" href="javascript:void(0);"><img src="'
-          . $static
-          . '/images/icon_close.png" alt="remove" title="remove" /></a> '
-          . '<a class="edit" href="javascript:void(0);">edit</a></li>' . "\n";
+          . '</span>'
+          . '<img class="edit" src="' . $static
+          . 'images/status_icons/draft.gif" alt="Edit" title="Edit" /> '
+          . '<img class="remove" src="' . $static
+          . 'images/status_icons/close.gif" alt="Remove" title="Remove" />'
+          . "</li>\n";
     }
     $html
       .= "          <li class=\"last\">"
-      . "<a href=\"javascript:void(0);\" class=\"add-item\">Add Item</a>"
+      . "<span class=\"button add-item\">Add Item</span>"
       . "</li>\n"
       . "    </ul>\n"
       . "</div>\n"
@@ -991,17 +993,16 @@ sub type_text_group {
       . "\" />\n<script type=\"text/javascript\">
   jQuery('#'+'$field_id-text-group').parents('form').submit( function (){
     var struct = Array();
-    jQuery(this).find('#'+'$field_id-text-group ul li button').trigger('click');
-    jQuery(this).find('#'+'$field_id-text-group ul li span.text').each( function(i, e) {
+    jQuery(this).find('#'+'$field_id-text-group ul li span.content').each( function(i, e) {
       var l = jQuery(this).html();
       struct.push( { 'label': l } );
     });
     var json = struct.toJSON().escapeJS();
     jQuery('#'+'$field_id').val( json );
   });
-  jQuery('#'+'$field_id-text-group ul li a.add-item').click( text_handle_edit_click );
-  jQuery('#'+'$field_id-text-group ul li a.remove').click( text_handle_delete_click );
-  jQuery('#'+'$field_id-text-group ul li a.edit').click( text_handle_edit_click );
+  jQuery('#'+'$field_id-text-group ul li span.add-item').click( text_handle_edit_click );
+  jQuery('#'+'$field_id-text-group ul li img.remove').click( text_handle_delete_click );
+  jQuery('#'+'$field_id-text-group ul li img.edit, #' + '$field_id-text-group ul li span.content').click( text_handle_edit_click );
 </script>\n";
     return $html;
 } ## end sub type_text_group

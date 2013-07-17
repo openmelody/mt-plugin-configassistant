@@ -85,10 +85,14 @@ function text_handle_edit_click() {
 };
 
 function render_text(label) {
-    var dom = '<li class="pkg"><span class="text">'+label+'</span> <a class="remove" href="javascript:void(0);"><img src="'+StaticURI+'images/icon_close.png" alt="remove" title="remove" /></a> <a class="edit" href="javascript:void(0);">edit</a></li>';
+    var dom = '<li class="pkg"><span class="content">' + label + '</span> '
+        + '<img class="edit" src="' + StaticURI
+        + 'images/status_icons/draft.gif" alt="Edit" title="Edit" /> '
+        + '<img class="remove" src="' + StaticURI
+        + 'images/status_icons/close.gif" alt="Remove" title="Remove" /></li>';
     var e = jQuery(dom);
-    e.find('a.edit').click( text_handle_edit_click );
-    e.find('a.remove').click( text_handle_delete_click );
+    e.find('img.edit, span.content').click( text_handle_edit_click );
+    e.find('img.remove').click( text_handle_delete_click );
     return e;
 };
 
@@ -96,7 +100,7 @@ function text_handle_save_click() {
     var label = jQuery(this).parent().find('input[class=label]').val();
     if (!label) { return false; }
     jQuery(this).parents('ul').find('li.last').show();
-    jQuery(this).parent().replaceWith( render_text(label) );
+    jQuery(this).parent().html( render_text(label) );
     return false;
 };
 
@@ -105,14 +109,17 @@ function text_handle_delete_click() {
 };
 
 function render_text_form(label,url) {
-    var dom = '<li><label class="link-text">Label: <input type="text" class="label" value="'+(typeof label != 'undefined' ? label : '')+'" /></label> <button>Save</button></li>';
+    var dom = '<li><label class="link-text">Label: '
+        + '<input type="text" class="label" value="'
+        + (typeof label != 'undefined' ? label : '')
+        + '" /></label> <span class="button">Save</></li>';
     var e = jQuery(dom);
-    e.find('button').click( text_handle_save_click ); 
+    e.find('span.button').click( text_handle_save_click ); 
     e.find('input.label').focus( function() {
         jQuery(this).bind('keypress', function(event) {
             if (event.keyCode == 13) {
                 event.stopPropagation();
-                e.find('button').trigger('click');
+                e.find('span.button').trigger('click');
                 return false;
             }
     });
