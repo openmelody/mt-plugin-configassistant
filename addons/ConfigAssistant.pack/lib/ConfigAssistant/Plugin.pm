@@ -1104,7 +1104,7 @@ sub list_entry_or_page {
     my $pkg      = $app->model($type) or return "Invalid request.";
 
     my %terms = (
-        status => '2',
+        status => MT->model('entry')->RELEASE(),
         class  => '*',
     );
 
@@ -1127,7 +1127,7 @@ sub list_entry_or_page {
 
     my $plugin = MT->component('ConfigAssistant')
       or die "OMG NO COMPONENT!?!";
-    my $tmpl   = $plugin->load_tmpl('entry_or_page_list.mtml');
+    my $tmpl   = $plugin->load_tmpl('entry_list.mtml');
     $tmpl->param( 'type', $type );
 
     return $app->listing(
@@ -1166,7 +1166,6 @@ sub list_entry_or_page {
             },
             terms => \%terms,
             args  => \%args,
-            limit => 10,
         }
     );
 }
