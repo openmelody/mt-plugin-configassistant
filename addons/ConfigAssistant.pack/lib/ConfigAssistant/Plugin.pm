@@ -548,7 +548,14 @@ sub _hdlr_field_value {
     my $value = _get_field_value($ctx);
     return $args->{default}
       if ( $args->{default} && ( !$value || $value eq '' ) );
-    return $value;
+
+    # If any MT templating is in the field, process it.
+    my $builder = $ctx->stash('builder');
+    my $tokens = $builder->compile( $ctx, $value );
+    return $ctx->error( $builder->errstr ) unless defined $tokens;
+    my $out = $builder->build( $ctx, $tokens );
+    return $ctx->error( $builder->errstr ) unless defined $out;
+    return $out;
 }
 
 sub _hdlr_field_asset {
