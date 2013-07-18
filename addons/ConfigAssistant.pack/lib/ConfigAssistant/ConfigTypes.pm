@@ -769,7 +769,7 @@ sub type_radio {
         $out
           .= "        <li><input type=\"radio\" name=\"$field_id\""
           . " id=\"$el_id\" value=\"$option\""
-          . ( $value eq $option ? " checked=\"checked\"" : "" )
+          . ( $value && $value eq $option ? " checked=\"checked\"" : "" )
           . " class=\"rb\" />"
 
           # Add a space between the input field and the label so that the
