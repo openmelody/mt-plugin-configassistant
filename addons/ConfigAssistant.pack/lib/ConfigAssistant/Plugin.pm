@@ -116,189 +116,22 @@ sub theme_options {
         }
         return $app->redirect($redirect);
     }
-    my $types     = $app->registry('config_types');
-    my $fieldsets = $cfg->{fieldsets};
-    my $scope     = 'blog:' . $app->blog->id;
 
-    my $cfg_obj = eval { $plugin->get_config_hash($scope) };
+    my $result = _build_options_screen({
+        cfg          => $cfg,
+        blog         => $blog,
+        plugin       => $plugin,
+        options_type => 'theme',
+    });
 
-    require MT::Template::Context;
-    my $ctx = MT::Template::Context->new();
+    $param->{html}             = $result->{html};
+    $param->{fieldsets}        = $result->{loop};
+    $param->{leftovers}        = $result->{leftovers};
+    $param->{missing_required} = $result->{missing_required};
 
-    $fieldsets->{__global} = {
-                               label => sub { "Global Options"; }
-    };
-
-    # this is a localized stash for field HTML
-    my $fields;
-    my @missing_required;
-
-    foreach my $optname (
-        sort {
-            ( $cfg->{$a}->{order} || 999 ) <=> ( $cfg->{$b}->{order} || 999 )
-        } keys %{$cfg}
-      )
-    {
-        next if $optname eq 'fieldsets' || $optname eq 'plugin';
-        my $field = $cfg->{$optname};
-        if ( my $cond = $field->{condition} ) {
-            if ( !ref($cond) ) {
-                $cond = $field->{condition} = $app->handler_to_coderef($cond);
-            }
-            next unless $cond->();
-        }
-        if ( !$field->{'type'} ) {
-            MT->log( {
-                   blog_id => $blog->id,
-                   level   => MT::Log::WARNING(),
-                   message =>
-                     "Skipping option '$optname' in template set '$ts' "
-                     . "because it did not declare a type."
-                }
-            );
-            next;
-        }
-
-        my $field_id = $ts . '_' . $optname;
-
-        if ( $field->{'type'} eq 'separator' ) {
-
-            # The separator "type" is handled specially here because it's not
-            # really a "config type"-- it isn't editable and no data is saved
-            # or retrieved. It just displays a separator and some info.
-            my $out;
-            my $show_label
-              = defined $field->{show_label} ? $field->{show_label} : 1;
-            my $label = $field->{label} && ($field->{label} ne '')
-                ? &{ $field->{label} } : '';
-            $out
-              .= '  <div id="field-'
-              . $field_id
-              . '" class="field field-top-label pkg field-type-'
-              . $field->{type} . '">' . "\n";
-            $out .= "    <div class=\"field-header\">\n";
-            $out .= "        <h3>$label</h3>\n" if $show_label;
-            $out .= "    </div>\n";
-            $out .= "    <div class=\"field-content\">\n";
-
-            if ( $field->{hint} ) {
-                $out .= "       <div>" . &{$field->{hint}} . "</div>\n";
-            }
-            $out .= "    </div>\n";
-            $out .= "  </div>\n";
-            $field->{fieldset} = '__global' unless defined $field->{fieldset};
-            my $fs = $field->{fieldset};
-            push @{ $fields->{$fs} }, $out;
-        } ## end if ( $field->{'type'} ...)
-        elsif ( $types->{ $field->{'type'} } ) {
-            my $value = delete $cfg_obj->{$field_id};
-            my $out;
-            $field->{fieldset} = '__global' unless defined $field->{fieldset};
-            my $show_label
-              = defined $field->{show_label} ? &{ $field->{show_label} } : 1;
-            my $label = $field->{label} ne '' ? &{ $field->{label} } : '';
-            my $required = $field->{required} ? 'required' : '';
-            if ($required) {
-                if ( !$value ) {
-
-                    # There is no value for this field, and it's a required
-                    # field, so we need to tell the user to fix it!
-                    push @missing_required, { label => $label };
-                }
-
-                # Append the required flag.
-                $label .= ' <span class="required-flag">*</span>';
-            }
-
-            $out
-              .= "  <div id=\"field-$field_id\" class=\"field"
-              . ( $show_label == 1 ? " field-left-label" : "" )
-              . ' pkg field-type-'
-              . $field->{type} . ' '
-              . $required . '">' . "\n";
-            $out .= "    <div class=\"field-header\">\n";
-            $out .= "      <label for=\"$field_id\">$label</label>\n"
-              if $show_label;
-            $out .= "    </div>\n";
-            $out .= "    <div class=\"field-content\">\n";
-            my $hdlr = MT->handler_to_coderef(
-                                    $types->{ $field->{'type'} }->{handler} );
-            $out .= $hdlr->( $app, $ctx, $field_id, $field, $value );
-
-            if ( $field->{hint} ) {
-                $out
-                  .= "      <div class=\"hint\">"
-                  . &{$field->{hint}}
-                  . "</div>\n";
-            }
-            $out .= "    </div>\n";
-            $out .= "  </div>\n";
-            my $fs = $field->{fieldset};
-            push @{ $fields->{$fs} }, $out;
-        } ## end elsif ( $types->{ $field->...})
-        else {
-            MT->log( {
-                       message => 'Unknown config type encountered: '
-                         . $field->{'type'}
-                     }
-            );
-        }
-    } ## end foreach my $optname ( sort ...)
-    my @loop;
-    my $count = 0;
-    my $html;
-    foreach my $set (
-        sort {
-            ( $fieldsets->{$a}->{order} || 999 )
-              <=> ( $fieldsets->{$b}->{order} || 999 )
-        } keys %$fieldsets
-      )
-    {
-        next unless $fields->{$set} || $fieldsets->{$set}->{template};
-        my $label     = &{ $fieldsets->{$set}->{label} };
-        my $hint      = $fieldsets->{$set}->{hint};
-        my $innerhtml = '';
-        if ( my $tmpl = $fieldsets->{$set}->{template} ) {
-            my $txt = $plugin->load_tmpl($tmpl);
-            my $filter
-              = $fieldsets->{$set}->{format}
-              ? $fieldsets->{$set}->{format}
-              : '__default__';
-            $txt = MT->apply_text_filters( $txt->text(), [$filter] );
-            $innerhtml = $txt;
-            $html .= $txt;
-        }
-        else {
-            $html .= "<fieldset>";
-            $html .= "<h3>" . $label . "</h3>";
-            foreach ( @{ $fields->{$set} } ) {
-                $innerhtml .= $_;
-            }
-            $html .= $innerhtml;
-            $html .= "</fieldset>";
-        }
-        push @loop,
-          {
-            '__first__' => ( $count++ == 0 ),
-            id          => dirify($label),
-            label       => $label,
-            hint        => $hint,
-            content     => $innerhtml,
-          };
-    } ## end foreach my $set ( sort { ( ...)})
-    my @leftovers;
-    foreach my $field_id ( keys %$cfg_obj ) {
-        push @leftovers,
-          { name => $field_id, value => $cfg_obj->{$field_id}, };
-    }
-
-    $param->{html}             = $html;
-    $param->{fieldsets}        = \@loop;
-    $param->{leftovers}        = \@leftovers;
     $param->{blog_id}          = $blog->id;
     $param->{plugin_sig}       = $plugin->{plugin_sig};
     $param->{saved}            = $q->param('saved');
-    $param->{missing_required} = \@missing_required;
     return $app->load_tmpl( 'theme_options.mtml', $param );
 } ## end sub theme_options
 
@@ -852,19 +685,64 @@ sub plugin_options {
     my $cfg  = $plugin->registry('options');
     my $seen;
 
+    my $result = _build_options_screen({
+        cfg          => $cfg,
+        blog         => $blog,
+        plugin       => $plugin,
+        options_type => 'plugin',
+    });
+
+    $param->{html}             = $result->{html};
+    $param->{fieldsets}        = $result->{loop};
+    $param->{leftovers}        = $result->{leftovers};
+    $param->{missing_required} = $result->{missing_required};
+
+    $param->{blog_id}     = $blog->id if $blog;
+    $param->{magic_token} = $app->current_magic;
+    $param->{plugin_sig}  = $plugin->{plugin_sig};
+
+    return MT->component('ConfigAssistant')
+      ->load_tmpl( 'plugin_options.mtml', $param );
+} ## end sub plugin_options
+
+
+# The Theme Options and Plugin Options screen both display fields in the same
+# format.
+sub _build_options_screen {
+    my ($arg_ref) = @_;
+    my $cfg          = $arg_ref->{cfg};
+    my $blog         = $arg_ref->{blog};
+    my $plugin       = $arg_ref->{plugin};
+    my $options_type = $arg_ref->{options_type};
+    my $app = MT->instance;
+
     my $types     = $app->registry('config_types');
     my $fieldsets = $cfg->{fieldsets};
-    my $cfg_obj   = $plugin->get_config_hash($scope);
+    $fieldsets->{__global} = {
+        label => sub { "Global Options"; }
+    };
+
+    # Get any saved field settings.
+    my $cfg_obj = {};
+    if ( $options_type eq 'plugin') {
+        # Plugin Options can be for either the blog or system level, so
+        # determine current scope.
+        my $scope = $blog
+            ? 'blog:' . $blog->id
+            : 'system';
+        $cfg_obj = $plugin->get_config_hash($scope);
+    }
+    # Theme Options
+    else { 
+        $cfg_obj = eval { $plugin->get_config_hash('blog:' . $blog->id) };
+    }
 
     require MT::Template::Context;
     my $ctx = MT::Template::Context->new();
 
-    $fieldsets->{__global} = {
-                               label => sub { "Global Options"; }
-    };
-
     # this is a localized stash for field HTML
     my $fields;
+    my @missing_required;
 
     foreach my $optname (
         sort {
@@ -873,64 +751,98 @@ sub plugin_options {
       )
     {
         next if $optname eq 'fieldsets' || $optname eq 'plugin';
+
         my $field = $cfg->{$optname};
-
-        next
-          if (    ( $field->{scope} eq 'blog' && $scope !~ /^blog:/ )
-               || ( $field->{scope} eq 'system' && $scope ne 'system' ) );
-
         if ( my $cond = $field->{condition} ) {
             if ( !ref($cond) ) {
                 $cond = $field->{condition} = $app->handler_to_coderef($cond);
             }
             next unless $cond->();
         }
+        if ( !$field->{'type'} ) {
+            $app->log( {
+                   blog_id => $blog->id,
+                   level   => MT::Log::WARNING(),
+                   message =>
+                     "Skipping option '$optname' in "
+                     . $options_type eq 'plugin'
+                         ? 'plugin settings '
+                         : 'template set "' . $blog->template_set . '" '
+                     . "because it did not declare a type."
+                }
+            );
+            next;
+        }
 
-        my $field_id = $optname;
+        my $field_id;
+        if ( $options_type eq 'plugin' ) {
+            $field_id = $optname;
+        }
+        else {
+            $field_id = $blog->template_set . '_' . $optname;
+        }
 
+        # The separator "type" is handled specially here because it's not
+        # really a "config type" -- it isn't editable and no data is saved
+        # or retrieved. It just displays a separator and some info.
         if ( $field->{'type'} eq 'separator' ) {
 
-            # The separator "type" is handled specially here because it's not
-            # really a "config type"-- it isn't editable and no data is saved
-            # or retrieved. It just displays a separator and some info.
             my $out;
             my $show_label
-              = defined $field->{show_label} ? %{ $field->{show_label} } : 1;
-            my $label = $field->{label} ne '' ? &{ $field->{label} } : '';
-
+              = defined $field->{show_label} ? $field->{show_label} : 1;
+            my $label = $field->{label} && ($field->{label} ne '')
+                ? &{ $field->{label} } : '';
             $out
               .= '  <div id="field-'
               . $field_id
               . '" class="field field-top-label pkg field-type-'
               . $field->{type} . '">' . "\n";
-            $out .= "   <div class=\"field-header\">\n";
-            $out .= "       <h3>$label</h3>\n" if $show_label;
-            $out .= "   </div>\n";
-            $out .= "   <div class=\"field-content\">\n";
+            $out .= "    <div class=\"field-header\">\n";
+            $out .= "        <h3>$label</h3>\n" if $show_label;
+            $out .= "    </div>\n";
+            $out .= "    <div class=\"field-content\">\n";
+
             if ( $field->{hint} ) {
-                $out .= "       <div>" . $field->{hint} . "</div>\n";
+                my $hint = MT->product_version =~ /^4/
+                    ? $field->{hint}
+                    : &{ $field->{hint} }; # MT5+
+                $out .= "       <div>$hint</div>\n";
             }
+            $out .= "    </div>\n";
             $out .= "  </div>\n";
             $field->{fieldset} = '__global' unless defined $field->{fieldset};
             my $fs = $field->{fieldset};
             push @{ $fields->{$fs} }, $out;
         } ## end if ( $field->{'type'} ...)
+
         elsif ( $types->{ $field->{'type'} } ) {
             my $value = delete $cfg_obj->{$field_id};
             my $out;
             $field->{fieldset} = '__global' unless defined $field->{fieldset};
             my $show_label
-              = defined $field->{show_label} ? %{ $field->{show_label} } : 1;
+                = defined $field->{show_label} ? &{ $field->{show_label} } : 1;
             my $label = $field->{label} ne '' ? &{ $field->{label} } : '';
+            my $required = $field->{required} ? 'required' : '';
+            if ($required) {
+                # There is no value for this field, and it's a required field,
+                # so we need to tell the user to fix it!
+                if ( !$value ) {
+                    push @missing_required, { label => $label };
+                }
+
+                # Append the required flag.
+                $label .= ' <span class="required-flag">*</span>';
+            }
 
             $out
-              .= "  <div id=\"field-$field_id\" class=\"field"
-              . ( $show_label == 1 ? " field-left-label" : "" )
-              . ' pkg field-type-'
-              . $field->{type} . '">' . "\n";
+                .= "  <div id=\"field-$field_id\" class=\"field"
+                . ( $show_label == 1 ? " field-left-label" : "" )
+                . ' pkg field-type-'
+                . $field->{type} . ' '
+                . $required . '">' . "\n";
             $out .= "    <div class=\"field-header\">\n";
             $out .= "      <label for=\"$field_id\">$label</label>\n"
-              if $show_label;
+                if $show_label;
             $out .= "    </div>\n";
             $out .= "    <div class=\"field-content\">\n";
             my $hdlr = MT->handler_to_coderef(
@@ -938,27 +850,21 @@ sub plugin_options {
             $out .= $hdlr->( $app, $ctx, $field_id, $field, $value );
 
             if ( $field->{hint} ) {
-                $out
-                  .= "      <div class=\"hint\">"
-                  . $field->{hint}
-                  . "</div>\n";
+                my $hint = MT->product_version =~ /^4/
+                    ? $field->{hint}
+                    : &{ $field->{hint} }; # MT5+
+                $out .= "      <div class=\"hint\">$hint</div>\n";
             }
             $out .= "    </div>\n";
             $out .= "  </div>\n";
-
             my $fs = $field->{fieldset};
             push @{ $fields->{$fs} }, $out;
         } ## end elsif ( $types->{ $field->...})
-        else {
-            MT->log( {
-                       message => 'Unknown config type encountered: '
-                         . $field->{'type'}
-                     }
-            );
-        }
     } ## end foreach my $optname ( sort ...)
+
     my @loop;
     my $count = 0;
+    my $html;
     foreach my $set (
         sort {
             ( $fieldsets->{$a}->{order} || 999 )
@@ -1003,16 +909,16 @@ sub plugin_options {
         push @leftovers,
           { name => $field_id, value => $cfg_obj->{$field_id}, };
     }
-    $param->{html}        = $html;
-    $param->{fieldsets}   = \@loop;
-    $param->{leftovers}   = \@leftovers;
-    $param->{blog_id}     = $blog->id if $blog;
-    $param->{magic_token} = $app->current_magic;
-    $param->{plugin_sig}  = $plugin->{plugin_sig};
 
-    return MT->component('ConfigAssistant')
-      ->load_tmpl( 'plugin_options.mtml', $param );
-} ## end sub plugin_options
+    # Return the built options screen -- ready for either the Theme Options or
+    # Plugin Options display.
+    return {
+        html             => $html,
+        loop             => \@loop,
+        leftovers        => \@leftovers,
+        missing_required => \@missing_required,
+    };
+}
 
 sub list_entry_mini {
     my $app = shift;
