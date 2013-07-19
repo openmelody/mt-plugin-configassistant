@@ -21,7 +21,8 @@ sub type_author {
     my $app = shift;
     my ( $ctx, $field_id, $field, $value ) = @_;
     $value ||= ''; # Define $value if no saved/default.
-    my $blog_id = $app->blog->id;
+
+    my $blog_id = $app->blog ? $app->blog->id : '0';
 
     # Show the author display name, if a valid author has been saved already.
     my $author_display_name = '';
@@ -49,23 +50,26 @@ sub type_author {
     # The all_authors key will be true if all authors should appear in the
     # pop-up, regardless of blog association.
     my $all_authors = $field->{all_authors} || '';
+    # If this is used as a Plugin Option at the system level, all authors are
+    # also valid because there is no blog restriction.
+    $all_authors = 1 if !$app->blog;
 
     my $button = '';
     if (MT->product_version =~ /^4/) {
         $button = "onclick=\"return openDialog(this.form, 'ca_select_author', "
-            . "'blog_id=$blog_id&all_authors=$all_authors&idfield=$field_id"
-            . "&namefield=${field_id}_display_name)\"";
+            . "'blog_id=${blog_id}&all_authors=$all_authors&idfield=$field_id"
+            . "&namefield=${field_id}_display_name')\"";
     }
     else {
         $button = "onclick=\"return jQuery.fn.mtDialog.open('" . $app->app_uri
-            . "?__mode=ca_select_author&blog_id=$blog_id&idfield=$field_id')\"";
+            . "?__mode=ca_select_author&blog_id=${blog_id}&idfield=$field_id')\"";
     }
 
     my $out = <<HTML;
 <script type="text/javascript">
     // Build the query string for the openDialog popup.
     var query_string = ''
-        + 'blog_id=$blog_id'
+        + 'blog_id=${blog_id}'
         + '&all_authors=$all_authors'
         + '&idfield=$field_id'
         + '&namefield=${field_id}_display_name';
@@ -116,6 +120,13 @@ sub select_author {
     my $args = {};
     $args->{sort} = 'name';
 
+    # Build the terms for the join used to find all of the users to display in
+    # the popup.
+    my $join_terms = {};
+    if ( !$q->param('all_authors') && $q->param('blog_id') ) {
+        $join_terms->{blog_id} = $q->param('blog_id');
+    }
+
     # Load authors with permission on this blog
     my $author_roles = $q->param('roles');
     if ($author_roles) {
@@ -124,15 +135,12 @@ sub select_author {
         });
         return unless @roles;
 
+        $join_terms->{role_id} = \@roles;
+
         require MT::Association;
         $args->{join} = MT::Association->join_on(
-            'author_id', 
-            {
-                role_id => \@roles,
-                blog_id => $app->param('all_authors') 
-                    ? {like => '%'} # Grab authors in any blog
-                    : $app->param('blog_id'), 
-            },
+            'author_id',
+            $join_terms,
             { unique => 1, }
         );
     }
@@ -140,15 +148,12 @@ sub select_author {
     # Roles have not been specified, so just grab any user with adequate
     # permission to post.
     else {
+        $join_terms->{permissions} = { like => '%post%', };
+
         require MT::Permission;
         $args->{join} = MT::Permission->join_on(
-            'author_id', 
-            {
-                blog_id => $app->param('all_authors') 
-                    ? {like => '%'} # Grab authors in any blog
-                    : $app->param('blog_id'), 
-                permissions => { like => '%post%', } 
-            },
+            'author_id',
+            $join_terms,
             { unique => 1, }
         );
     }
