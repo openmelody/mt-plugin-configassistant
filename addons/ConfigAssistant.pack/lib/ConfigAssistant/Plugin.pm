@@ -569,16 +569,18 @@ sub _hdlr_field_entry_loop {
     my ( $ctx, $args, $cond ) = @_;
     my $field = $ctx->stash('field') or return _no_field($ctx);
     my $value  = _get_field_value($ctx);
-    unless ( $value ) {
-        require MT::Template::ContextHandlers;
-        return MT::Template::Context::_hdlr_pass_tokens_else(@_);
-    }
 
     # The value contains both active and inactive entries. We want the
     # active ones, because the inactive ones aren't supposed to get 
     # published. The format is, for example: `active:1,2,5;inactive:3,4,6`
-    ( my $active_ids = $value ) =~ s{active:([^;]+).*}{$1};
+    ( my $active_ids = $value ) =~ s{active:(.*);inactive.*}{$1};
     my @ids                     =  split( ',', $active_ids );
+
+    # There are no entries selected.
+    unless ( @ids ) {
+        require MT::Template::ContextHandlers;
+        return MT::Template::Context::_hdlr_pass_tokens_else(@_);
+    }
 
     my $out   = '';
     my $count = 0;
