@@ -120,13 +120,45 @@ function removeAuthor(field_id) {
 
 
 // Entry or Page config types
+// Removing an item (particularly when using the "multiple" option) requires
+// some careful handling. The data is stored in the format
+// "active:1,2,12;inactive:4,5,6" so we need to be careful when removing item
+// "2," for example and not turning "12" into "1." So, turn the object IDs into
+// an array to properly remove any ID.
 function removeCustomFieldEntry(el_id, obj_id) {
     // Strip the object ID off of the element.
     var obj_ids = jQuery('#'+el_id).val();
-    var re = new RegExp(',?'+obj_id);
-    obj_ids = obj_ids.replace(re,'');
-    jQuery('#'+el_id).val( obj_ids );
 
+    // The ID of this object is saved to a hidden field to track all active
+    // and inactive objects in use.
+    var split_result = obj_ids.split(';');
+    var i = 0;
+
+    // Process "active:1,2,3" and "inactive:4,5,6" which are the only elements
+    // in the `split_result` array.
+    while ( split_result[i] ) {
+        // Strip the leader prefix and the IDs.
+        var item   = split_result[i].split(':');
+        var prefix = item[0];
+        var id_str = item[1] || '';
+
+        // The IDs are a string. Split them into an array to be able to remove
+        // any specific element.
+        var ids = id_str.split(',');
+        // Search the array of IDs for the ID to remove.
+        var index = jQuery.inArray( obj_id, ids );
+        // Remove the item.
+        ids.splice( index, 1 );
+        // Rebuild the array item.
+        split_result[i] = prefix + ':' + ids.join(',');
+
+        // Increment to work with the next item in the `split_result` array.
+        i++;
+    }
+
+    // Reconstruct the "active" and "inactive" pieces.
+    var obj_ids = split_result.join(';');
+    jQuery('#'+el_id).val( obj_ids );
     // Remove the list item that shows the object.
     jQuery('#field-'+el_id+' li#obj-'+obj_id).remove();
 }

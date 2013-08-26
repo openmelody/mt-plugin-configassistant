@@ -574,7 +574,7 @@ sub _hdlr_field_entry_loop {
     # active ones, because the inactive ones aren't supposed to get 
     # published. The format is, for example: `active:1,2,5;inactive:3,4,6`
     ( my $active_ids = $value ) =~ s{active:(.*);inactive.*}{$1};
-    my @ids                     =  split( ',', $active_ids );
+    my @ids = grep { /^\d+$/ } split( ',', $active_ids );
 
     # There are no entries selected.
     unless ( @ids ) {
