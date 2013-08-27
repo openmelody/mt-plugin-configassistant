@@ -1,7 +1,4 @@
-# Config Assistant plugin for Melody and Movable Type 4.x #
-
-_**Melody users:** This plugin is bundled with Melody so separate installation
-is neither required nor advisable._
+# Config Assistant plugin for Movable Type #
 
 _**Upgrade Note:** If you are upgrading from a version prior to 2.1.6, please
 make sure to read the upgrade instructions below._
@@ -68,11 +65,6 @@ foisted upon end users to deploy a plugin/theme's static content.
 
 ### <a id="prerequisites">Prerequisites</a> ###
 
-* Any version of Melody or Movable Type 4.1 or higher
-    * This plugin has not yet been tested on MT 5.x
-
-Movable Type users will also need to install the [Melody Compatibility
-Layer](https://github.com/endevver/mt-plugin-melody-compat).
 
 ### <a id="features">Features</a> ###
 
@@ -362,7 +354,8 @@ field:
 * `category` - Produces the ability to select a single category via a
   drop-down listing. This field supports additional optional keys:
 
-  * `multiple` - set to `1` to create a multi-select listing, allowing multiple categories to be selected.
+  * `multiple` - set to `1` to create a multi-select listing, allowing multiple
+    categories to be selected.
   * `show_children` - set to `1` to include child categories, in addition to
     parent.
 
@@ -411,7 +404,8 @@ field:
 * `folder` - Produces the ability to select a single folder via a drop-down
   listing. This field supports additional optional keys:
 
-   * `multiple` - set to `1` to create a multi-select listing, allowing multiple folders to be selected.
+   * `multiple` - set to `1` to create a multi-select listing, allowing multiple
+     folders to be selected.
    * `show_children` - set to `1` to include child folders, in addition to
      parent.
 
@@ -448,7 +442,7 @@ field:
   informational only. Only the `label`, `hint`, `order`, and `fieldset` keys
   are valid with this field type.
 
-* `tagged-entries` - Produces a pull down menu of entries tagged a certain
+* `tagged-entry` - Produces a pull down menu of entries tagged a certain
   way. This type supports the following additional attributes: `lastn` and
   `tag-filter`.
 
