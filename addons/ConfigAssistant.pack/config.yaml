@@ -1,7 +1,7 @@
 name: Configuration Assistant
 id: ConfigAssistant
 key: ConfigAssistant
-author_link: http://openmelody.org/
+author_link: https://github.com/openmelody/mt-plugin-configassistant
 author_name: "Byrne Reese, Open Melody Software Group"
 description: This plugin provides a simple YAML based framework for creating plugin and theme configuration options.
 version: 2.3.13
