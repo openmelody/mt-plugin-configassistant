@@ -1,10 +1,9 @@
 #list-plugins .fieldset-options { display: block; }
 #list-plugins #fieldsets h3 { display: block; }
 
-.fieldset-options { display: none; }
 .fieldset-description { padding-bottom: 15px; }
 
-#fieldsets h3 { display: none; }
+/*#fieldsets h3 { display: none; }*/
 #fieldsets #about-tab-content h3 { display: block; margin-top: 0; }
 h2#page-title span.star { display: none; }
 #content-nav ul li.changed b { font-style: italic; }
@@ -75,10 +74,11 @@ h2#page-title span.star { display: none; }
 
 .link-group-container li.last { display: inline-block; margin-bottom: 0; }
 
-#configassistant-form .field-content .preview {
+.field-content .preview {
   float: left;
 }
-#configassistant-form .field-content button {
+
+.field-content button {
   color: white;
   float: left;
   font-size: 10px;
@@ -93,6 +93,10 @@ h2#page-title span.star { display: none; }
 
 .field-content a.button {
     float: left;
+}
+
+.field-content div.hint {
+    clear: both;
 }
 
 #list-entries-dialog .listing-filter select {
@@ -118,12 +122,10 @@ h2#page-title span.star { display: none; }
 .ui-timepicker-rtl dl dd { margin: 0 40% 10px 10px; }
 
 .field-content ul {
-    clear: both;
-    margin-top: 10px 0;
-    padding: 5px 7px;
+    padding: 5px 7px 5px 0;
     min-height: 20px;
-    width: 290px;
 }
+
 .field-content ul li { padding-bottom: 1px; }
 .field-content ul li span.obj-title { padding-right: 5px; }
 .field-content ul li a { padding-left: 5px; }
@@ -159,3 +161,13 @@ h2#page-title span.star { display: none; }
     cursor: pointer;
     background: url(../images/sortable-small.png) left center no-repeat;
 }
+
+
+.field-content img.remove,
+.field-content img.edit {
+    margin-left: 5px;
+    cursor: pointer;
+}
+
+.field-content ul li span.text,
+.field-content ul li span.text:hover { border: 0; box-shadow: 0;}
