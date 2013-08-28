@@ -65,6 +65,8 @@ foisted upon end users to deploy a plugin/theme's static content.
 
 ### <a id="prerequisites">Prerequisites</a> ###
 
+* Movable Type 4.1 or higher
+* Movable Type 5.x or higher
 
 ### <a id="features">Features</a> ###
 
