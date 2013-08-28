@@ -326,4 +326,19 @@ jQuery(document).ready(function() {
         jQuery(this).parent().parent().parent().find('input.hidden').val('');
         jQuery(this).parent().remove();
     });
+
+    // Radio-image config type
+    jQuery('.field-type-radio-image li input:checked').each( function() {
+        jQuery(this).parent().addClass('selected');
+    });
+
+    jQuery('.field-type-radio-image li').click( function() {
+        jQuery(this).parent().find('input:checked').attr('checked',false);
+        jQuery(this).find('input').attr('checked',true);
+        jQuery(this).parent().find('.selected').removeClass('selected');
+        jQuery(this).addClass('selected');
+        var changed = jQuery(this).parent().parent().parent().parent().attr('id');
+        jQuery('#content-nav ul li.'+changed).addClass('changed');
+    });
+
 });
