@@ -557,7 +557,7 @@ sub update_menus {
             label      => 'Theme Options',
             order      => '10',
             mode       => 'theme_options',
-            view       => 'blog',
+            view       => [ 'blog', 'website' ],
             permission => 'edit_templates',
             condition  => sub {
                 my $blog = MT->instance->blog;
