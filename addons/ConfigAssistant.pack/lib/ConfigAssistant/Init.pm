@@ -4,6 +4,7 @@ use strict;
 use ConfigAssistant::Util qw( find_theme_plugin find_option_plugin );
 use File::Spec;
 use Sub::Install;
+use MT::Theme;
 
 # use MT::Log::Log4perl qw( l4mtdump ); use Log::Log4perl qw( :resurrect );
 our $logger;
@@ -51,6 +52,15 @@ sub init_app {
                                    as   => 'needs_upgrade'
                                  }
     );
+
+    # Template sets should work as blog or website-level themes. The modified
+    # function allows a template set to work as either.
+    my $result = Sub::Install::reinstall_sub({
+        code => \&load_pseudo_theme_from_template_set,
+        into => 'MT::Theme',
+        as   => '_load_pseudo_theme_from_template_set'
+    });
+
     return 1;
 } ## end sub init_app
 
@@ -622,5 +632,56 @@ sub needs_upgrade {
     0;
 } ## end sub needs_upgrade
 
-1;
+# This is a copy of MT::Theme::_load_pseudo_theme_from_template_set with only
+# one change: $props->{class} is set to `both` instead of `blog`, which means
+# the template set can work as both a blog theme and a website theme.
+sub load_pseudo_theme_from_template_set {
+    my $pkg = shift;
+    my ($id) = @_;
+    $id =~ s/^theme_//;
+    my $sets = MT->registry("template_sets")
+        or return;
+    my $set = $sets->{$id}
+        or return;
+    my $plugin = $set->{plugin} || undef;
+    my $label 
+        = $set->{label}
+        || ( $plugin && $plugin->registry('name') )
+        || $id;
+    my $props = {
+        id          => "theme_$id",
+        type        => 'template_set',
+        author_name => $plugin ? $plugin->registry('author_name') : '',
+        author_link => $plugin ? $plugin->registry('author_link') : '',
+        version     => $plugin ? $plugin->registry('version') : '',
+        __plugin    => $plugin,
+        
+        # A template set theme is valid for both blog and website-level themes.
+        # class       => 'blog',
+        class       => 'both',
 
+        path        => $plugin ? $plugin->path : '',
+        base_css    => $set->{base_css},
+        elements    => {
+            template_set => {
+                component => 'core',
+                importer  => 'template_set',
+                name      => 'template set',
+                data      => $id,
+            },
+        },
+    };
+    my $reg = {
+        id          => "theme_$id",
+        version     => $plugin ? $plugin->registry('version') : '',
+        l10n_class  => $plugin ? $plugin->registry('l10n_class') : 'MT::L10N',
+        label       => sub { MT->translate( '[_1]', $label ) },
+        description => $set->{description},
+        class       => 'blog',
+    };
+    my $class = $pkg->new($props);
+    $class->registry($reg);
+    return $class;
+}
+
+1;
