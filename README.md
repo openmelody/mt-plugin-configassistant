@@ -350,8 +350,11 @@ field:
     supplied to filter the popup dialog contents.
 
 * `blogs` - Produces a pull down menu listing every blog in the system.
-  *Warning: this is not advisable for large installations as it can
-  dramatically impact performance (negatively).*
+  *Warning: this is not advisable for installations with many blogs as it can
+  dramatically impact performance (negatively).* This field supports an additional key:
+
+  * `class` - valid values are `blog`, `website`, and `*` (both blogs and
+    websites). The default value is `blog`.
 
 * `category` - Produces the ability to select a single category via a
   drop-down listing. This field supports additional optional keys:

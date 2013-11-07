@@ -205,8 +205,14 @@ sub select_author {
 sub type_blogs {
     my $app = shift;
     my ( $ctx, $field_id, $field, $value ) = @_;
+    my $class = $field->{class} || 'blog';
     my $out;
-    my @blogs = MT->model('blog')->load( {}, { sort => 'name' } );
+
+    my @blogs = MT->model('blog')->load(
+        { class => , $class, },
+        { sort => 'name', }
+    );
+
     $out .= "      <select name=\"$field_id\">\n";
     $out
       .= "        <option value=\"0\" "
