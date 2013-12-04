@@ -24,11 +24,13 @@ sub type_asset {
         my $static_uri = $app->static_path;
 
         my $asset = MT->model('asset')->load($value);
-        my $asset_id    = $asset->id;
-        my $asset_label = $asset->label;
-        my $asset_url   = $asset->url;
 
-        $asset_html = <<HTML;
+        if ($asset) {
+            my $asset_id    = $asset->id;
+            my $asset_label = $asset->label;
+            my $asset_url   = $asset->url;
+
+            $asset_html = <<HTML;
 <div id="obj-$asset_id">
     <span class="obj-title">$asset_label</span>
     <a href="${script_uri}?__mode=view&amp;_type=asset&amp;id=$asset_id&amp;blog_id=$blog_id"
@@ -50,6 +52,10 @@ sub type_asset {
         width="9" height="9" />
 </div>
 HTML
+        }
+        else {
+            $asset_html = "Asset ID $value not found.";
+        }
     }
 
     my $out = <<HTML;
