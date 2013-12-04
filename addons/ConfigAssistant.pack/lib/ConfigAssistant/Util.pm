@@ -6,7 +6,7 @@ use base 'Exporter';
 our @EXPORT_OK
   = qw( find_theme_plugin   find_template_def   find_option_def
         find_option_plugin  process_file_upload 
-        plugin_static_web_path plugin_static_file_path
+        plugin_static_web_path plugin_static_file_path fix_support_directories
         ERROR SUCCESS OVERWRITE NO_UPLOAD );
 
 use MT::Util qw( encode_url );
@@ -144,22 +144,22 @@ sub process_file_upload {
     }
     elsif ( lc($scope) eq 'support' ) {
         require MT::FileMgr;
-        $root_path = File::Spec->catdir( $app->static_file_path, 'support' );
-        $base_url  = $app->static_path . '/support';
+        $root_path = $app->support_directory_path;
+        $base_url  = $app->support_directory_url;
         $fmgr      = MT::FileMgr->new('Local');
         $blog_id   = $app->blog ? $app->blog->id : 0;  # the resulting asset will be added to this context
-        $format    = File::Spec->catfile( '%s', 'support' );
+        $format    = '%s';
 
     }
     
     # $scope is a different value -- perhaps "system."
     else {
         require MT::FileMgr;
-        $root_path = File::Spec->catdir( $app->static_file_path, 'support', 'system' );
-        $base_url  = $app->static_path . '/support/system';
+        $root_path = File::Spec->catdir( $app->support_directory_path, 'system' );
+        $base_url  = $app->support_directory_path . '/system';
         $fmgr      = MT::FileMgr->new('Local');
         $blog_id   = $app->blog ? $app->blog->id : 0;  # the resulting asset will be added to this context
-        $format    = File::Spec->catfile( '%s', 'support', 'system' );
+        $format    = File::Spec->catfile( '%s', 'system' );
     }
 
     unless ( $fmgr->exists($root_path) ) {
@@ -385,7 +385,7 @@ sub process_file_upload {
 } ## end sub process_file_upload
 
 # Reserved:
-# %s - mt-static/support
+# %s - support directory (mt-static/support)
 # %r - blog site root
 # %a - blog archive root
 # Implemented:
@@ -401,6 +401,41 @@ sub format_path {
         $path =~ s/\%({\d*})?e/$str/g;
     }
     return $path;
+}
+
+# If this theme option was used in MT4 then upgraded to MT5, the `%s` value
+# changed. (In MT4 it pointed to the `mt-static/` directory and in MT5 it
+# points to the `mt-static/support/` directory). In earlier versions of CA, a
+# `support` folder was appended to the `%s` value to be sure files were placed
+# in the support folder, but in MT5 this effectively causes files to go in
+# `mt-static/support/support/`. Strip out the double support folder to make
+# things work again.
+sub fix_support_directories {
+    my $app = MT->instance;
+    my ($asset) = @_;
+
+    # Build the bad support path, which looks something like
+    # `[MT_HOME]/mt-static/support/support/`
+    my $bad_support_path
+        = File::Spec->catfile( $app->support_directory_path, 'support' );
+    my $asset_path = $asset->file_path;
+
+    # Give up if the asset path is not wrong. (That is, it's presumably
+    # correct, though we're not actually testing that.)
+    return $asset
+        if $asset_path !~ /$bad_support_path/;
+
+    $asset_path =~ s/${bad_support_path}(.*)/%s$1/;
+    $asset->file_path( $asset_path );
+
+    my $bad_support_url = $app->support_directory_url . 'support';
+    my $asset_url = $asset->url;
+    $asset_url =~ s/${bad_support_url}(.*)/%s$1/;
+    $asset->url( $asset_url );
+
+    $asset->save or die $asset->errstr;
+
+    return $asset;
 }
 
 sub generate_random_string {

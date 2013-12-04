@@ -4,6 +4,8 @@ use strict;
 use warnings;
 use Carp qw( croak );
 
+use ConfigAssistant::Util qw( fix_support_directories );
+
 use MT::Util qw ( encode_html dirify );
 # use MT::Util
 #   qw( relative_date      offset_time    offset_time_list    epoch2ts
@@ -651,6 +653,9 @@ sub type_file {
     if ($value) {
         my $asset = MT->model('asset')->load($value);
         if ($asset) {
+            # Fix support directories (likely a problem when moving from MT4 to 5.)
+            ($asset) = fix_support_directories( $asset );
+
             $html
               .= "<p>"
               . ( $asset->label ? $asset->label : $asset->file_name )

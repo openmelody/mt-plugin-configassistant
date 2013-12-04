@@ -8,7 +8,7 @@ use MT::Util
       ts2epoch format_ts encode_html    decode_html         dirify );
 use ConfigAssistant::Util
   qw( find_theme_plugin     find_template_def   find_option_def
-      find_option_plugin    process_file_upload 
+      find_option_plugin    process_file_upload fix_support_directories
       plugin_static_web_path plugin_static_file_path );
 use JSON;
 # use MT::Log::Log4perl qw( l4mtdump ); use Log::Log4perl qw( :resurrect );
@@ -396,9 +396,14 @@ sub _hdlr_field_asset {
     my $field = $ctx->stash('config_type') or return _no_field($ctx);
     my $value = _get_field_value($ctx);
     return if !$value || $value eq '';
+
     my $asset = MT->model('asset')->load($value);
+
     my $out;
     if ($asset) {
+        # Fix support directories (likely a problem when moving from MT4 to 5.)
+        ($asset) = fix_support_directories( $asset );
+
         local $ctx->{'__stash'}->{'asset'} = $asset;
         defined( $out = $ctx->slurp( $args, $cond ) ) or return;
         return $out;
