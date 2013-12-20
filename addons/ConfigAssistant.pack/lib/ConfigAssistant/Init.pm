@@ -5,6 +5,7 @@ use ConfigAssistant::Util qw( find_theme_plugin find_option_plugin );
 use File::Spec;
 use Sub::Install;
 use MT::Theme;
+use version 0.77;
 
 # use MT::Log::Log4perl qw( l4mtdump ); use Log::Log4perl qw( :resurrect );
 our $logger;
@@ -607,24 +608,24 @@ sub needs_upgrade {
     # static_version.
     my $c = shift;
     if ( $c->schema_version ) {
-        my $sv = $c->schema_version;
+        my $sv = version->parse( $c->schema_version );
 
         # Don't return 0 here, because we also need to check static_version.
         #return 0 unless defined $sv;
         my $key     = 'PluginSchemaVersion';
         my $id      = $c->id;
         my $ver     = MT->config($key);
-        my $cfg_ver = $ver->{$id} if $ver;
+        my $cfg_ver = version->parse( $ver->{$id} ) if $ver && $ver->{id};
         if ( ( !defined $cfg_ver ) || ( $cfg_ver < $sv ) ) {
             return 1;
         }
     }
     if ( $c->{'registry'}->{'static_version'} ) {
-        my $sv      = $c->{'registry'}->{'static_version'};
+        my $sv      = version->parse( $c->{'registry'}->{'static_version'} );
         my $key     = 'PluginStaticVersion';
         my $id      = $c->id;
         my $ver     = MT->config($key);
-        my $cfg_ver = $ver->{$id} if $ver;
+        my $cfg_ver = version->parse( $ver->{$id} ) if $ver && $ver->{id};
         if ( ( !defined $cfg_ver ) || ( $cfg_ver < $sv ) ) {
             return 1;
         }

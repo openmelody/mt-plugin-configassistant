@@ -5,6 +5,7 @@ use warnings;
 use MT;
 use MT::FileMgr;
 use File::Spec;
+use version 0.77;
 
 sub upgrade {
     my $self = shift;
@@ -42,7 +43,7 @@ sub upgrade {
                     if defined $ver->{$plugin_id};
             }
 
-            if ( $static_version > $saved_version ) {
+            if ( version->parse($static_version) > version->parse($saved_version) ) {
                 $self->progress( 'Copying static files for <strong>'
                              . $plugin->name
                              . '</strong> to mt-static/support/plugins/...' );
