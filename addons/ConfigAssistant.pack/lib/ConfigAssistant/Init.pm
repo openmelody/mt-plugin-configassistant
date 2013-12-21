@@ -606,31 +606,22 @@ sub needs_upgrade {
     # We need to override MT::Component::needs_upgrade because that only
     # checks for schema_version, because now we also want to check for
     # static_version.
-    my $c = shift;
-    if ( $c->schema_version ) {
-        my $sv = version->parse( $c->schema_version );
+    my $c  = shift;
+    my $id = $c->id;
 
-        # Don't return 0 here, because we also need to check static_version.
-        #return 0 unless defined $sv;
-        my $key     = 'PluginSchemaVersion';
-        my $id      = $c->id;
-        my $ver     = MT->config($key);
-        my $cfg_ver = version->parse( $ver->{$id} ) if $ver && $ver->{id};
-        if ( ( !defined $cfg_ver ) || ( $cfg_ver < $sv ) ) {
-            return 1;
+    my %versions = (
+        PluginSchemaVersion => $c->schema_version,
+        PluginStaticVersion => $c->{'registry'}->{'static_version'},
+    );
+
+    foreach my $key ( keys %versions ) {
+        if ( defined( my $currver = $versions{$key} )) {
+            my $lastver = MT->config($key)->{$id} // '0.0.0';
+            return 1 if version->parse( $currver ) > version->parse( $lastver );
         }
     }
-    if ( $c->{'registry'}->{'static_version'} ) {
-        my $sv      = version->parse( $c->{'registry'}->{'static_version'} );
-        my $key     = 'PluginStaticVersion';
-        my $id      = $c->id;
-        my $ver     = MT->config($key);
-        my $cfg_ver = version->parse( $ver->{$id} ) if $ver && $ver->{id};
-        if ( ( !defined $cfg_ver ) || ( $cfg_ver < $sv ) ) {
-            return 1;
-        }
-    }
-    0;
+
+    return 0;
 } ## end sub needs_upgrade
 
 # This is a copy of MT::Theme::_load_pseudo_theme_from_template_set with only
