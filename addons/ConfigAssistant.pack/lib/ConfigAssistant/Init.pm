@@ -616,7 +616,7 @@ sub needs_upgrade {
 
     foreach my $key ( keys %versions ) {
         if ( defined( my $currver = $versions{$key} )) {
-            my $lastver = MT->config($key)->{$id} // '0.0.0';
+            my $lastver = MT->config($key)->{$id} || '0.0.0';
             return 1 if version->parse( $currver ) > version->parse( $lastver );
         }
     }
