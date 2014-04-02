@@ -65,8 +65,9 @@ foisted upon end users to deploy a plugin/theme's static content.
 
 ### <a id="prerequisites">Prerequisites</a> ###
 
-* Movable Type 4.1 or higher
 * Movable Type 5.x or higher
+
+* Movable Type 4.1 or higher is supported with [Config Assistant version 2.3.13](https://github.com/openmelody/mt-plugin-configassistant/releases)
 
 ### <a id="features">Features</a> ###
 
