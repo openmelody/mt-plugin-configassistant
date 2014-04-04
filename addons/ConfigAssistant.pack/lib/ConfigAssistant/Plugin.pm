@@ -349,8 +349,13 @@ sub _republish_template {
         $result = $app->rebuild(
             BlogID      => $blog_id,
             ArchiveType => $tmpl_map->archive_type,
-            Limit       => 1, # Only limits entries.
             NoIndexes   => 1,
+            Force       => 1,
+            # Only limit entries, not archives.
+            Limit       => (
+                ($tmpl_map->archive_type eq 'Individual'
+                    || $tmpl_map->archive_type eq 'Page') ? 1 : 0
+            ),
         );
     }
 
