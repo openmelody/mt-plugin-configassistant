@@ -365,16 +365,16 @@ sub load_tags {
                                         'ConfigAssistant::Plugin', @_ );
                             };
                         } ## end elsif ( $option->{'type'}...)
-                        elsif (    $option->{'type'} eq 'category_list'
+                        elsif (    $option->{'type'} eq 'category'
+                                or $option->{'type'} eq 'folder'
+                                # deprecated options
+                                or $option->{'type'} eq 'category_list'
                                 or $option->{'type'} eq 'folder_list' )
                         {
-                            my $t = $option->{'type'};
-                            my $tag_type
-                              = $t eq 'category_list'
-                              ? 'Categories'
-                              : 'Folders';
-                            my $obj_class
-                              = substr( $t, 0, index( $t, '_list' ) );
+                            my $obj_class = $option->{'type'} =~ /category/
+                                ? 'category' : 'folder';
+                            my $tag_type = $obj_class eq 'category'
+                                ? 'Categories' : 'Folders';
                             $tags->{block}->{ $tag . $tag_type } = sub {
                                 $_[0]->stash( 'obj_class', $obj_class );
                                 my $blog = $_[0]->stash('blog');
@@ -494,13 +494,16 @@ sub load_tags {
                     };
                 } ## end elsif ( $option->{'type'}...)
 
-                elsif (    $option->{'type'} eq 'category_list'
+                elsif (    $option->{'type'} eq 'category'
+                        or $option->{'type'} eq 'folder'
+                        # deprecated options
+                        or $option->{'type'} eq 'category_list'
                         or $option->{'type'} eq 'folder_list' )
                 {
-                    my $t = $option->{'type'};
-                    my $tag_type
-                      = $t eq 'category_list' ? 'Categories' : 'Folders';
-                    my $obj_class = substr( $t, 0, index( $t, '_list' ) );
+                    my $obj_class = $option->{'type'} =~ /category/
+                        ? 'category' : 'folder';
+                    my $tag_type = $obj_class eq 'category'
+                        ? 'Categories' : 'Folders';
                     $tags->{block}->{ $tag . $tag_type } = sub {
                         $_[0]->stash( 'obj_class', $obj_class );
                         my $blog = $_[0]->stash('blog');
