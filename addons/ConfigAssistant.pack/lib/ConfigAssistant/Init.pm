@@ -613,8 +613,8 @@ sub needs_upgrade {
     my $id = $c->id;
 
     my %versions = (
-        PluginSchemaVersion => $c->schema_version,
-        PluginStaticVersion => $c->{'registry'}->{'static_version'},
+        PluginSchemaVersion => ($c->schema_version || '0.0.0'),
+        PluginStaticVersion => ($c->{'registry'}->{'static_version'} || '0.0.0'),
     );
 
     foreach my $key ( keys %versions ) {
