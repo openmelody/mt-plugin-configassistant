@@ -1,12 +1,20 @@
 #!/usr/local/bin/perl -w
 
 package MT::Tool::StaticCopy;
+
+###
+### We should probably replace most of this module with File::Copy::Recursive
+### or, better, File::Rsync since we can then exclude to_skip files
+###
+
 use strict;
 use warnings;
 use lib qw( lib extlib );
 use File::Basename qw( basename dirname );
 use base qw( MT::Tool );
 use MT;
+
+use File::Copy; # qw( copy );
 
 # use Data::Dumper;
 # use MT::Log::Log4perl qw( l4mtdump );
@@ -28,7 +36,7 @@ sub main {
         # Do *not* check static versions, because we want the static copy
         # to run for all plugins.
         if ( $registry->{'static_version'} ) {
-            print "\nCopying static files for " . $plugin->name . "...\n";
+            print "\n" . $plugin->name . ":\n";
 
             # Build a hash of the directory structure within the static folder.
             my $static_dir = {};
@@ -111,7 +119,8 @@ sub _traverse_hash {
                                        $dir,                   $cur_item
                   );
 
-                _write_file( $src, $dest );
+                copy( $src, $dest ) or die "Copy failed: $!";
+                printf "\t\t- Copied %s\n", basename( $dest );
             }
         } ## end else [ if ( $subfolders ne '')]
     } ## end while ( my ( $cur_item, $subfolders...))
@@ -132,41 +141,12 @@ sub _make_dir {
         # Success!
         my $static_file_path = $app->static_file_path;
         $dir =~ s!$static_file_path/support/plugins/(.*)!$1!;
-        print "Created folder $dir/\n";
+        print "\t* Created folder $dir/\n";
     }
     else {
         die $fmgr->errstr . "\n";
     }
     return;
 } ## end sub _make_dir
-
-sub _write_file {
-
-    # Actually copy the file from plugins/static/ to the mt-static/support/plugins/ area.
-    my ( $src, $dest ) = @_;
-    my $fmgr = MT::FileMgr->new('Local') or return MT::FileMgr->errstr;
-    ###l4p $logger ||= MT::Log::Log4perl->new(); $logger->trace();
-
-    # Grab the file specified.
-    my $src_data = $fmgr->get_data($src)
-      or die "Could not read file $src: "
-      . ( $fmgr->errstr || 'Unknown error' ) . "\n";
-
-    # Write the file to its new home, but only if some data was read.
-    if ($src_data) {
-        $fmgr->mkpath( dirname($dest) );
-        my $bytes = $fmgr->put_data( $src_data, $dest )
-          or die $fmgr->errstr . "\n";
-
-        # Only provide a "copied" message if the file was successfully written.
-        if ($bytes) {
-            my $app              = MT->instance;
-            my $static_file_path = $app->static_file_path;
-            $dest =~ s!$static_file_path/support/plugins/(.*)!$1!;
-            print "Copied $dest\n";
-        }
-    }
-    return;
-} ## end sub _write_file
 
 __PACKAGE__->main;
