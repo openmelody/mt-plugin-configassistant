@@ -260,7 +260,9 @@ sub type_category {
         $terms->{parent} = 0;
     }
 
-    my $obj_class = $ctx->stash('object_class') || 'category';
+    my $obj_class = 'category'
+        unless $ctx->stash('object_class') eq 'folder';
+
     my @cats = MT->model($obj_class)->load(
         $terms,
         {
