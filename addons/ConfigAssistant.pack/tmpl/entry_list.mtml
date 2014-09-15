@@ -20,7 +20,11 @@
     /* <![CDATA[ */
     function dialogClose(data) {
         if (!data) {
+        <mt:If tag="Version" lt="5">
             closeDialog();
+        <mt:Else>
+            parent.jQuery.fn.mtDialog.close();
+        </mt:If>
             return;
         }
         // user made a selection and clicked insert...
