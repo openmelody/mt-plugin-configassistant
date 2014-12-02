@@ -1179,7 +1179,7 @@ END_TMPL
   <link rel="stylesheet" href="<mt:PluginStaticWebPath component="configassistant">colorpicker/css/colorpicker.css" type="text/css" />
   <mt:If tag="Version" lt="5">
     <mt:Unless tag="ProductName" eq="Melody">
-  <script src="<mt:StaticWebPath>jquery/jquery.js" type="text/javascript"></script>
+  <script src="<mt:Var name="static_uri">jquery/jquery.js" type="text/javascript"></script>
     </mt:Unless>
   </mt:If>
   <script src="<mt:PluginStaticWebPath component="configassistant">js/options.js" type="text/javascript"></script>
