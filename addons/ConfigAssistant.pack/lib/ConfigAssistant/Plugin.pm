@@ -785,6 +785,13 @@ sub _build_options_screen {
             next;
         }
 
+        # System-scoped fields shouldn't appear if there's a blog context
+        # (because that means this isn't the system level).
+        next if $field->{'scope'} eq 'system' && $app->blog;
+        # Blog-scoped fields shouldn't appear if there is *not* a blog content
+        # (because that means this isn't the blog level).
+        next if $field->{'scope'} eq 'blog' && !$app->blog;
+
         my $field_id;
         if ( $options_type eq 'plugin' ) {
             $field_id = $optname;
