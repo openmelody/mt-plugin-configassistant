@@ -133,14 +133,14 @@ h2#page-title span.star { display: none; }
 .field-content div.active-container {
     clear: left;
     float: left;
-    width: 300px;
+    width: 49%;
     margin-top: 5px;
 }
 
 .field-content div.inactive-container {
     clear: none;
     position: relative;
-    width: 300px;
+    width: 49%;
     margin-left: 10px;
     float: left;
 }
@@ -153,7 +153,7 @@ h2#page-title span.star { display: none; }
 }
 .field-content div.inactive-container ul {
     background: #e2e2e2;
-    padding-bottom: 25px;
+    padding: 5px 10px 25px;
 }
 
 .field-content ul li.sortable {
