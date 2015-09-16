@@ -968,7 +968,7 @@ sub list_entry_mini {
                panel_searchable => 1,
                edit_blog_id     => $blog_id,
                edit_field       => $q->param('edit_field'),
-               search           => $q->param('search'),
+               search           => $q->param('search') || '',
                blog_id          => $blog_id,
                class            => $obj_type,
            },
@@ -1030,7 +1030,7 @@ sub select_entry {
 
 sub list_entry_or_page {
     my $app      = shift;
-    my $blog_ids = $app->param('blog_ids');
+    my $blog_ids = $app->param('blog_ids') || $app->param('blog_id');
     my $type     = 'entry';
     my $pkg      = $app->model($type) or return "Invalid request.";
 
@@ -1040,7 +1040,7 @@ sub list_entry_or_page {
     );
 
     my @blog_ids;
-    if ( $blog_ids == 'all' ) {
+    if ( $blog_ids eq 'all' ) {
 
         # @blog_ids should stay empty so all blogs are loaded.
     }
@@ -1066,9 +1066,10 @@ sub list_entry_or_page {
             template => $tmpl,
             params   => {
                 panel_searchable => 1,
+                entry_or_page    => 1,
                 edit_blog_id     => $blog_ids,
                 edit_field       => $app->param('edit_field'),
-                search           => $app->param('search'),
+                search           => $app->param('search') || '',
                 blog_id          => $blog_ids,
             },
             code => sub {
