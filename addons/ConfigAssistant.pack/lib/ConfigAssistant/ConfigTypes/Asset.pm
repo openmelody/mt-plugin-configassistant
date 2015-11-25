@@ -27,7 +27,7 @@ sub type_asset {
 
         if ($asset) {
             my $asset_id    = $asset->id;
-            my $asset_label = $asset->label;
+            my $asset_label = $asset->label ? $asset->label : $asset->file_name;
             my $asset_url   = $asset->url;
 
             $asset_html = <<HTML;
