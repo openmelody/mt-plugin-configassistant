@@ -99,8 +99,17 @@ sub asset_insert_param {
         && $ts
         && $app->registry('template_sets', $ts, 'options', $field_basename);
 
-    my $ctx   = $tmpl->context;
-    my $asset = $ctx->stash('asset');
+    my $ctx = $tmpl->context;
+
+    my $asset = {};
+    # MT 6.2+
+    if ( my $assets = $ctx->stash('assets') ) {
+        $asset = @$assets[0];
+    }
+    # MT 4.x, 5.x, 6.0.x, 6.1.x.
+    else {
+        $asset = $ctx->stash('asset');
+    }
 
     my $html;
     # If this asset has a URL and file path then link it for easy previewing.
