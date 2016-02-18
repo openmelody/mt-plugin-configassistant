@@ -1040,7 +1040,7 @@ sub list_entry_or_page {
     );
 
     my @blog_ids;
-    if ( $blog_ids eq 'all' ) {
+    if ( $blog_ids eq 'all' || $blog_ids == 0 ) {
 
         # @blog_ids should stay empty so all blogs are loaded.
     }
