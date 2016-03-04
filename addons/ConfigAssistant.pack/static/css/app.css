@@ -136,6 +136,9 @@ h2#page-title span.star { display: none; }
     width: 49%;
     margin-top: 5px;
 }
+.field-content div.active-container ul {
+    width: 100%;
+}
 
 .field-content div.inactive-container {
     clear: none;
