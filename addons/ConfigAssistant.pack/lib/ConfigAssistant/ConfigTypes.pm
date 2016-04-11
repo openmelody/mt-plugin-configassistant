@@ -443,8 +443,17 @@ sub type_entry_or_page {
 sub _type_object {
     my $app = shift;
     my ( $ctx, $field_id, $field, $value ) = @_;
-    my $blog_id     = $field->{all_blogs} ? 0 :
-                      $app->blog ? $app->blog->id : 0;
+    my $blog_id     = $field->{all_blogs}
+                      ? 0
+                      # If the blog_id was specified a handler is expected to
+                      # find the correct blog.
+                      : $field->{blog_id}
+                      ? $app->handler_to_coderef( $field->{blog_id} )->()
+                      # Fall back to the current blog or the system.
+                      : $app->blog
+                      ? $app->blog->id
+                      : 0;
+
     my $obj_class   = $ctx->stash('object_class') || '';
     my $list_method = 'ca_config_' . $obj_class;
     my $out;

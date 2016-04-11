@@ -385,6 +385,7 @@ field:
   * `all_blogs` - a boolean value which determines whether the user will be
     constricted to searching/selecting entries in the current blog, or all
     blogs on the system.
+  * `blog_id` - specify a code reference to determine a blog ID.
   * `multiple` - a boolean value which allows multiple entries to be selected.
   * `inactive_area` - a boolean value which adds a separate area to store
     selected entry or entries but not publish them -- useful when you need to
