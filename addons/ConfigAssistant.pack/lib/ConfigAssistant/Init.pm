@@ -6,6 +6,7 @@ use File::Spec;
 use Sub::Install;
 use MT::Theme;
 use version 0.77;
+use Scalar::Util qw( reftype );
 
 # use MT::Log::Log4perl qw( l4mtdump ); use Log::Log4perl qw( :resurrect );
 our $logger;
@@ -111,15 +112,19 @@ sub init_options {
                         #               return $default->(MT->instance) };
                         #     }
                         # }
-                        if ( ref $obj->{'registry'}->{'settings'} eq 'ARRAY' )
-                        {
-                            push @{ $obj->{'registry'}->{'settings'} },
-                              [ $optname, { scope => 'blog', %$option, } ];
+
+                        my $settings         = $obj->{registry}->{settings};
+                        my $settings_reftype = reftype($settings) || '';
+
+                        if ( 'ARRAY' eq $settings_reftype ) {
+                            push( @$settings,
+                                [ $optname, { scope => 'blog', %$option, } ]
+                            );
                         }
                         else
                         { # (ref $obj->{'registry'}->{'settings'} eq 'HASH') {
-                            $obj->{'registry'}->{'settings'}->{$optname}
-                              = { scope => 'blog', %$option, };
+                                $settings->{$optname}
+                                  = { scope => 'blog', %$option, };
                         }
                     }
                 } ## end foreach my $opt ( keys %{ $r...})
@@ -148,12 +153,13 @@ sub init_options {
                 # do nothing
             }
             else {
-                if ( ref $obj->{'registry'}->{'settings'} eq 'ARRAY' ) {
-                    push @{ $obj->{'registry'}->{'settings'} },
-                      [ $opt, { %$option, } ];
+                my $settings         = $obj->{registry}->{settings};
+                my $settings_reftype = reftype($settings) || '';
+                if ( 'ARRAY' eq $settings_reftype ) {
+                    push( @$settings, [ $opt, { %$option, } ]);
                 }
                 else {    # (ref $obj->{'registry'}->{'settings'} eq 'HASH') {
-                    $obj->{'registry'}->{'settings'}->{$opt} = { %$option, };
+                    $settings->{$opt} = { %$option };
                 }
             }
         } ## end foreach my $opt (@options)
@@ -163,15 +169,19 @@ sub init_options {
 sub _option_exists {
     my ( $sig, $opt ) = @_;
     my $obj = $MT::Plugins{$sig}{object};
-    if ( ref $obj->{'registry'}->{'settings'} eq 'ARRAY' ) {
-        my @settings = $obj->{'registry'}->{'settings'}->{$opt};
+
+    my $settings         = $obj->{registry}->{settings};
+    my $settings_reftype = reftype($settings) || '';
+
+    if ( 'ARRAY' eq $settings_reftype ) {
+        my @settings = $obj->{'registry'}->{'settings'}->{$opt}; # FIXME This looks wrong
         foreach (@settings) {
             return 1 if $opt eq $_[0];
         }
         return 0;
     }
-    elsif ( ref $obj->{'registry'}->{'settings'} eq 'HASH' ) {
-        return $obj->{'registry'}->{'settings'}->{$opt} ? 1 : 0;
+    elsif ( 'HASH' eq $settings_reftype ) {
+        return $settings->{$opt} ? 1 : 0;
     }
     return 0;
 }
