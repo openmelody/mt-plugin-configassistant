@@ -12,7 +12,7 @@ use MT::Util qw ( encode_html dirify );
 #       ts2epoch format_ts encode_html    decode_html         dirify );
 # use ConfigAssistant::Util
 #   qw( find_theme_plugin     find_template_def   find_option_def
-#       find_option_plugin    process_file_upload 
+#       find_option_plugin    process_file_upload
 #       plugin_static_web_path plugin_static_file_path );
 #use JSON;
 # use MT::Log::Log4perl qw( l4mtdump ); use Log::Log4perl qw( :resurrect );
@@ -77,7 +77,7 @@ sub type_author {
         + '&namefield=${field_id}_display_name';
 
     if ( jQuery('#'+'${field_id}_display_name').text() ) {
-        query_string += '&cur_author_display_name' 
+        query_string += '&cur_author_display_name'
             + jQuery('#'+'${field_id}_display_name').text();
     }
 
@@ -113,7 +113,7 @@ sub select_author {
     # If an author has already been selected, show their display name. This is
     # just helpful to see who I picked.
     my $cur_author = $q->param('cur_author_display_name')
-        ? $app->translate("Current author: ") 
+        ? $app->translate("Current author: ")
             . $q->param('cur_author_display_name')
         : '';
 
@@ -132,7 +132,7 @@ sub select_author {
     # Load authors with permission on this blog
     my $author_roles = $q->param('roles');
     if ($author_roles) {
-        my @roles = map { $_->id } MT->model('role')->load({ 
+        my @roles = map { $_->id } MT->model('role')->load({
             name => [ split(/\s*,\s*/, $author_roles) ]
         });
         return unless @roles;
@@ -167,7 +167,7 @@ sub select_author {
     };
 
     # MT::CMS::User::dialog_select_author mostly does what is needed, so that
-    # served as the starting point. We're supplying an argument list to 
+    # served as the starting point. We're supplying an argument list to
     # augment it.
     $app->listing(
         {
@@ -576,7 +576,7 @@ INACTIVE_AREA
             . "'blog_id=$blog_id&edit_field=$field_id&class=$obj_class')\"";
     }
     else {
-        $button = "onclick=\"return jQuery.fn.mtDialog.open('" 
+        $button = "onclick=\"return jQuery.fn.mtDialog.open('"
             . $app->app_uri . "?__mode=$list_method&blog_id=$blog_id"
             . "&edit_field=$field_id&class=$obj_class')\"";
     }
@@ -623,17 +623,17 @@ sub _entry_list_item {
     my $obj_name = ( $obj ? $obj->title : '' ) || '';
     my $class_label = $obj->class_label;
 
-    my $html .= "\t\t\t\t" 
-        . '<li id="obj-' . $obj->id 
+    my $html .= "\t\t\t\t"
+        . '<li id="obj-' . $obj->id
         . '" class="obj-type obj-type-' . $obj->class . $sortable
-        . '"><span class="obj-title">' . $obj_name 
+        . '"><span class="obj-title">' . $obj_name
         . '</span>' . "\n\t\t\t\t\t"
         # Edit button
         . '<a href="'. $mt_uri . '?__mode=view&amp;_type='
         . lc($class_label) . '&amp;id=' . $obj->id . '&amp;blog_id='
         . $obj->blog_id . '" target="_blank"'
         . ' title="Edit in a new window.">'
-        . '<img src="' . $static_path 
+        . '<img src="' . $static_path
         . 'images/status_icons/draft.gif" width="9" height="9"'
         . ' alt="Edit" />'
         . '</a> ' . "\n\t\t\t\t\t"
@@ -645,8 +645,8 @@ sub _entry_list_item {
         . ' alt="View" />'
         . '</a> ' . "\n\t\t\t\t\t"
         # The remove button
-        . '<a href="javascript:void(0);" onclick="removeCustomFieldEntry(\'' 
-        . "$field_id','" . $obj->id 
+        . '<a href="javascript:void(0);" onclick="removeCustomFieldEntry(\''
+        . "$field_id','" . $obj->id
         . '\')" title="Remove this ' . $class_label . '"><img src="'
         . $static_path . 'images/status_icons/close.gif" '
         . ' width="9" height="9" alt="Remove" /></a>' . "\n\t\t\t\t"
@@ -783,7 +783,7 @@ sub type_radio {
     my $out;
 
     # Use the delimiter specified for the field, or fall back to the comma.
-    # Split the values with the delimiter, but cut out any white space on 
+    # Split the values with the delimiter, but cut out any white space on
     # either side of the value.
     my $delimiter = $field->{delimiter} || ',';
     my @values = split( /\s*$delimiter\s*/, $field->{values} );
@@ -847,7 +847,7 @@ sub type_select {
     $value ||= '';
 
     # Use the delimiter specified for the field, or fall back to the comma.
-    # Split the values with the delimiter, but cut out any white space on 
+    # Split the values with the delimiter, but cut out any white space on
     # either side of the value.
     my $delimiter = $field->{delimiter} || ',';
     my @values = split( /\s*$delimiter\s*/, $field->{values} );
@@ -1058,7 +1058,7 @@ sub type_textarea {
     elsif ( $rows && $rows > 11 ) {
         $rows_class = 'highest';
     }
-    
+
     my $out;
     $out = "      <textarea name=\"$field_id\" class=\"text full $rows_class full-width\" rows=\""
       . $rows . "\">";

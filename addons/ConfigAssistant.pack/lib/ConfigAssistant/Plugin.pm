@@ -84,7 +84,7 @@ sub theme_options {
     my ($param) = @_;
     my $q       = $app->can('query') ? $app->query : $app->param;
     my $blog    = $app->blog;
-    
+
     # No blog was found, so this must be the system level. Just go to the
     # System Dashboard.
     if (!$blog) {
@@ -212,7 +212,7 @@ sub save_config {
                         $param->{$var} = undef;
                     }
                     else {
-                        
+
                         # The user hasn't changed the file--keep it.
                         $param->{$var} = $data->{$var};
                     }
@@ -226,13 +226,13 @@ sub save_config {
             }
             my $old = $data->{$var};
             my $new = $param->{$var};
-            my $has_changed 
+            my $has_changed
               = ( defined $new and !defined $old )
               || ( defined $old && !defined $new )
               || ( defined $new and $old ne $new );
             ###l4p $logger->debug('$has_changed: '.$has_changed);
 
-            # If the field data has changed, and if the field uses the 
+            # If the field data has changed, and if the field uses the
             # "republish" key, we want to republish the specified templates.
             # Add the specified templates to $repub_queue so that they can
             # be republished later.
@@ -553,7 +553,7 @@ sub _hdlr_field_datetime {
     my @pieces = split(/[\s]/, $value);
     my @date = split('/', $pieces[0]);
     $pieces[1] =~ s/\://g;
-    $value = sprintf('%s%s%s%s%s%s', $date[2], $date[0], $date[1], $pieces[1]); 
+    $value = sprintf('%s%s%s%s%s%s', $date[2], $date[0], $date[1], $pieces[1]);
 
     $args->{ts} = $value;
     my $processed_value = MT::Template::Context::_hdlr_date($ctx, $args);
@@ -566,7 +566,7 @@ sub _get_field_value {
     my $plugin_ns = $ctx->stash('plugin_ns');
     my $scope     = $ctx->stash('scope') || 'blog';
     my $field     = $ctx->stash('config_type');
- 
+
     my $plugin    = MT->component($plugin_ns);        # is this necessary?
     my $value;
     my $blog = $ctx->stash('blog');
@@ -744,7 +744,7 @@ sub _build_options_screen {
         $cfg_obj = $plugin->get_config_hash($scope);
     }
     # Theme Options
-    else { 
+    else {
         $cfg_obj = eval { $plugin->get_config_hash('blog:' . $blog->id) };
     }
 

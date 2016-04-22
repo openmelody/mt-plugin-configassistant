@@ -5,7 +5,7 @@ use warnings;
 use base 'Exporter';
 our @EXPORT_OK
   = qw( find_theme_plugin   find_template_def   find_option_def
-        find_option_plugin  process_file_upload 
+        find_option_plugin  process_file_upload
         plugin_static_web_path plugin_static_file_path fix_support_directories
         ERROR SUCCESS OVERWRITE NO_UPLOAD );
 
@@ -151,7 +151,7 @@ sub process_file_upload {
         $format    = '%s';
 
     }
-    
+
     # $scope is a different value -- perhaps "system."
     else {
         require MT::FileMgr;

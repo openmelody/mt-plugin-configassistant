@@ -90,9 +90,9 @@ sub init_options {
                     my $option
                       = $r->{'template_sets'}->{$set}->{'options'}->{$opt};
 
-                    # To avoid option names that may collide with other 
-                    # options in other template sets settings are derived 
-                    # by combining the name of the template set and the 
+                    # To avoid option names that may collide with other
+                    # options in other template sets settings are derived
+                    # by combining the name of the template set and the
                     # option's key.
                     my $optname = $set . '_' . $opt;
                     if ( _option_exists( $sig, $optname ) ) {
@@ -102,7 +102,7 @@ sub init_options {
                     else {
 
                         # if ( my $default = $option->{default} ) {
-                        #     if (   !ref($default) 
+                        #     if (   !ref($default)
                         #         && (   $default =~ /^\s*sub/
                         #             || $default =~ /^\$/)) {
                         #         $default
@@ -279,7 +279,7 @@ sub load_tags {
                                 runner( '_hdlr_field_value_entry',
                                         'ConfigAssistant::Plugin', @_ );
                             };
-                        } ## end 
+                        } ## end
                         elsif ( $option->{'type'} eq 'checkbox' ) {
                             $tags->{block}->{ $tag . 'Loop' } = sub {
                                 my $blog = $_[0]->stash('blog');
@@ -640,7 +640,7 @@ sub load_pseudo_theme_from_template_set {
     my $set = $sets->{$id}
         or return;
     my $plugin = $set->{plugin} || undef;
-    my $label 
+    my $label
         = $set->{label}
         || ( $plugin && $plugin->registry('name') )
         || $id;
@@ -651,7 +651,7 @@ sub load_pseudo_theme_from_template_set {
         author_link => $plugin ? $plugin->registry('author_link') : '',
         version     => $plugin ? $plugin->registry('version') : '',
         __plugin    => $plugin,
-        
+
         # A template set theme is valid for both blog and website-level themes.
         # class       => 'blog',
         class       => 'both',
