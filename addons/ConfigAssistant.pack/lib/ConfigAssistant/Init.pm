@@ -123,8 +123,8 @@ sub init_options {
                         }
                         else
                         { # (ref $obj->{'registry'}->{'settings'} eq 'HASH') {
-                                $settings->{$optname}
-                                  = { scope => 'blog', %$option, };
+                            $obj->{registry}->{settings}->{$optname}
+                                = { scope => 'blog', %$option, };
                         }
                     }
                 } ## end foreach my $opt ( keys %{ $r...})
@@ -159,7 +159,7 @@ sub init_options {
                     push( @$settings, [ $opt, { %$option, } ]);
                 }
                 else {    # (ref $obj->{'registry'}->{'settings'} eq 'HASH') {
-                    $settings->{$opt} = { %$option };
+                    $obj->{registry}->{settings}->{$opt} = { %$option, };
                 }
             }
         } ## end foreach my $opt (@options)
