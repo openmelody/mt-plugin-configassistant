@@ -93,31 +93,31 @@ sub init_options {
                 # by combining the name of the template set and the
                 # option's key.
                 my $optname = $set . '_' . $opt;
-                unless ( _option_exists( $sig, $optname ) ) {
-                    # if ( my $default = $option->{default} ) {
-                    #     if (   !ref($default)
-                    #         && (   $default =~ /^\s*sub/
-                    #             || $default =~ /^\$/)) {
-                    #         $default
-                    #           = $app->handler_to_coderef($default);
-                    #         $option->{default} = sub {
-                    #               return $default->(MT->instance) };
-                    #     }
-                    # }
+                next if _option_exists( $sig, $optname );
 
-                    my $settings         = $obj->{registry}->{settings} ||= {};
-                    my $settings_reftype = reftype($settings) || '';
+                # if ( my $default = $option->{default} ) {
+                #     if (   !ref($default)
+                #         && (   $default =~ /^\s*sub/
+                #             || $default =~ /^\$/)) {
+                #         $default
+                #           = $app->handler_to_coderef($default);
+                #         $option->{default} = sub {
+                #               return $default->(MT->instance) };
+                #     }
+                # }
 
-                    if ( 'ARRAY' eq $settings_reftype ) {
-                        push( @$settings,
-                            [ $optname, { scope => 'blog', %$option, } ]
-                        );
-                    }
-                    else
-                    { # (ref $obj->{'registry'}->{'settings'} eq 'HASH') {
-                            $settings->{$optname}
-                              = { scope => 'blog', %$option, };
-                    }
+                my $settings         = $obj->{registry}->{settings} ||= {};
+                my $settings_reftype = reftype($settings) || '';
+
+                if ( 'ARRAY' eq $settings_reftype ) {
+                    push( @$settings,
+                        [ $optname, { scope => 'blog', %$option, } ]
+                    );
+                }
+                else
+                { # (ref $obj->{'registry'}->{'settings'} eq 'HASH') {
+                        $settings->{$optname}
+                          = { scope => 'blog', %$option, };
                 }
             } ## end foreach my $opt ( keys %{ $r...})
         }    # end foreach (@sets)
@@ -139,15 +139,15 @@ sub init_options {
                   = \&ConfigAssistant::Plugin::plugin_options;
             }
 
-            unless ( _option_exists( $sig, $opt ) ) {
-                my $settings         = $obj->{registry}->{settings} ||= {};
-                my $settings_reftype = reftype($settings) || '';
-                if ( 'ARRAY' eq $settings_reftype ) {
-                    push( @$settings, [ $opt, { %$option, } ]);
-                }
-                else {    # (ref $obj->{'registry'}->{'settings'} eq 'HASH') {
-                    $settings->{$opt} = { %$option };
-                }
+            next if _option_exists( $sig, $opt );
+
+            my $settings         = $obj->{registry}->{settings} ||= {};
+            my $settings_reftype = reftype($settings) || '';
+            if ( 'ARRAY' eq $settings_reftype ) {
+                push( @$settings, [ $opt, { %$option, } ]);
+            }
+            else {    # (ref $obj->{'registry'}->{'settings'} eq 'HASH') {
+                $settings->{$opt} = { %$option };
             }
         } ## end foreach my $opt (@options)
     } ## end for my $sig ( keys %MT::Plugins)
