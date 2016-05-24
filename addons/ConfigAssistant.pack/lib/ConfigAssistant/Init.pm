@@ -113,7 +113,7 @@ sub init_options {
                         #     }
                         # }
 
-                        my $settings         = $obj->{registry}->{settings};
+                        my $settings         = $obj->{registry}->{settings} ||= {};
                         my $settings_reftype = reftype($settings) || '';
 
                         if ( 'ARRAY' eq $settings_reftype ) {
@@ -153,7 +153,7 @@ sub init_options {
                 # do nothing
             }
             else {
-                my $settings         = $obj->{registry}->{settings};
+                my $settings         = $obj->{registry}->{settings} ||= {};
                 my $settings_reftype = reftype($settings) || '';
                 if ( 'ARRAY' eq $settings_reftype ) {
                     push( @$settings, [ $opt, { %$option, } ]);
@@ -170,7 +170,7 @@ sub _option_exists {
     my ( $sig, $opt ) = @_;
     my $obj = $MT::Plugins{$sig}{object};
 
-    my $settings         = $obj->{registry}->{settings};
+    my $settings         = $obj->{registry}->{settings} ||= {};
     my $settings_reftype = reftype($settings) || '';
 
     if ( 'ARRAY' eq $settings_reftype ) {
