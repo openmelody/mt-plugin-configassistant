@@ -83,52 +83,48 @@ sub init_options {
         my $r      = $obj->{registry};
         my @sets   = keys %{ $r->{'template_sets'} };
         foreach my $set (@sets) {
-            if ( $r->{'template_sets'}->{$set}->{'options'} ) {
-                foreach my $opt (
-                        keys %{ $r->{'template_sets'}->{$set}->{'options'} } )
-                {
-                    next if ( $opt eq 'fieldsets' );
-                    my $option
-                      = $r->{'template_sets'}->{$set}->{'options'}->{$opt};
+            my $options = $r->{'template_sets'}->{$set}->{'options'} || {};
+            foreach my $opt ( keys %$options ) {
+                next if ( $opt eq 'fieldsets' );
+                my $option = $options->{$opt};
 
-                    # To avoid option names that may collide with other
-                    # options in other template sets settings are derived
-                    # by combining the name of the template set and the
-                    # option's key.
-                    my $optname = $set . '_' . $opt;
-                    if ( _option_exists( $sig, $optname ) ) {
+                # To avoid option names that may collide with other
+                # options in other template sets settings are derived
+                # by combining the name of the template set and the
+                # option's key.
+                my $optname = $set . '_' . $opt;
+                if ( _option_exists( $sig, $optname ) ) {
 
-                        # do nothing
+                    # do nothing
+                }
+                else {
+
+                    # if ( my $default = $option->{default} ) {
+                    #     if (   !ref($default)
+                    #         && (   $default =~ /^\s*sub/
+                    #             || $default =~ /^\$/)) {
+                    #         $default
+                    #           = $app->handler_to_coderef($default);
+                    #         $option->{default} = sub {
+                    #               return $default->(MT->instance) };
+                    #     }
+                    # }
+
+                    my $settings         = $obj->{registry}->{settings} ||= {};
+                    my $settings_reftype = reftype($settings) || '';
+
+                    if ( 'ARRAY' eq $settings_reftype ) {
+                        push( @$settings,
+                            [ $optname, { scope => 'blog', %$option, } ]
+                        );
                     }
-                    else {
-
-                        # if ( my $default = $option->{default} ) {
-                        #     if (   !ref($default)
-                        #         && (   $default =~ /^\s*sub/
-                        #             || $default =~ /^\$/)) {
-                        #         $default
-                        #           = $app->handler_to_coderef($default);
-                        #         $option->{default} = sub {
-                        #               return $default->(MT->instance) };
-                        #     }
-                        # }
-
-                        my $settings         = $obj->{registry}->{settings} ||= {};
-                        my $settings_reftype = reftype($settings) || '';
-
-                        if ( 'ARRAY' eq $settings_reftype ) {
-                            push( @$settings,
-                                [ $optname, { scope => 'blog', %$option, } ]
-                            );
-                        }
-                        else
-                        { # (ref $obj->{'registry'}->{'settings'} eq 'HASH') {
-                                $settings->{$optname}
-                                  = { scope => 'blog', %$option, };
-                        }
+                    else
+                    { # (ref $obj->{'registry'}->{'settings'} eq 'HASH') {
+                            $settings->{$optname}
+                              = { scope => 'blog', %$option, };
                     }
-                } ## end foreach my $opt ( keys %{ $r...})
-            } ## end if ( $r->{'template_sets'...})
+                }
+            } ## end foreach my $opt ( keys %{ $r...})
         }    # end foreach (@sets)
 
         # Now register settings for each plugin option and a plugin_config_form
@@ -219,38 +215,61 @@ sub load_tags {
         # First initialize all the tags associated with themes
         my @sets = keys %{ $r->{'template_sets'} };
         foreach my $set (@sets) {
-            if ( $obj->registry( 'template_sets', $set, 'options' ) ) {
-                foreach my $opt (
-                    keys %{ $obj->registry( 'template_sets', $set, 'options' )
-                    } )
-                {
-                    my $option
-                      = $obj->registry( 'template_sets', $set, 'options',
-                                        $opt );
+            my $options = $obj->registry('template_sets', $set, 'options') || {};
+            foreach my $opt ( keys %$options ) {
+                my $option = $options->{$opt};
 
-                    # If the option does not define a tag name,
-                    # then there is no need to register one
-                    next if ( !defined( $option->{tag} ) );
-                    my $tag = $option->{tag};
+                # If the option does not define a tag name,
+                # then there is no need to register one
+                next if ( !defined( $option->{tag} ) );
+                my $tag = $option->{tag};
 
-                    # TODO - there is the remote possibility that a template
-                    # set will attempt to register a duplicate tag. This
-                    # case needs to be handled properly. Or does it? Note:
-                    # the tag handler takes into consideration the blog_id,
-                    # the template set id and the option/setting name.
-                    if ( $tag =~ s/\?$// ) {
-                        $tags->{block}->{$tag} = sub {
+                # TODO - there is the remote possibility that a template
+                # set will attempt to register a duplicate tag. This
+                # case needs to be handled properly. Or does it? Note:
+                # the tag handler takes into consideration the blog_id,
+                # the template set id and the option/setting name.
+                if ( $tag =~ s/\?$// ) {
+                    $tags->{block}->{$tag} = sub {
+                        my $blog = $_[0]->stash('blog');
+                        my $bset = $blog->template_set;
+                        $_[0]->stash( 'config_type', $bset . '_' . $opt );
+                        $_[0]->stash( 'plugin_ns',
+                                      find_theme_plugin($bset)->id );
+                        $_[0]->stash( 'scope', 'blog' );
+                        runner( '_hdlr_field_cond',
+                                'ConfigAssistant::Plugin', @_ );
+                    };
+                }
+                elsif ( $tag ne '' ) {
+                    $tags->{function}->{$tag} = sub {
+                        my $blog = $_[0]->stash('blog');
+                        my $bset = $blog->template_set;
+                        $_[0]->stash( 'config_type', $bset . '_' . $opt );
+                        $_[0]->stash( 'plugin_ns',
+                                      find_theme_plugin($bset)->id );
+                        $_[0]->stash( 'scope', 'blog' );
+                        runner( '_hdlr_field_value',
+                                'ConfigAssistant::Plugin', @_ );
+                    };
+                    # Field type: `entry` or `page` or `entry_or_page`
+                    if (
+                        $option->{'type'} eq 'entry'
+                        || $option->{'type'} eq 'page'
+                        || $option->{'type'} eq 'entry_or_page'
+                    ) {
+                        $tags->{block}->{ $tag . 'Entries' } = sub {
                             my $blog = $_[0]->stash('blog');
                             my $bset = $blog->template_set;
                             $_[0]->stash( 'config_type', $bset . '_' . $opt );
                             $_[0]->stash( 'plugin_ns',
                                           find_theme_plugin($bset)->id );
                             $_[0]->stash( 'scope', 'blog' );
-                            runner( '_hdlr_field_cond',
+                            runner( '_hdlr_field_entry_loop',
                                     'ConfigAssistant::Plugin', @_ );
                         };
-                    }
-                    elsif ( $tag ne '' ) {
+                        # Redefine the function tag so that only the
+                        # active entries are returned.
                         $tags->{function}->{$tag} = sub {
                             my $blog = $_[0]->stash('blog');
                             my $bset = $blog->template_set;
@@ -258,155 +277,126 @@ sub load_tags {
                             $_[0]->stash( 'plugin_ns',
                                           find_theme_plugin($bset)->id );
                             $_[0]->stash( 'scope', 'blog' );
-                            runner( '_hdlr_field_value',
+                            runner( '_hdlr_field_value_entry',
                                     'ConfigAssistant::Plugin', @_ );
                         };
-                        # Field type: `entry` or `page` or `entry_or_page`
-                        if (
-                            $option->{'type'} eq 'entry'
-                            || $option->{'type'} eq 'page'
-                            || $option->{'type'} eq 'entry_or_page'
-                        ) {
-                            $tags->{block}->{ $tag . 'Entries' } = sub {
-                                my $blog = $_[0]->stash('blog');
-                                my $bset = $blog->template_set;
-                                $_[0]->stash( 'config_type', $bset . '_' . $opt );
-                                $_[0]->stash( 'plugin_ns',
-                                              find_theme_plugin($bset)->id );
-                                $_[0]->stash( 'scope', 'blog' );
-                                runner( '_hdlr_field_entry_loop',
-                                        'ConfigAssistant::Plugin', @_ );
-                            };
-                            # Redefine the function tag so that only the
-                            # active entries are returned.
-                            $tags->{function}->{$tag} = sub {
-                                my $blog = $_[0]->stash('blog');
-                                my $bset = $blog->template_set;
-                                $_[0]->stash( 'config_type', $bset . '_' . $opt );
-                                $_[0]->stash( 'plugin_ns',
-                                              find_theme_plugin($bset)->id );
-                                $_[0]->stash( 'scope', 'blog' );
-                                runner( '_hdlr_field_value_entry',
-                                        'ConfigAssistant::Plugin', @_ );
-                            };
-                        } ## end
-                        elsif ( $option->{'type'} eq 'checkbox' ) {
-                            $tags->{block}->{ $tag . 'Loop' } = sub {
-                                my $blog = $_[0]->stash('blog');
-                                my $bset = $blog->template_set;
-                                $_[0]->stash( 'config_type', $bset . '_' . $opt );
-                                $_[0]->stash( 'plugin_ns',
-                                              find_theme_plugin($bset)->id );
-                                $_[0]->stash( 'scope', 'blog' );
-                                runner( '_hdlr_field_array_loop',
-                                        'ConfigAssistant::Plugin', @_ );
-                            };
-                            $tags->{block}->{ $tag . 'Contains' } = sub {
-                                ###l4p $logger ||= MT::Log::Log4perl->new(); $logger->trace();
-                                my $blog = $_[0]->stash('blog');
-                                my $bset = $blog->template_set;
-                                $_[0]->stash( 'config_type', $bset . '_' . $opt );
-                                $_[0]->stash( 'plugin_ns',
-                                              find_theme_plugin($bset)->id );
-                                $_[0]->stash( 'scope', 'blog' );
-                                ###l4p $logger->debug('Contains: ', l4mtdump({ bset => $bset, opt => $opt, plugin_ns => $_[0]->stash('plugin_ns'), tag => $tag}));
+                    } ## end
+                    elsif ( $option->{'type'} eq 'checkbox' ) {
+                        $tags->{block}->{ $tag . 'Loop' } = sub {
+                            my $blog = $_[0]->stash('blog');
+                            my $bset = $blog->template_set;
+                            $_[0]->stash( 'config_type', $bset . '_' . $opt );
+                            $_[0]->stash( 'plugin_ns',
+                                          find_theme_plugin($bset)->id );
+                            $_[0]->stash( 'scope', 'blog' );
+                            runner( '_hdlr_field_array_loop',
+                                    'ConfigAssistant::Plugin', @_ );
+                        };
+                        $tags->{block}->{ $tag . 'Contains' } = sub {
+                            ###l4p $logger ||= MT::Log::Log4perl->new(); $logger->trace();
+                            my $blog = $_[0]->stash('blog');
+                            my $bset = $blog->template_set;
+                            $_[0]->stash( 'config_type', $bset . '_' . $opt );
+                            $_[0]->stash( 'plugin_ns',
+                                          find_theme_plugin($bset)->id );
+                            $_[0]->stash( 'scope', 'blog' );
+                            ###l4p $logger->debug('Contains: ', l4mtdump({ bset => $bset, opt => $opt, plugin_ns => $_[0]->stash('plugin_ns'), tag => $tag}));
 
-                                runner( '_hdlr_field_array_contains',
-                                        'ConfigAssistant::Plugin', @_ );
-                            };
-                        } ## end if ( $option->{'type'}...)
-                        elsif (
-                            $option->{'type'} eq 'file'
-                            || $option->{'type'} eq 'asset'
-                        ) {
-                            $tags->{block}->{ $tag . 'Asset' } = sub {
-                                my $blog = $_[0]->stash('blog');
-                                my $bset = $blog->template_set;
-                                $_[0]->stash( 'config_type', $bset . '_' . $opt );
-                                $_[0]->stash( 'plugin_ns',
-                                              find_theme_plugin($bset)->id );
-                                $_[0]->stash( 'scope', 'blog' );
-                                runner( '_hdlr_field_asset',
-                                        'ConfigAssistant::Plugin', @_ );
-                            };
-                        }
-                        elsif ( $option->{'type'} eq 'link-group' ) {
-                            $tags->{block}->{ $tag . 'Links' } = sub {
-                                my $blog = $_[0]->stash('blog');
-                                my $bset = $blog->template_set;
-                                $_[0]->stash( 'config_type', $bset . '_' . $opt );
-                                $_[0]->stash( 'plugin_ns',
-                                              find_theme_plugin($bset)->id );
-                                $_[0]->stash( 'scope', 'blog' );
-                                $_[0]->stash(
-                                           'show_children',
-                                           (
-                                             defined $option->{show_children}
-                                             ? $option->{show_children}
-                                             : 1
-                                           )
-                                );
-                                runner( '_hdlr_field_link_group',
-                                        'ConfigAssistant::Plugin', @_ );
-                            };
-                        } ## end elsif ( $option->{'type'}...)
-                        elsif ( $option->{'type'} eq 'text-group' ) {
-                            $tags->{block}->{ $tag . 'Items' } = sub {
-                                my $blog = $_[0]->stash('blog');
-                                my $bset = $blog->template_set;
-                                $_[0]->stash( 'config_type', $bset . '_' . $opt );
-                                $_[0]->stash( 'plugin_ns',
-                                              find_theme_plugin($bset)->id );
-                                $_[0]->stash( 'scope', 'blog' );
-                                runner( '_hdlr_field_text_group',
-                                        'ConfigAssistant::Plugin', @_ );
-                            };
-                        } ## end elsif ( $option->{'type'}...)
-                        elsif ( $option->{'type'} eq 'datetime' ) {
-                            $tags->{function}->{ $tag } = sub {
-                                my $blog = $_[0]->stash('blog');
-                                my $bset = $blog->template_set;
-                                $_[0]->stash( 'config_type', $bset . '_' . $opt );
-                                $_[0]->stash( 'plugin_ns',
-                                              find_theme_plugin($bset)->id );
-                                $_[0]->stash( 'scope', 'blog' );
-                                $_[0]->stash( 'format', $option->{format} );
-                                runner( '_hdlr_field_datetime',
-                                        'ConfigAssistant::Plugin', @_ );
-                            };
-                        } ## end elsif ( $option->{'type'}...)
-                        elsif (    $option->{'type'} eq 'category'
-                                or $option->{'type'} eq 'folder'
-                                # deprecated options
-                                or $option->{'type'} eq 'category_list'
-                                or $option->{'type'} eq 'folder_list' )
-                        {
-                            my $obj_class = $option->{'type'} =~ /category/
-                                ? 'category' : 'folder';
-                            my $tag_type = $obj_class eq 'category'
-                                ? 'Categories' : 'Folders';
-                            $tags->{block}->{ $tag . $tag_type } = sub {
-                                $_[0]->stash( 'obj_class', $obj_class );
-                                my $blog = $_[0]->stash('blog');
-                                my $bset = $blog->template_set;
-                                $_[0]->stash( 'config_type', $bset . '_' . $opt );
-                                $_[0]->stash( 'plugin_ns',
-                                              find_theme_plugin($bset)->id );
-                                $_[0]->stash( 'scope', 'blog' );
-                                $_[0]->stash(
-                                           'show_children',
-                                           (
-                                             defined $option->{show_children}
-                                             ? $option->{show_children}
-                                             : 1
-                                           ));
-                                runner( '_hdlr_field_category_list',
-                                        'ConfigAssistant::Plugin', @_ );
-                            };
-                        } ## end elsif ( $option->{'type'}...)
-                    } ## end elsif ( $tag ne '' )
-                } ## end foreach my $opt ( keys %{ $obj...})
-            } ## end if ( $obj->registry( 'template_sets'...))
+                            runner( '_hdlr_field_array_contains',
+                                    'ConfigAssistant::Plugin', @_ );
+                        };
+                    } ## end if ( $option->{'type'}...)
+                    elsif (
+                        $option->{'type'} eq 'file'
+                        || $option->{'type'} eq 'asset'
+                    ) {
+                        $tags->{block}->{ $tag . 'Asset' } = sub {
+                            my $blog = $_[0]->stash('blog');
+                            my $bset = $blog->template_set;
+                            $_[0]->stash( 'config_type', $bset . '_' . $opt );
+                            $_[0]->stash( 'plugin_ns',
+                                          find_theme_plugin($bset)->id );
+                            $_[0]->stash( 'scope', 'blog' );
+                            runner( '_hdlr_field_asset',
+                                    'ConfigAssistant::Plugin', @_ );
+                        };
+                    }
+                    elsif ( $option->{'type'} eq 'link-group' ) {
+                        $tags->{block}->{ $tag . 'Links' } = sub {
+                            my $blog = $_[0]->stash('blog');
+                            my $bset = $blog->template_set;
+                            $_[0]->stash( 'config_type', $bset . '_' . $opt );
+                            $_[0]->stash( 'plugin_ns',
+                                          find_theme_plugin($bset)->id );
+                            $_[0]->stash( 'scope', 'blog' );
+                            $_[0]->stash(
+                                       'show_children',
+                                       (
+                                         defined $option->{show_children}
+                                         ? $option->{show_children}
+                                         : 1
+                                       )
+                            );
+                            runner( '_hdlr_field_link_group',
+                                    'ConfigAssistant::Plugin', @_ );
+                        };
+                    } ## end elsif ( $option->{'type'}...)
+                    elsif ( $option->{'type'} eq 'text-group' ) {
+                        $tags->{block}->{ $tag . 'Items' } = sub {
+                            my $blog = $_[0]->stash('blog');
+                            my $bset = $blog->template_set;
+                            $_[0]->stash( 'config_type', $bset . '_' . $opt );
+                            $_[0]->stash( 'plugin_ns',
+                                          find_theme_plugin($bset)->id );
+                            $_[0]->stash( 'scope', 'blog' );
+                            runner( '_hdlr_field_text_group',
+                                    'ConfigAssistant::Plugin', @_ );
+                        };
+                    } ## end elsif ( $option->{'type'}...)
+                    elsif ( $option->{'type'} eq 'datetime' ) {
+                        $tags->{function}->{ $tag } = sub {
+                            my $blog = $_[0]->stash('blog');
+                            my $bset = $blog->template_set;
+                            $_[0]->stash( 'config_type', $bset . '_' . $opt );
+                            $_[0]->stash( 'plugin_ns',
+                                          find_theme_plugin($bset)->id );
+                            $_[0]->stash( 'scope', 'blog' );
+                            $_[0]->stash( 'format', $option->{format} );
+                            runner( '_hdlr_field_datetime',
+                                    'ConfigAssistant::Plugin', @_ );
+                        };
+                    } ## end elsif ( $option->{'type'}...)
+                    elsif (    $option->{'type'} eq 'category'
+                            or $option->{'type'} eq 'folder'
+                            # deprecated options
+                            or $option->{'type'} eq 'category_list'
+                            or $option->{'type'} eq 'folder_list' )
+                    {
+                        my $obj_class = $option->{'type'} =~ /category/
+                            ? 'category' : 'folder';
+                        my $tag_type = $obj_class eq 'category'
+                            ? 'Categories' : 'Folders';
+                        $tags->{block}->{ $tag . $tag_type } = sub {
+                            $_[0]->stash( 'obj_class', $obj_class );
+                            my $blog = $_[0]->stash('blog');
+                            my $bset = $blog->template_set;
+                            $_[0]->stash( 'config_type', $bset . '_' . $opt );
+                            $_[0]->stash( 'plugin_ns',
+                                          find_theme_plugin($bset)->id );
+                            $_[0]->stash( 'scope', 'blog' );
+                            $_[0]->stash(
+                                       'show_children',
+                                       (
+                                         defined $option->{show_children}
+                                         ? $option->{show_children}
+                                         : 1
+                                       ));
+                            runner( '_hdlr_field_category_list',
+                                    'ConfigAssistant::Plugin', @_ );
+                        };
+                    } ## end elsif ( $option->{'type'}...)
+                } ## end elsif ( $tag ne '' )
+            } ## end foreach my $opt ( keys %{ $obj...})
         } ## end foreach my $set (@sets)
 
         # Create tags for system- and blog-level Plugin Options.
