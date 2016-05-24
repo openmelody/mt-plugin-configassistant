@@ -114,10 +114,9 @@ sub init_options {
                         [ $optname, { scope => 'blog', %$option, } ]
                     );
                 }
-                else
-                { # (ref $obj->{'registry'}->{'settings'} eq 'HASH') {
                         $settings->{$optname}
                           = { scope => 'blog', %$option, };
+                else {
                 }
             } ## end foreach my $opt ( keys %{ $r...})
         }    # end foreach (@sets)
@@ -130,23 +129,23 @@ sub init_options {
             $option->{scope} ||= '';
             if ( $option->{scope} eq 'system' ) {
                 require ConfigAssistant::Plugin;
-                $obj->{'registry'}->{'system_config_template'}
+                $r->{'system_config_template'}
                   = \&ConfigAssistant::Plugin::plugin_options;
             }
             if ( $option->{scope} eq 'blog' ) {
                 require ConfigAssistant::Plugin;
-                $obj->{'registry'}->{'blog_config_template'}
+                $r->{'blog_config_template'}
                   = \&ConfigAssistant::Plugin::plugin_options;
             }
 
             next if _option_exists( $sig, $opt );
 
-            my $settings         = $obj->{registry}->{settings} ||= {};
+            my $settings         = $r->{settings} ||= {};
             my $settings_reftype = reftype($settings) || '';
             if ( 'ARRAY' eq $settings_reftype ) {
                 push( @$settings, [ $opt, { %$option, } ]);
             }
-            else {    # (ref $obj->{'registry'}->{'settings'} eq 'HASH') {
+            else {    # (ref $r->{'settings'} eq 'HASH')
                 $settings->{$opt} = { %$option };
             }
         } ## end foreach my $opt (@options)
@@ -161,7 +160,7 @@ sub _option_exists {
     my $settings_reftype = reftype($settings) || '';
 
     if ( 'ARRAY' eq $settings_reftype ) {
-        my @settings = $obj->{'registry'}->{'settings'}->{$opt}; # FIXME This looks wrong
+        my @settings = $settings->{$opt}; # FIXME This looks wrong
         foreach (@settings) {
             return 1 if $opt eq $_[0];
         }
