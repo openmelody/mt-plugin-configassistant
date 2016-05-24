@@ -66,110 +66,60 @@ sub init_app {
     return 1;
 } ## end sub init_app
 
+# init_options converts each plugin's options into settings
 sub init_options {
-
-    #    my $callback = shift;
-    my $app = shift;
-
-    # For each plugin, convert options into settings
+    my $app               = shift;
     my $has_blog_settings = 0;
     my $has_sys_settings  = 0;
+    my $push_setting      = sub { push( @{+shift}, [ @_ ] ) };
+    my $add_setting       = sub { $_[0]->{$_[1]} = $_[2] };
 
-    # For the static_version check, to determine if an upgrade is needed.
-    my @plugins;
-    for my $sig ( keys %MT::Plugins ) {
-        my $plugin = $MT::Plugins{$sig};
-        my $obj    = $MT::Plugins{$sig}{object};
-        my $r      = $obj->{registry};
-        my @sets   = keys %{ $r->{'template_sets'} };
-        foreach my $set (@sets) {
-            my $options = $r->{'template_sets'}->{$set}->{'options'} || {};
-            foreach my $opt ( keys %$options ) {
-                next if ( $opt eq 'fieldsets' );
-                my $option = $options->{$opt};
+    my %plugins = map  { $_->{plugin_sig} => $_ }
+                  grep { defined  $_->{plugin_sig} } MT::Plugin->select;
 
-                # To avoid option names that may collide with other
-                # options in other template sets settings are derived
-                # by combining the name of the template set and the
-                # option's key.
-                my $optname = $set . '_' . $opt;
-                next if _option_exists( $sig, $optname );
+    while ( my ( $sig, $plugin ) = each %plugins ) {
+        my $r        = $plugin->{registry} ||= {};
+        my $settings = $r->{settings}      ||= {};
+        my $setting  = Scalar::Util::reftype( $settings ) eq 'ARRAY'
+                           ? sub { $push_setting->( $settings, @_ ) }
+                           : sub { $add_setting->(  $settings, @_ ) };
 
-                # if ( my $default = $option->{default} ) {
-                #     if (   !ref($default)
-                #         && (   $default =~ /^\s*sub/
-                #             || $default =~ /^\$/)) {
-                #         $default
-                #           = $app->handler_to_coderef($default);
-                #         $option->{default} = sub {
-                #               return $default->(MT->instance) };
-                #     }
-                # }
+        foreach my $set ( keys %{ $r->{template_sets} } ) {
+            my $options = $r->{template_sets}->{$set}->{options} || {};
 
-                my $settings         = $obj->{registry}->{settings} ||= {};
-                my $settings_reftype = reftype($settings) || '';
+            while ( my ( $key, $option ) = each %$options ) {
+                next if $key eq 'fieldsets';
+                my $optname = "${set}_$key"; # Avoid option name collision
+                next if _option_exists( $settings, $optname );
 
-                if ( 'ARRAY' eq $settings_reftype ) {
-                    push( @$settings,
-                        [ $optname, { scope => 'blog', %$option, } ]
-                    );
-                }
-                        $settings->{$optname}
-                          = { scope => 'blog', %$option, };
-                else {
-                }
-            } ## end foreach my $opt ( keys %{ $r...})
-        }    # end foreach (@sets)
+                $setting->( $optname, { scope => 'blog', %$option } );
+                ### FIXME Is option scope not variable?
+            }
+        }
 
         # Now register settings for each plugin option and a plugin_config_form
-        my @options = keys %{ $r->{'options'} };
-        foreach my $opt (@options) {
-            next if ( $opt eq 'fieldsets' );
-            my $option = $r->{'options'}->{$opt};
-            $option->{scope} ||= '';
-            if ( $option->{scope} eq 'system' ) {
-                require ConfigAssistant::Plugin;
-                $r->{'system_config_template'}
-                  = \&ConfigAssistant::Plugin::plugin_options;
-            }
-            if ( $option->{scope} eq 'blog' ) {
-                require ConfigAssistant::Plugin;
-                $r->{'blog_config_template'}
-                  = \&ConfigAssistant::Plugin::plugin_options;
-            }
+        while ( my ( $key, $option ) = each %{ $r->{options} }) {
+            next if $key eq 'fieldsets';
 
-            next if _option_exists( $sig, $opt );
+            if ( $option->{scope} ||= '' ) {
+                require ConfigAssistant::Plugin;
+                my $ctmpl    = $option->{scope}.'_config_template';
+                $r->{$ctmpl} = ConfigAssistant::Plugin->can('plugin_options');
+            };
 
-            my $settings         = $r->{settings} ||= {};
-            my $settings_reftype = reftype($settings) || '';
-            if ( 'ARRAY' eq $settings_reftype ) {
-                push( @$settings, [ $opt, { %$option, } ]);
-            }
-            else {    # (ref $r->{'settings'} eq 'HASH')
-                $settings->{$opt} = { %$option };
-            }
-        } ## end foreach my $opt (@options)
-    } ## end for my $sig ( keys %MT::Plugins)
-} ## end sub init_options
+            next if _option_exists( $settings, $key );
+
+            ### FIXME Why is scope variable above but hardcoded to blog below?
+            $setting->( $key, { scope => 'blog', %$option } );
+        }
+    }
+}
 
 sub _option_exists {
-    my ( $sig, $opt ) = @_;
-    my $obj = $MT::Plugins{$sig}{object};
-
-    my $settings         = $obj->{registry}->{settings} ||= {};
-    my $settings_reftype = reftype($settings) || '';
-
-    if ( 'ARRAY' eq $settings_reftype ) {
-        my @settings = $settings->{$opt}; # FIXME This looks wrong
-        foreach (@settings) {
-            return 1 if $opt eq $_[0];
-        }
-        return 0;
-    }
-    elsif ( 'HASH' eq $settings_reftype ) {
-        return $settings->{$opt} ? 1 : 0;
-    }
-    return 0;
+    my ( $settings, $opt ) = @_;
+    return 'ARRAY' eq reftype($settings) ? grep { $_ eq $opt } @$settings
+         : $settings->{$opt}             ? 1
+                                         : 0;
 }
 
 sub load_tags {
@@ -181,7 +131,7 @@ sub load_tags {
     my $cfg = $app->registry('plugin_config');
     foreach my $plugin_id ( keys %$cfg ) {
         my $plugin_cfg = $cfg->{$plugin_id};
-        my $p          = delete $cfg->{$plugin_id}->{'plugin'};
+        my $p          = delete $cfg->{$plugin_id}{plugin};
         foreach my $key ( keys %$plugin_cfg ) {
             MT->log( {
                    message => $p->name
