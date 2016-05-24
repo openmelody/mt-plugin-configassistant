@@ -93,12 +93,7 @@ sub init_options {
                 # by combining the name of the template set and the
                 # option's key.
                 my $optname = $set . '_' . $opt;
-                if ( _option_exists( $sig, $optname ) ) {
-
-                    # do nothing
-                }
-                else {
-
+                unless ( _option_exists( $sig, $optname ) ) {
                     # if ( my $default = $option->{default} ) {
                     #     if (   !ref($default)
                     #         && (   $default =~ /^\s*sub/
@@ -144,11 +139,7 @@ sub init_options {
                   = \&ConfigAssistant::Plugin::plugin_options;
             }
 
-            if ( _option_exists( $sig, $opt ) ) {
-
-                # do nothing
-            }
-            else {
+            unless ( _option_exists( $sig, $opt ) ) {
                 my $settings         = $obj->{registry}->{settings} ||= {};
                 my $settings_reftype = reftype($settings) || '';
                 if ( 'ARRAY' eq $settings_reftype ) {
