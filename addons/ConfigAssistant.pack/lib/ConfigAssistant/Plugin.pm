@@ -321,7 +321,9 @@ sub _republish_template {
         $result = $app->rebuild_indexes(
             BlogID   => $blog_id,
             Template => $tmpl,
-            Force    => 1,
+            # If the template is set to go to the PQ, just send it there. If
+            # it's set to static or manual it needs to be published now.
+            Force    => ($tmpl->build_type == 4 ? 0 : 1),
         );
     }
     # Rebuild an archive template.
